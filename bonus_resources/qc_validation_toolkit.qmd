@@ -1,0 +1,563 @@
+---
+title: "QC Validation Toolkit"
+subtitle: "AI-Assisted Quality Control for Clinical Programming"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+    code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# 🔍 QC Validation Toolkit
+
+**AI-Assisted Quality Control for Clinical Programming**  
+GitHub Copilot Integration for Automated QC Procedures
+
+This toolkit demonstrates comprehensive QC procedures using R with GitHub Copilot assistance for clinical programming validation.
+
+## Overview
+
+Quality Control (QC) is a critical component of clinical programming that ensures data integrity, regulatory compliance, and statistical accuracy. This toolkit provides:
+
+- Automated data validation procedures
+- AI-assisted error detection using GitHub Copilot
+- Standardized QC report generation
+- Cross-domain validation checks
+
+## Required Libraries
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(tibble)
+library(stringr)
+library(lubridate)
+library(tidyr)
+library(purrr)
+
+cat("=== AI-Assisted Clinical Data Quality Control ===\n")
+cat("Comprehensive QC procedures with GitHub Copilot integration\n\n")
+```
+
+## Mock Clinical Data with Intentional Issues
+
+We'll create test data with various quality issues to demonstrate our QC procedures.
+
+```{r}
+#| label: mock-data
+
+set.seed(2024)
+
+# Create ADSL with various data quality issues
+adsl_qc <- tibble(
+  STUDYID = "ABC-123",
+  USUBJID = c(
+    paste0("ABC-123-", sprintf("%03d", 1:18)),
+    "ABC-123-019",  # Duplicate will be added
+    "ABC-123-019"   # Duplicate subject
+  ),
+  SUBJID = c(sprintf("%03d", 1:18), "019", "019"),
+  AGE = c(sample(18:75, 18, replace = TRUE), 65, NA),  # Missing age
+  SEX = c(sample(c("M", "F"), 18, replace = TRUE), "X", "F"),  # Invalid sex code
+  RACE = c(sample(c("WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN"), 18, replace = TRUE), 
+           "white", "WHITE"),  # Inconsistent case
+  TRT01P = c(sample(c("Placebo", "Study Drug 5mg", "Study Drug 10mg"), 18, replace = TRUE),
+             "PLACEBO", "Study Drug 5mg"),  # Inconsistent treatment name
+  TRT01PN = c(sample(c(0, 5, 10), 18, replace = TRUE), 0, 5),
+  TRTSDT = c(
+    rep(as.Date("2024-01-15"), 18),
+    as.Date("2023-12-01"),  # Treatment start before study start
+    as.Date("2024-01-15")
+  ),
+  TRTEDT = c(
+    rep(as.Date("2024-03-15"), 18),
+    as.Date("2024-03-15"),
+    NA  # Missing treatment end date
+  ),
+  SAFFL = c(rep("Y", 19), ""),  # Missing safety flag
+  ITTFL = c(rep("Y", 18), "N", "Y"),
+  COMPLFL = c(rep("Y", 17), "N", "Y", "Y"),
+  DTHFL = c(rep("N", 19), "Y"),
+  DTHDTC = c(rep("", 19), "2024-02-28"),
+  DTHDT = c(rep(as.Date(NA), 19), as.Date("2024-02-28"))
+)
+
+# Display the problematic data
+print("ADSL Data with Quality Issues:")
+print(adsl_qc)
+```
+
+## QC Check Functions
+
+### 1. Duplicate Subject Check
+
+```{r}
+#| label: duplicate-check
+
+check_duplicates <- function(data, id_var = "USUBJID") {
+  cat("=== Duplicate Subject Check ===\n")
+  
+  duplicates <- data %>%
+    group_by(!!sym(id_var)) %>%
+    filter(n() > 1) %>%
+    ungroup()
+  
+  if (nrow(duplicates) > 0) {
+    cat("❌ ISSUE FOUND: Duplicate subjects detected\n")
+    cat("Number of duplicate records:", nrow(duplicates), "\n")
+    cat("Duplicate subjects:\n")
+    print(duplicates %>% select(!!sym(id_var), SUBJID, AGE, SEX))
+    
+    return(list(
+      status = "FAIL",
+      count = nrow(duplicates),
+      details = duplicates
+    ))
+  } else {
+    cat("✅ PASS: No duplicate subjects found\n")
+    return(list(status = "PASS", count = 0, details = NULL))
+  }
+}
+
+# Run duplicate check
+dup_result <- check_duplicates(adsl_qc)
+```
+
+### 2. Missing Critical Variables Check
+
+```{r}
+#| label: missing-check
+
+check_missing_critical <- function(data, critical_vars = c("USUBJID", "AGE", "SEX", "TRTSDT")) {
+  cat("\n=== Missing Critical Variables Check ===\n")
+  
+  issues <- list()
+  
+  for (var in critical_vars) {
+    if (var %in% names(data)) {
+      missing_count <- sum(is.na(data[[var]]) | data[[var]] == "")
+      missing_pct <- round(missing_count / nrow(data) * 100, 2)
+      
+      if (missing_count > 0) {
+        cat("❌", var, ":", missing_count, "missing values (", missing_pct, "%)\n")
+        
+        # Show which subjects have missing values
+        missing_subjects <- data %>%
+          filter(is.na(!!sym(var)) | !!sym(var) == "") %>%
+          select(USUBJID, !!sym(var))
+        
+        issues[[var]] <- list(
+          count = missing_count,
+          percentage = missing_pct,
+          subjects = missing_subjects
+        )
+      } else {
+        cat("✅", var, ": No missing values\n")
+      }
+    } else {
+      cat("⚠️", var, ": Variable not found in dataset\n")
+    }
+  }
+  
+  return(issues)
+}
+
+# Run missing values check
+missing_result <- check_missing_critical(adsl_qc)
+```
+
+### 3. Controlled Terminology Validation
+
+```{r}
+#| label: terminology-check
+
+check_controlled_terminology <- function(data) {
+  cat("\n=== Controlled Terminology Validation ===\n")
+  
+  # Define expected controlled terminology
+  valid_sex <- c("M", "F")
+  valid_race <- c("WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN", 
+                  "AMERICAN INDIAN OR ALASKA NATIVE", "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER")
+  valid_flags <- c("Y", "N", "")
+  
+  issues <- list()
+  
+  # Check SEX
+  invalid_sex <- data %>%
+    filter(!SEX %in% valid_sex) %>%
+    select(USUBJID, SEX)
+  
+  if (nrow(invalid_sex) > 0) {
+    cat("❌ SEX: Invalid values found\n")
+    print(invalid_sex)
+    issues$SEX <- invalid_sex
+  } else {
+    cat("✅ SEX: All values valid\n")
+  }
+  
+  # Check RACE (case sensitivity)
+  invalid_race <- data %>%
+    filter(!RACE %in% valid_race) %>%
+    select(USUBJID, RACE)
+  
+  if (nrow(invalid_race) > 0) {
+    cat("❌ RACE: Invalid/inconsistent values found\n")
+    print(invalid_race)
+    issues$RACE <- invalid_race
+  } else {
+    cat("✅ RACE: All values valid\n")
+  }
+  
+  # Check flags
+  flag_vars <- c("SAFFL", "ITTFL", "COMPLFL", "DTHFL")
+  for (flag_var in flag_vars) {
+    if (flag_var %in% names(data)) {
+      invalid_flags <- data %>%
+        filter(!is.na(!!sym(flag_var)) & !!!sym(flag_var) %in% valid_flags) %>%
+        select(USUBJID, !!sym(flag_var))
+      
+      if (nrow(invalid_flags) > 0) {
+        cat("❌", flag_var, ": Invalid flag values found\n")
+        print(invalid_flags)
+        issues[[flag_var]] <- invalid_flags
+      } else {
+        cat("✅", flag_var, ": All flag values valid\n")
+      }
+    }
+  }
+  
+  return(issues)
+}
+
+# Run controlled terminology check
+ct_result <- check_controlled_terminology(adsl_qc)
+```
+
+### 4. Date Logic Validation
+
+```{r}
+#| label: date-logic-check
+
+check_date_logic <- function(data) {
+  cat("\n=== Date Logic Validation ===\n")
+  
+  issues <- list()
+  study_start <- as.Date("2024-01-01")  # Define study start date
+  
+  # Check treatment start vs study start
+  early_treatment <- data %>%
+    filter(!is.na(TRTSDT) & TRTSDT < study_start) %>%
+    select(USUBJID, TRTSDT)
+  
+  if (nrow(early_treatment) > 0) {
+    cat("❌ Treatment start before study start:\n")
+    print(early_treatment)
+    issues$early_treatment <- early_treatment
+  } else {
+    cat("✅ All treatment start dates valid\n")
+  }
+  
+  # Check treatment end vs treatment start
+  invalid_treatment_duration <- data %>%
+    filter(!is.na(TRTSDT) & !is.na(TRTEDT) & TRTEDT < TRTSDT) %>%
+    select(USUBJID, TRTSDT, TRTEDT)
+  
+  if (nrow(invalid_treatment_duration) > 0) {
+    cat("❌ Treatment end before treatment start:\n")
+    print(invalid_treatment_duration)
+    issues$invalid_duration <- invalid_treatment_duration
+  } else {
+    cat("✅ All treatment durations valid\n")
+  }
+  
+  # Check death date logic
+  death_logic_issues <- data %>%
+    filter(DTHFL == "Y" & (is.na(DTHDT) | DTHDT == "")) %>%
+    select(USUBJID, DTHFL, DTHDT)
+  
+  if (nrow(death_logic_issues) > 0) {
+    cat("❌ Death flag Y but missing death date:\n")
+    print(death_logic_issues)
+    issues$death_logic <- death_logic_issues
+  } else {
+    cat("✅ Death date logic consistent\n")
+  }
+  
+  return(issues)
+}
+
+# Run date logic check
+date_result <- check_date_logic(adsl_qc)
+```
+
+### 5. Age Validation
+
+```{r}
+#| label: age-validation
+
+check_age_validation <- function(data) {
+  cat("\n=== Age Validation ===\n")
+  
+  issues <- list()
+  
+  # Check age range
+  invalid_age <- data %>%
+    filter(!is.na(AGE) & (AGE < 18 | AGE > 100)) %>%
+    select(USUBJID, AGE)
+  
+  if (nrow(invalid_age) > 0) {
+    cat("❌ Age outside expected range (18-100):\n")
+    print(invalid_age)
+    issues$age_range <- invalid_age
+  } else {
+    cat("✅ All ages within expected range\n")
+  }
+  
+  # Age distribution summary
+  cat("\nAge Distribution Summary:\n")
+  age_summary <- data %>%
+    filter(!is.na(AGE)) %>%
+    summarise(
+      n = n(),
+      mean_age = round(mean(AGE), 1),
+      median_age = median(AGE),
+      min_age = min(AGE),
+      max_age = max(AGE),
+      sd_age = round(sd(AGE), 1)
+    )
+  
+  print(age_summary)
+  
+  return(issues)
+}
+
+# Run age validation
+age_result <- check_age_validation(adsl_qc)
+```
+
+## Cross-Domain Validation
+
+```{r}
+#| label: cross-domain
+
+# Mock additional domain for cross-validation
+adae_qc <- tibble(
+  USUBJID = c(
+    sample(adsl_qc$USUBJID[1:15], 10),  # Some subjects from ADSL
+    "ABC-123-999"  # Subject not in ADSL
+  ),
+  AEDECOD = sample(c("Headache", "Nausea", "Dizziness", "Fatigue"), 11, replace = TRUE),
+  AESEV = sample(c("MILD", "MODERATE", "SEVERE"), 11, replace = TRUE),
+  AEREL = sample(c("RELATED", "NOT RELATED", "POSSIBLY RELATED"), 11, replace = TRUE)
+)
+
+check_cross_domain <- function(adsl_data, ae_data) {
+  cat("\n=== Cross-Domain Validation ===\n")
+  
+  issues <- list()
+  
+  # Check for AE subjects not in ADSL
+  ae_subjects <- unique(ae_data$USUBJID)
+  adsl_subjects <- unique(adsl_data$USUBJID)
+  
+  orphan_ae <- setdiff(ae_subjects, adsl_subjects)
+  
+  if (length(orphan_ae) > 0) {
+    cat("❌ AE subjects not found in ADSL:\n")
+    cat(paste(orphan_ae, collapse = ", "), "\n")
+    issues$orphan_ae <- orphan_ae
+  } else {
+    cat("✅ All AE subjects found in ADSL\n")
+  }
+  
+  # Check for ADSL subjects with safety flag Y but no AEs
+  safety_subjects <- adsl_data %>%
+    filter(SAFFL == "Y") %>%
+    pull(USUBJID)
+  
+  subjects_no_ae <- setdiff(safety_subjects, ae_subjects)
+  
+  cat("Safety population subjects without AEs:", length(subjects_no_ae), "\n")
+  if (length(subjects_no_ae) > 5) {  # Only show first 5
+    cat("Examples:", paste(head(subjects_no_ae, 5), collapse = ", "), "\n")
+  }
+  
+  return(issues)
+}
+
+# Run cross-domain check
+cross_result <- check_cross_domain(adsl_qc, adae_qc)
+```
+
+## QC Summary Report
+
+```{r}
+#| label: qc-summary
+
+generate_qc_summary <- function(dup_result, missing_result, ct_result, date_result, age_result, cross_result) {
+  cat("\n" , "="*60, "\n")
+  cat("            QUALITY CONTROL SUMMARY REPORT\n")
+  cat("="*60, "\n")
+  cat("Dataset: ADSL\n")
+  cat("QC Date:", format(Sys.Date(), "%Y-%m-%d"), "\n")
+  cat("Total Records:", nrow(adsl_qc), "\n")
+  cat("-"*60, "\n")
+  
+  # Summary of issues
+  total_issues <- 0
+  
+  cat("ISSUE SUMMARY:\n")
+  
+  if (dup_result$status == "FAIL") {
+    cat("• Duplicate subjects:", dup_result$count, "\n")
+    total_issues <- total_issues + dup_result$count
+  }
+  
+  if (length(missing_result) > 0) {
+    missing_count <- sum(sapply(missing_result, function(x) x$count))
+    cat("• Missing critical values:", missing_count, "\n")
+    total_issues <- total_issues + missing_count
+  }
+  
+  if (length(ct_result) > 0) {
+    ct_count <- sum(sapply(ct_result, nrow))
+    cat("• Controlled terminology issues:", ct_count, "\n")
+    total_issues <- total_issues + ct_count
+  }
+  
+  if (length(date_result) > 0) {
+    date_count <- sum(sapply(date_result, nrow))
+    cat("• Date logic issues:", date_count, "\n")
+    total_issues <- total_issues + date_count
+  }
+  
+  if (length(cross_result) > 0) {
+    cross_count <- length(unlist(cross_result))
+    cat("• Cross-domain issues:", cross_count, "\n")
+    total_issues <- total_issues + cross_count
+  }
+  
+  cat("-"*60, "\n")
+  cat("TOTAL ISSUES IDENTIFIED:", total_issues, "\n")
+  
+  if (total_issues == 0) {
+    cat("🎉 QC STATUS: PASS - No issues found\n")
+  } else {
+    cat("⚠️  QC STATUS: REVIEW REQUIRED\n")
+  }
+  
+  cat("="*60, "\n")
+}
+
+# Generate summary report
+generate_qc_summary(dup_result, missing_result, ct_result, date_result, age_result, cross_result)
+```
+
+## AI-Assisted QC with GitHub Copilot
+
+### Copilot Prompts for QC
+
+Here are effective GitHub Copilot prompts for clinical data QC:
+
+```{r}
+#| label: copilot-prompts
+#| eval: false
+
+# Example Copilot prompts for QC programming:
+
+# 1. Generate validation function
+# Prompt: "Create a function to validate SDTM dates against FDA requirements"
+
+# 2. Check data completeness  
+# Prompt: "Write R code to check missing values in clinical trial dataset by treatment group"
+
+# 3. Controlled terminology validation
+# Prompt: "Create validation rules for CDISC controlled terminology in R using dplyr"
+
+# 4. Cross-domain referential integrity
+# Prompt: "Write function to check that all subjects in AE domain exist in DM domain"
+
+# 5. Statistical outlier detection
+# Prompt: "Identify statistical outliers in vital signs data using R"
+```
+
+### Advanced QC Techniques
+
+```{r}
+#| label: advanced-qc
+
+# Statistical outlier detection for continuous variables
+detect_outliers <- function(data, var_name, method = "iqr") {
+  cat(paste("Outlier detection for", var_name, "using", method, "method:\n"))
+  
+  values <- data[[var_name]][!is.na(data[[var_name]])]
+  
+  if (method == "iqr") {
+    Q1 <- quantile(values, 0.25)
+    Q3 <- quantile(values, 0.75)
+    IQR <- Q3 - Q1
+    lower_bound <- Q1 - 1.5 * IQR
+    upper_bound <- Q3 + 1.5 * IQR
+    
+    outliers <- data %>%
+      filter(!is.na(!!sym(var_name)) & 
+             (!!sym(var_name) < lower_bound | !!sym(var_name) > upper_bound)) %>%
+      select(USUBJID, !!sym(var_name))
+    
+    if (nrow(outliers) > 0) {
+      cat("Outliers detected:\n")
+      print(outliers)
+    } else {
+      cat("No outliers detected\n")
+    }
+  }
+  
+  return(outliers)
+}
+
+# Check for age outliers
+age_outliers <- detect_outliers(adsl_qc, "AGE")
+```
+
+## Best Practices
+
+### QC Checklist
+
+1. **Data Completeness**
+   - ✅ Check for missing key identifier variables
+   - ✅ Validate completeness of critical efficacy/safety variables
+   - ✅ Assess missing data patterns by treatment group
+
+2. **Data Consistency** 
+   - ✅ Validate controlled terminology adherence
+   - ✅ Check date logic and chronological order
+   - ✅ Verify cross-domain referential integrity
+
+3. **Statistical Validation**
+   - ✅ Identify statistical outliers
+   - ✅ Check for impossible/implausible values
+   - ✅ Validate derived variables calculations
+
+4. **Regulatory Compliance**
+   - ✅ CDISC standards compliance
+   - ✅ FDA submission requirements
+   - ✅ ICH-GCP guidelines adherence
+
+### GitHub Copilot Integration Tips
+
+- Use descriptive variable names to help Copilot understand context
+- Write clear comments explaining the clinical logic
+- Break complex validations into smaller, focused functions
+- Use domain-specific terminology (CDISC, ICH, FDA) in prompts
+
+---
+
+*This QC toolkit provides a comprehensive framework for clinical data validation using modern R programming techniques with AI assistance.*

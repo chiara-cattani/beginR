@@ -1,0 +1,603 @@
+---
+title: "Data Manipulation Examples"
+subtitle: "Practical Data Manipulation Examples with dplyr"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+    code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# 📊 Data Manipulation Examples
+
+**Practical Data Manipulation Examples with dplyr**  
+Module 2-3: Data Manipulation, Filtering, Joins, and Summaries
+
+This guide demonstrates essential dplyr operations for clinical data analysis, covering core functions and techniques used in data manipulation workflows.
+
+## Overview
+
+Data manipulation is fundamental to clinical programming. This document covers:
+
+- Essential dplyr functions (`select`, `filter`, `mutate`, `summarise`)
+- Data reshaping and transformation techniques
+- Joining datasets and handling missing data
+- Group-wise operations and statistical summaries
+
+## Required Libraries
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(tibble)
+library(lubridate)
+library(stringr)
+
+cat("=== Data Manipulation Examples ===\n")
+cat("Essential dplyr operations for data analysis\n\n")
+```
+
+## Sample SDTM Datasets
+
+Let's create sample clinical datasets to demonstrate data manipulation techniques.
+
+### Demographics Domain (DM)
+
+```{r}
+#| label: dm-data
+
+# Load validated SDTM datasets (in production, these would be from validated sources)
+# Demographics Domain (DM)
+dm_sdtm <- tibble(
+  STUDYID = "ABC-123",
+  DOMAIN = "DM",
+  USUBJID = paste0("ABC-123-", sprintf("%03d", 1:20)),
+  SUBJID = sprintf("%03d", 1:20),
+  SITEID = rep(c("001", "002", "003"), length.out = 20),
+  BRTHDTC = sample(seq(as.Date("1950-01-01"), as.Date("1990-12-31"), by = "day"), 20),
+  SEX = sample(c("M", "F"), 20, replace = TRUE, prob = c(0.6, 0.4)),
+  RACE = sample(c("WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN"), 20, replace = TRUE),
+  ETHNIC = sample(c("HISPANIC OR LATINO", "NOT HISPANIC OR LATINO"), 20, replace = TRUE),
+  ARMCD = rep(c("PBO", "TRT"), length.out = 20),
+  ARM = case_when(
+    ARMCD == "PBO" ~ "Placebo",
+    ARMCD == "TRT" ~ "Study Drug 10mg"
+  ),
+  RFSTDTC = as.Date("2024-01-15"),
+  RFENDTC = as.Date("2024-04-15")
+)
+
+print("Demographics Domain (DM):")
+print(dm_sdtm)
+```
+
+### Vital Signs Domain (VS)
+
+```{r}
+#| label: vs-data
+
+# Vital Signs Domain (VS) - Multiple records per subject
+vs_sdtm <- map_dfr(dm_sdtm$USUBJID[1:10], function(subj) {
+  visits <- c("BASELINE", "WEEK 2", "WEEK 4", "WEEK 8", "WEEK 12")
+  
+  tibble(
+    STUDYID = "ABC-123",
+    DOMAIN = "VS",
+    USUBJID = subj,
+    VISIT = visits,
+    VISITNUM = 1:5,
+    VSTESTCD = rep(c("SYSBP", "DIABP", "PULSE"), each = 5),
+    VSTEST = rep(c("Systolic Blood Pressure", "Diastolic Blood Pressure", "Pulse Rate"), each = 5),
+    VSORRES = c(
+      round(rnorm(5, 125, 15)),  # Systolic BP
+      round(rnorm(5, 80, 10)),   # Diastolic BP  
+      round(rnorm(5, 70, 12))    # Pulse
+    ),
+    VSORRESU = rep(c("mmHg", "mmHg", "beats/min"), each = 5),
+    VSDTC = rep(seq(as.Date("2024-01-15"), by = "2 weeks", length.out = 5), 3)
+  )
+}) %>%
+  arrange(USUBJID, VSTESTCD, VISITNUM)
+
+print("Vital Signs Domain (VS) - First 15 records:")
+print(vs_sdtm %>% slice(1:15))
+```
+
+### Adverse Events Domain (AE)
+
+```{r}
+#| label: ae-data
+
+# Adverse Events Domain (AE)
+ae_sdtm <- tibble(
+  STUDYID = "ABC-123",
+  DOMAIN = "AE", 
+  USUBJID = sample(dm_sdtm$USUBJID, 12, replace = TRUE),
+  AEDECOD = sample(c("Headache", "Nausea", "Dizziness", "Fatigue", "Insomnia"), 12, replace = TRUE),
+  AESEV = sample(c("MILD", "MODERATE", "SEVERE"), 12, replace = TRUE, prob = c(0.6, 0.3, 0.1)),
+  AEREL = sample(c("RELATED", "NOT RELATED", "POSSIBLY RELATED"), 12, replace = TRUE),
+  AESTDTC = sample(seq(as.Date("2024-01-20"), as.Date("2024-04-10"), by = "day"), 12),
+  AEENDTC = sample(seq(as.Date("2024-02-01"), as.Date("2024-04-15"), by = "day"), 12)
+) %>%
+  arrange(USUBJID, AESTDTC)
+
+print("Adverse Events Domain (AE):")
+print(ae_sdtm)
+```
+
+## Core dplyr Operations
+
+### 1. Selecting Columns
+
+```{r}
+#| label: select-examples
+
+cat("=== SELECT Operations ===\n")
+
+# Select specific columns
+dm_basic <- dm_sdtm %>%
+  select(USUBJID, SEX, RACE, ARM)
+
+print("Basic demographics (selected columns):")
+print(dm_basic)
+
+# Select columns using patterns
+dm_dates <- dm_sdtm %>%
+  select(USUBJID, ends_with("DTC"))
+
+print("\nDate columns:")
+print(dm_dates)
+
+# Select and rename columns
+dm_renamed <- dm_sdtm %>%
+  select(
+    Subject_ID = USUBJID,
+    Gender = SEX,
+    Treatment = ARM,
+    Start_Date = RFSTDTC
+  )
+
+print("\nRenamed columns:")
+print(head(dm_renamed))
+```
+
+### 2. Filtering Rows
+
+```{r}
+#| label: filter-examples
+
+cat("\n=== FILTER Operations ===\n")
+
+# Simple filtering
+males_only <- dm_sdtm %>%
+  filter(SEX == "M")
+
+print("Male subjects only:")
+print(males_only %>% select(USUBJID, SEX, ARM))
+
+# Multiple conditions with AND
+treatment_males <- dm_sdtm %>%
+  filter(SEX == "M" & ARMCD == "TRT")
+
+print("\nTreatment group males:")
+print(treatment_males %>% select(USUBJID, SEX, ARM))
+
+# Multiple conditions with OR
+minority_subjects <- dm_sdtm %>%
+  filter(RACE %in% c("BLACK OR AFRICAN AMERICAN", "ASIAN") | 
+         ETHNIC == "HISPANIC OR LATINO")
+
+print("\nMinority subjects:")
+print(minority_subjects %>% select(USUBJID, RACE, ETHNIC))
+
+# Filtering with date conditions
+recent_births <- dm_sdtm %>%
+  filter(BRTHDTC >= as.Date("1980-01-01"))
+
+print("\nSubjects born after 1980:")
+print(recent_births %>% select(USUBJID, BRTHDTC) %>% arrange(BRTHDTC))
+```
+
+### 3. Creating New Variables
+
+```{r}
+#| label: mutate-examples
+
+cat("\n=== MUTATE Operations ===\n")
+
+# Calculate age and create age groups
+dm_enhanced <- dm_sdtm %>%
+  mutate(
+    # Calculate age at study start
+    AGE = as.numeric(floor(difftime(RFSTDTC, BRTHDTC, units = "days") / 365.25)),
+    
+    # Create age groups
+    AGEGROUP = case_when(
+      AGE < 30 ~ "18-29",
+      AGE < 50 ~ "30-49", 
+      AGE < 65 ~ "50-64",
+      TRUE ~ "65+"
+    ),
+    
+    # Create binary treatment indicator
+    TREATMENT_FLAG = if_else(ARMCD == "TRT", 1, 0),
+    
+    # Format treatment description
+    TREATMENT_DESC = str_to_title(ARM),
+    
+    # Study duration
+    STUDY_DAYS = as.numeric(RFENDTC - RFSTDTC)
+  )
+
+print("Enhanced demographics with calculated variables:")
+print(dm_enhanced %>% 
+       select(USUBJID, SEX, AGE, AGEGROUP, TREATMENT_DESC, STUDY_DAYS) %>%
+       head(10))
+```
+
+### 4. Arranging Data
+
+```{r}
+#| label: arrange-examples
+
+cat("\n=== ARRANGE Operations ===\n")
+
+# Sort by single variable
+dm_by_age <- dm_enhanced %>%
+  arrange(AGE) %>%
+  select(USUBJID, SEX, AGE, ARM)
+
+print("Subjects sorted by age (ascending):")
+print(head(dm_by_age, 8))
+
+# Sort by multiple variables
+dm_multi_sort <- dm_enhanced %>%
+  arrange(ARM, desc(AGE)) %>%
+  select(USUBJID, ARM, SEX, AGE)
+
+print("\nSorted by treatment, then age (descending):")
+print(head(dm_multi_sort, 10))
+```
+
+## Group Operations and Summaries
+
+### 1. Basic Grouping and Summarization
+
+```{r}
+#| label: group-summarise
+
+cat("\n=== GROUP BY and SUMMARISE Operations ===\n")
+
+# Basic summary by treatment group
+dm_summary <- dm_enhanced %>%
+  group_by(ARM) %>%
+  summarise(
+    N = n(),
+    Mean_Age = round(mean(AGE), 1),
+    Median_Age = median(AGE),
+    Min_Age = min(AGE),
+    Max_Age = max(AGE),
+    SD_Age = round(sd(AGE), 1),
+    Female_N = sum(SEX == "F"),
+    Female_Pct = round(Female_N / N * 100, 1)
+  )
+
+print("Demographics summary by treatment:")
+print(dm_summary)
+
+# Multiple grouping variables
+site_treatment_summary <- dm_enhanced %>%
+  group_by(SITEID, ARM) %>%
+  summarise(
+    N = n(),
+    Mean_Age = round(mean(AGE), 1),
+    .groups = "drop"
+  )
+
+print("\nSummary by site and treatment:")
+print(site_treatment_summary)
+```
+
+### 2. Advanced Grouping Operations
+
+```{r}
+#| label: advanced-grouping
+
+# Group-wise calculations with mutate
+dm_group_calc <- dm_enhanced %>%
+  group_by(ARM) %>%
+  mutate(
+    # Z-score of age within treatment group
+    AGE_ZSCORE = round((AGE - mean(AGE)) / sd(AGE), 2),
+    
+    # Rank within group
+    AGE_RANK = rank(AGE),
+    
+    # Group size
+    GROUP_SIZE = n(),
+    
+    # Age percentile within group
+    AGE_PERCENTILE = round(percent_rank(AGE) * 100, 1)
+  ) %>%
+  ungroup()
+
+print("Group-wise calculations:")
+print(dm_group_calc %>% 
+       select(USUBJID, ARM, AGE, AGE_ZSCORE, AGE_RANK, AGE_PERCENTILE) %>%
+       arrange(ARM, AGE_RANK) %>%
+       head(12))
+```
+
+## Data Joining Operations
+
+### 1. Inner Joins
+
+```{r}
+#| label: joins
+
+cat("\n=== JOIN Operations ===\n")
+
+# Inner join: Only subjects with both demographics and AEs
+dm_ae_inner <- dm_sdtm %>%
+  inner_join(ae_sdtm, by = "USUBJID") %>%
+  select(USUBJID, SEX, ARM, AEDECOD, AESEV, AEREL)
+
+print("Inner join - Subjects with AEs:")
+print(dm_ae_inner)
+
+# Left join: All subjects, with AE data where available
+dm_ae_left <- dm_sdtm %>%
+  left_join(
+    ae_sdtm %>% 
+      group_by(USUBJID) %>% 
+      summarise(
+        Total_AEs = n(),
+        Severe_AEs = sum(AESEV == "SEVERE"),
+        Related_AEs = sum(AEREL == "RELATED"),
+        .groups = "drop"
+      ),
+    by = "USUBJID"
+  ) %>%
+  mutate(
+    Total_AEs = replace_na(Total_AEs, 0),
+    Severe_AEs = replace_na(Severe_AEs, 0),
+    Related_AEs = replace_na(Related_AEs, 0)
+  )
+
+print("\nLeft join - All subjects with AE counts:")
+print(dm_ae_left %>% 
+       select(USUBJID, ARM, Total_AEs, Severe_AEs, Related_AEs) %>%
+       arrange(desc(Total_AEs)))
+```
+
+### 2. Complex Joins with Vital Signs
+
+```{r}
+#| label: complex-joins
+
+# Join demographics with baseline vital signs
+baseline_vitals <- vs_sdtm %>%
+  filter(VISIT == "BASELINE") %>%
+  select(USUBJID, VSTESTCD, VSORRES) %>%
+  pivot_wider(
+    names_from = VSTESTCD,
+    values_from = VSORRES,
+    names_prefix = "BL_"
+  )
+
+dm_vitals <- dm_enhanced %>%
+  left_join(baseline_vitals, by = "USUBJID") %>%
+  filter(!is.na(BL_SYSBP))  # Only subjects with baseline vitals
+
+print("Demographics with baseline vitals:")
+print(dm_vitals %>% 
+       select(USUBJID, ARM, AGE, BL_SYSBP, BL_DIABP, BL_PULSE) %>%
+       head(8))
+```
+
+## Advanced Data Manipulation
+
+### 1. Conditional Operations
+
+```{r}
+#| label: conditional-ops
+
+cat("\n=== Conditional Operations ===\n")
+
+# Complex conditional logic
+dm_risk_assessment <- dm_enhanced %>%
+  mutate(
+    # Risk categorization based on multiple factors
+    RISK_CATEGORY = case_when(
+      AGE >= 65 & SEX == "M" ~ "High Risk",
+      AGE >= 65 & SEX == "F" ~ "Moderate Risk",
+      AGE < 65 & SEX == "M" ~ "Moderate Risk",
+      AGE < 65 & SEX == "F" ~ "Low Risk",
+      TRUE ~ "Unknown"
+    ),
+    
+    # Eligibility criteria
+    ELIGIBLE = case_when(
+      AGE < 18 ~ "Too Young",
+      AGE > 75 ~ "Too Old", 
+      TRUE ~ "Eligible"
+    ),
+    
+    # Priority scoring
+    PRIORITY_SCORE = case_when(
+      ARMCD == "TRT" & AGE >= 65 ~ 3,
+      ARMCD == "TRT" & AGE < 65 ~ 2,
+      ARMCD == "PBO" ~ 1,
+      TRUE ~ 0
+    )
+  )
+
+print("Risk assessment and eligibility:")
+print(dm_risk_assessment %>% 
+       select(USUBJID, AGE, SEX, ARM, RISK_CATEGORY, ELIGIBLE, PRIORITY_SCORE) %>%
+       arrange(desc(PRIORITY_SCORE)))
+```
+
+### 2. String Manipulation
+
+```{r}
+#| label: string-manipulation
+
+# Advanced string operations
+dm_strings <- dm_sdtm %>%
+  mutate(
+    # Extract site region from site ID
+    REGION = case_when(
+      str_detect(SITEID, "^00[1-2]") ~ "North America",
+      str_detect(SITEID, "^003") ~ "Europe",
+      TRUE ~ "Other"
+    ),
+    
+    # Format subject ID for display
+    DISPLAY_ID = str_replace(USUBJID, "ABC-123-", "Subject "),
+    
+    # Create composite descriptions
+    SUBJECT_DESC = paste(SEX, RACE, "subject in", ARM, "group"),
+    
+    # Clean and standardize race
+    RACE_CLEAN = str_to_title(str_to_lower(RACE))
+  )
+
+print("String manipulation examples:")
+print(dm_strings %>% 
+       select(USUBJID, DISPLAY_ID, REGION, SUBJECT_DESC) %>%
+       head(8))
+```
+
+### 3. Window Functions
+
+```{r}
+#| label: window-functions
+
+# Window functions for rankings and running calculations
+vs_analysis <- vs_sdtm %>%
+  filter(VSTESTCD == "SYSBP") %>%
+  group_by(USUBJID) %>%
+  arrange(USUBJID, VISITNUM) %>%
+  mutate(
+    # Running mean
+    RUNNING_MEAN = round(cummean(VSORRES), 1),
+    
+    # Change from baseline
+    CHANGE_BL = VSORRES - first(VSORRES),
+    
+    # Percent change from baseline  
+    PCT_CHANGE_BL = round((VSORRES - first(VSORRES)) / first(VSORRES) * 100, 1),
+    
+    # Visit rank (within subject)
+    VISIT_RANK = row_number(),
+    
+    # Flag last visit
+    LAST_VISIT = if_else(row_number() == n(), "Y", "N")
+  ) %>%
+  ungroup()
+
+print("Window functions - Systolic BP analysis:")
+print(vs_analysis %>% 
+       select(USUBJID, VISIT, VSORRES, RUNNING_MEAN, CHANGE_BL, PCT_CHANGE_BL, LAST_VISIT) %>%
+       head(15))
+```
+
+## Summary Statistics by Group
+
+### 1. Treatment Group Comparisons
+
+```{r}
+#| label: treatment-comparison
+
+# Comprehensive treatment group comparison
+treatment_comparison <- dm_enhanced %>%
+  group_by(ARM) %>%
+  summarise(
+    # Sample size
+    N = n(),
+    
+    # Age statistics
+    Age_Mean = round(mean(AGE), 1),
+    Age_SD = round(sd(AGE), 1),
+    Age_Median = median(AGE),
+    Age_Min = min(AGE),
+    Age_Max = max(AGE),
+    
+    # Gender distribution
+    Female_N = sum(SEX == "F"),
+    Female_Pct = round(Female_N / N * 100, 1),
+    Male_N = sum(SEX == "M"),
+    Male_Pct = round(Male_N / N * 100, 1),
+    
+    # Race distribution
+    White_N = sum(RACE == "WHITE"),
+    White_Pct = round(White_N / N * 100, 1),
+    
+    .groups = "drop"
+  )
+
+print("Treatment group comparison:")
+print(treatment_comparison)
+```
+
+### 2. Site-Level Analysis
+
+```{r}
+#| label: site-analysis
+
+# Site-level enrollment and demographics
+site_analysis <- dm_enhanced %>%
+  group_by(SITEID) %>%
+  summarise(
+    Total_Enrolled = n(),
+    Treatment_N = sum(ARMCD == "TRT"),
+    Placebo_N = sum(ARMCD == "PBO"),
+    Randomization_Ratio = round(Treatment_N / Placebo_N, 2),
+    Mean_Age = round(mean(AGE), 1),
+    Female_Pct = round(sum(SEX == "F") / n() * 100, 1),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Total_Enrolled))
+
+print("Site-level analysis:")
+print(site_analysis)
+```
+
+## Best Practices Summary
+
+### Key dplyr Principles
+
+1. **Pipe Operator (`%>%`)**: Chain operations for readable code
+2. **Group Operations**: Use `group_by()` for category-wise calculations  
+3. **Joins**: Choose appropriate join type based on analysis needs
+4. **Window Functions**: Leverage for rankings and running calculations
+5. **Conditional Logic**: Use `case_when()` for complex categorizations
+
+### Performance Tips
+
+- Filter early to reduce data size
+- Use `select()` to keep only needed columns
+- Leverage vectorized operations over loops
+- Group operations are generally efficient
+- Consider `data.table` for very large datasets
+
+### Code Organization
+
+- Use meaningful variable names
+- Add comments for complex logic
+- Break complex operations into steps
+- Validate results at each step
+- Document assumptions and business rules
+
+---
+
+*This guide demonstrates essential data manipulation techniques for clinical programming using modern R practices with dplyr.*

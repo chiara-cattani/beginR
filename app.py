@@ -179,34 +179,39 @@ BONUS_RESOURCES = {
     'sdtm_programming': {
         'title': 'SDTM Programming Guide',
         'description': 'Complete examples for SDTM domain creation with sdtm.oak',
-        'file': 'bonus_resources/sdtm_programming_guide.R',
+        'file': 'bonus_resources/sdtm_programming_guide.qmd',
         'icon': '📊'
     },
     'qc_validation': {
         'title': 'QC Validation Toolkit',
         'description': 'Quality control procedures and data validation scripts',
-        'file': 'bonus_resources/qc_validation_toolkit.R',
+        'file': 'bonus_resources/qc_validation_toolkit.qmd',
         'icon': '✓'
     },
     'data_manipulation': {
         'title': 'Data Manipulation Examples',
         'description': 'dplyr operations and data manipulation techniques',
-        'file': 'bonus_resources/data_manipulation_examples.R',
+        'file': 'bonus_resources/data_manipulation_examples.qmd',
         'icon': '📊'
     },
     'custom_functions': {
         'title': 'Custom Functions Library',
         'description': 'Reusable R functions and SAS macro translations',
-        'file': 'bonus_resources/custom_functions_library.R',
+        'file': 'bonus_resources/custom_functions_library.qmd',
         'icon': '🔧'
     },
     'date_text_functions': {
         'title': 'Date & Text Functions',
         'description': 'lubridate and stringr practical examples',
-        'file': 'bonus_resources/date_text_functions.R',
+        'file': 'bonus_resources/date_text_functions.qmd',
         'icon': '📅'
     },
-
+    'sas_to_r_cheatsheet': {
+        'title': 'SAS to R Migration Guide',
+        'description': 'Comprehensive guide for transitioning from SAS to R',
+        'file': 'bonus_resources/sas_to_r_cheatsheet.pdf',
+        'icon': '🔄'
+    }
 }
 
 @app.route('/')
@@ -234,7 +239,15 @@ def contact():
 @app.route('/download/<path:filename>')
 def download_file(filename):
     try:
-        return send_file(filename, as_attachment=True)
+        # Try training_material directory first, then bonus_resources
+        file_path = os.path.join('training_material', filename)
+        if not os.path.exists(file_path):
+            file_path = os.path.join('bonus_resources', filename)
+        
+        if not os.path.exists(file_path):
+            return "File not found", 404
+            
+        return send_file(file_path, as_attachment=True)
     except FileNotFoundError:
         return "File not found", 404
 
@@ -267,40 +280,96 @@ def toggle_theme():
 
 @app.route('/view/<path:filename>')
 def view_file(filename):
-    """View content of various file types"""
+    """View content of various file types with proper rendering"""
     try:
-        # Check if it's a Quarto file
-        if filename.endswith('.qmd'):
-            # Try to find the corresponding HTML file
+        # Try training_material directory first, then bonus_resources
+        file_path = os.path.join('training_material', filename)
+        if not os.path.exists(file_path):
+            file_path = os.path.join('bonus_resources', filename)
+        
+        if not os.path.exists(file_path):
+            return f"File not found: {filename}", 404
+        
+        if filename.endswith('.pdf'):
+            # For PDF files, serve them directly to open in browser
+            return send_file(file_path, mimetype='application/pdf')
+            
+        elif filename.endswith('.qmd'):
+            # For QMD files, try to find rendered HTML first, otherwise show raw content
             html_filename = filename.replace('.qmd', '.html')
-            if os.path.exists(html_filename):
-                # Read and modify the HTML content to fix file paths
-                with open(html_filename, 'r', encoding='utf-8') as f:
+            html_path = os.path.join('training_material', html_filename)
+            if os.path.exists(html_path):
+                # Read and serve the rendered HTML
+                with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # Get the directory name for the supporting files
-                dir_name = os.path.basename(os.path.dirname(html_filename))
-                file_base = os.path.splitext(os.path.basename(html_filename))[0]
-                files_dir = f"{file_base}_files"
-                
-                # Replace relative paths with Flask routes
-                content = content.replace(f'{files_dir}/', f'/view_files/{dir_name}/{files_dir}/')
+                # Fix relative paths for supporting files
+                dir_name = os.path.dirname(html_filename)
+                if dir_name:
+                    file_base = os.path.splitext(os.path.basename(html_filename))[0]
+                    files_dir = f"{file_base}_files"
+                    if files_dir in content:
+                        content = content.replace(f'{files_dir}/', f'/view_files/{os.path.basename(dir_name)}/{files_dir}/')
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:
-                # Fallback to the QMD viewer if HTML doesn't exist
-                return render_template('qmd_viewer.html', filename=filename, 
-                                     message=f"HTML version not available for {filename}. Showing QMD content instead.")
-        elif filename.endswith(('.R', '.Rmd')):
-            # For R files, display as plain text with syntax highlighting
-            with open(filename, 'r', encoding='utf-8') as f:
+                # Show QMD source with syntax highlighting
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    qmd_content = f.read()
+                return render_template('file_viewer.html', 
+                                     filename=filename, 
+                                     content=qmd_content, 
+                                     file_type='markdown',
+                                     message="Showing QMD source code (rendered HTML not available)")
+                                     
+        elif filename.endswith('.Rmd'):
+            # For RMD files, try to find rendered HTML first, otherwise show raw content
+            html_filename = filename.replace('.Rmd', '.html')
+            html_path = os.path.join('training_material', html_filename)
+            if os.path.exists(html_path):
+                with open(html_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                return content, 200, {'Content-Type': 'text/html'}
+            else:
+                # Show RMD source with syntax highlighting
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    rmd_content = f.read()
+                return render_template('file_viewer.html', 
+                                     filename=filename, 
+                                     content=rmd_content, 
+                                     file_type='markdown',
+                                     message="Showing RMD source code (rendered HTML not available)")
+                                     
+        elif filename.endswith('.R'):
+            # For R files, show with syntax highlighting
+            with open(file_path, 'r', encoding='utf-8') as f:
+                r_content = f.read()
+            return render_template('file_viewer.html', 
+                                 filename=filename, 
+                                 content=r_content, 
+                                 file_type='r',
+                                 message="R Script")
+                                 
+        elif filename.endswith(('.html', '.htm')):
+            # For HTML files, serve directly
+            with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            return render_template('qmd_viewer.html', filename=filename, content=content, 
-                                 file_type='r', message=f"Viewing R script: {os.path.basename(filename)}")
+            return content, 200, {'Content-Type': 'text/html'}
+            
         else:
-            return "File type not supported for viewing", 400
+            # For other text files, show as plain text
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return render_template('file_viewer.html', 
+                                 filename=filename, 
+                                 content=content, 
+                                 file_type='text',
+                                 message=f"Viewing: {os.path.basename(filename)}")
+            
     except FileNotFoundError:
-        return "File not found", 404
+        return f"File not found: {filename}", 404
+    except Exception as e:
+        return f"Error viewing file: {str(e)}", 500
 
 @app.route('/view_qmd/<path:filename>')
 def view_qmd_content(filename):
