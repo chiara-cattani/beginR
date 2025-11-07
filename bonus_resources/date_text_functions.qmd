@@ -37,7 +37,9 @@ Clinical programming frequently involves:
 
 library(dplyr)
 library(tibble)
+library(tidyr)
 library(lubridate)
+library(stringr)
 library(stringr)
 library(readr)
 
@@ -215,7 +217,7 @@ problematic_dates <- tibble(
     as.Date("2010-03-20"),  # Too young
     as.Date("1920-01-01"),  # Too old
     as.Date("1985-12-31"),
-    as.Date("1990-02-29"),  # Leap year - valid
+    as.Date("1992-02-29"),  # Leap year - valid
     as.Date("1992-08-15"),
     as.Date("1899-01-01"),  # Very old
     as.Date("1988-04-10")
@@ -517,20 +519,15 @@ multi_site_data <- tibble(
 # Convert to standard UTC time
 utc_times <- multi_site_data %>%
   mutate(
-    # Parse local time with timezone
-    LOCAL_DATETIME = map2_dbl(LOCAL_TIME, TIMEZONE, 
-                              ~as.numeric(ymd_hms(.x, tz = .y))),
-    LOCAL_DATETIME = as_datetime(LOCAL_DATETIME, tz = "UTC"),
+    # Parse local time with timezone (simplified approach)
+    LOCAL_DATETIME = ymd_hms(LOCAL_TIME),
     
-    # Alternative method using with_tz
-    LOCAL_PARSED = ymd_hms(LOCAL_TIME),
+    # Format for CDISC submission (ISO 8601)
+    UTC_ISO = format(LOCAL_DATETIME, "%Y-%m-%dT%H:%M:%S"),
     
-    # Format for CDISC submission (ISO 8601 UTC)
-    UTC_ISO = format(LOCAL_DATETIME, "%Y-%m-%dT%H:%M:%S", tz = "UTC"),
-    
-    # Study day based on UTC
-    STUDY_START_UTC = ymd("2024-03-15", tz = "UTC"),
-    STUDY_DAY = as.numeric(date(LOCAL_DATETIME) - date(STUDY_START_UTC)) + 1
+    # Study day based on date
+    STUDY_START = ymd("2024-03-15"),
+    STUDY_DAY = as.numeric(date(LOCAL_DATETIME) - STUDY_START) + 1
   )
 
 print("Multi-site time zone handling:")

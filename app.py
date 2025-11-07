@@ -312,8 +312,21 @@ def view_file(filename):
         elif filename.endswith('.qmd'):
             # For QMD files, try to find rendered HTML first, otherwise show raw content
             html_filename = filename.replace('.qmd', '.html')
-            html_path = os.path.join(base_dir, html_filename)
-            if os.path.exists(html_path):
+            html_path = None
+            
+            # Search for HTML file recursively in training_material
+            for root, dirs, files in os.walk('training_material'):
+                if html_filename in files:
+                    html_path = os.path.join(root, html_filename)
+                    break
+            
+            # If not found, check bonus_resources directory
+            if not html_path:
+                bonus_html_path = os.path.join('bonus_resources', html_filename)
+                if os.path.exists(bonus_html_path):
+                    html_path = bonus_html_path
+            
+            if html_path:
                 # Read and serve the rendered HTML
                 with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()

@@ -32,10 +32,10 @@ This guide demonstrates how to convert raw clinical data to SDTM-compliant domai
 #| warning: false
 
 library(dplyr)
-library(tibble)
+library(tidyr)
 library(stringr)
 library(lubridate)
-library(haven)         # For reading SAS datasets
+# library(haven)       # For reading SAS datasets - not needed for this demo
 # library(sdtm.oak)    # Uncomment when sdtm.oak is available
 
 cat("=== CDISC SDTM Domain Creation ===\n")
@@ -62,7 +62,7 @@ This represents CRF/EDC data that would typically come from your clinical databa
 #| label: raw-demographics
 
 # Raw Demographics Data (typically from EDC)
-raw_demographics <- tibble(
+raw_demographics <- data.frame(
   subject_id = sprintf("%03d", 1:25),
   site_number = sample(c("001", "002", "003"), 25, replace = TRUE),
   birth_date = sample(seq(as.Date("1950-01-01"), as.Date("1990-12-31"), by = "day"), 25),
@@ -72,7 +72,8 @@ raw_demographics <- tibble(
   ethnicity = sample(c("Hispanic or Latino", "Not Hispanic or Latino"), 
                      25, replace = TRUE, prob = c(0.2, 0.8)),
   consent_date = STUDY_RFSTDTC + sample(-30:30, 25, replace = TRUE),
-  randomization_date = NA  # Will be filled based on treatment assignment
+  randomization_date = NA,  # Will be filled based on treatment assignment
+  stringsAsFactors = FALSE
 )
 
 print("Raw Demographics Data Structure:")
@@ -89,11 +90,11 @@ glimpse(raw_demographics)
 set.seed(123)
 visits <- c("Screening", "Baseline", "Week 2", "Week 4", "Week 8", "Week 12", "End of Study")
 
-raw_vitals <- map_dfr(raw_demographics$subject_id, function(subj) {
+raw_vitals_list <- lapply(raw_demographics$subject_id, function(subj) {
   n_visits <- sample(4:7, 1)  # Random number of visits per subject
   selected_visits <- sample(visits, n_visits)
   
-  tibble(
+  data.frame(
     subject_id = subj,
     visit = selected_visits,
     visit_date = STUDY_RFSTDTC + cumsum(sample(7:28, n_visits, replace = TRUE)),
@@ -105,6 +106,8 @@ raw_vitals <- map_dfr(raw_demographics$subject_id, function(subj) {
     temperature_c = round(rnorm(n_visits, 36.5, 0.5), 1)
   )
 })
+
+raw_vitals <- do.call(rbind, raw_vitals_list)
 
 print("Raw Vital Signs Data Structure:")
 glimpse(raw_vitals)

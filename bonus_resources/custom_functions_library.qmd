@@ -37,7 +37,7 @@ This collection includes:
 #| warning: false
 
 library(dplyr)
-library(tibble)
+library(tidyr)
 library(stringr)
 library(lubridate)
 library(purrr)
@@ -518,7 +518,7 @@ text_cleaned <- text_examples %>%
   bind_cols(parse_subject_id(text_examples$USUBJID))
 
 print("String processing examples:")
-print(text_cleaned %>% select(-USUBJID1))  # Remove duplicate column
+print(text_cleaned)
 ```
 
 ## Statistical Functions

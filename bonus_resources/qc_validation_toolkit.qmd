@@ -143,10 +143,10 @@ check_missing_critical <- function(data, critical_vars = c("USUBJID", "AGE", "SE
   
   for (var in critical_vars) {
     if (var %in% names(data)) {
-      missing_count <- sum(is.na(data[[var]]) | data[[var]] == "")
+      missing_count <- sum(is.na(data[[var]]) | data[[var]] == "", na.rm = TRUE)
       missing_pct <- round(missing_count / nrow(data) * 100, 2)
       
-      if (missing_count > 0) {
+      if (!is.na(missing_count) && missing_count > 0) {
         cat("❌", var, ":", missing_count, "missing values (", missing_pct, "%)\n")
         
         # Show which subjects have missing values
@@ -221,7 +221,7 @@ check_controlled_terminology <- function(data) {
   for (flag_var in flag_vars) {
     if (flag_var %in% names(data)) {
       invalid_flags <- data %>%
-        filter(!is.na(!!sym(flag_var)) & !!!sym(flag_var) %in% valid_flags) %>%
+        filter(!is.na(!!sym(flag_var)) & !(!!sym(flag_var) %in% valid_flags)) %>%
         select(USUBJID, !!sym(flag_var))
       
       if (nrow(invalid_flags) > 0) {
@@ -403,13 +403,13 @@ cross_result <- check_cross_domain(adsl_qc, adae_qc)
 #| label: qc-summary
 
 generate_qc_summary <- function(dup_result, missing_result, ct_result, date_result, age_result, cross_result) {
-  cat("\n" , "="*60, "\n")
+  cat("\n", paste(rep("=", 60), collapse=""), "\n")
   cat("            QUALITY CONTROL SUMMARY REPORT\n")
-  cat("="*60, "\n")
+  cat(paste(rep("=", 60), collapse=""), "\n")
   cat("Dataset: ADSL\n")
   cat("QC Date:", format(Sys.Date(), "%Y-%m-%d"), "\n")
   cat("Total Records:", nrow(adsl_qc), "\n")
-  cat("-"*60, "\n")
+  cat(paste(rep("-", 60), collapse=""), "\n")
   
   # Summary of issues
   total_issues <- 0
@@ -445,7 +445,7 @@ generate_qc_summary <- function(dup_result, missing_result, ct_result, date_resu
     total_issues <- total_issues + cross_count
   }
   
-  cat("-"*60, "\n")
+  cat(paste(rep("-", 60), collapse=""), "\n")
   cat("TOTAL ISSUES IDENTIFIED:", total_issues, "\n")
   
   if (total_issues == 0) {
@@ -454,7 +454,7 @@ generate_qc_summary <- function(dup_result, missing_result, ct_result, date_resu
     cat("⚠️  QC STATUS: REVIEW REQUIRED\n")
   }
   
-  cat("="*60, "\n")
+  cat(paste(rep("=", 60), collapse=""), "\n")
 }
 
 # Generate summary report
