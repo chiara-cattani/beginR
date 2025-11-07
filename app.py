@@ -254,7 +254,51 @@ def download_file(filename):
         if os.path.exists(bonus_path):
             return send_file(bonus_path, as_attachment=True)
         
-        return f"File not found: {filename}", 404
+        # If the exact file doesn't exist, check if it's an HTML file request
+        # and try to find the corresponding QMD source file
+        if filename.endswith('.html'):
+            base_name = os.path.splitext(filename)[0]
+            import re
+            
+            # Try to find PDF version first (for actual PDF resources)
+            pdf_name = f"{base_name}.pdf"
+            pdf_path = os.path.join('bonus_resources', pdf_name)
+            if os.path.exists(pdf_path):
+                return send_file(pdf_path, as_attachment=True)
+            
+            # Try numbered PDF version (remove number prefix)
+            if re.match(r'^\d+_', base_name):
+                base_without_number = re.sub(r'^\d+_', '', base_name)
+                pdf_name_no_number = f"{base_without_number}.pdf"
+                pdf_path_no_number = os.path.join('bonus_resources', pdf_name_no_number)
+                if os.path.exists(pdf_path_no_number):
+                    return send_file(pdf_path_no_number, as_attachment=True)
+                
+                # If no PDF, try to find the QMD source file first
+                qmd_name = f"{base_without_number}.qmd"
+                qmd_path = os.path.join('bonus_resources', 'source', qmd_name)
+                if os.path.exists(qmd_path):
+                    return send_file(qmd_path, as_attachment=True)
+                
+                # If no QMD, try to find the RMD source file
+                rmd_name = f"{base_without_number}.Rmd"
+                rmd_path = os.path.join('bonus_resources', 'rendered', rmd_name)
+                if os.path.exists(rmd_path):
+                    return send_file(rmd_path, as_attachment=True)
+            
+            # Try QMD source file with original name first
+            qmd_name = f"{base_name}.qmd"
+            qmd_path = os.path.join('bonus_resources', 'source', qmd_name)
+            if os.path.exists(qmd_path):
+                return send_file(qmd_path, as_attachment=True)
+            
+            # Try RMD source file with original name
+            rmd_name = f"{base_name}.Rmd"
+            rmd_path = os.path.join('bonus_resources', 'rendered', rmd_name)
+            if os.path.exists(rmd_path):
+                return send_file(rmd_path, as_attachment=True)
+        
+        return f"Download not available for: {filename}. This resource is only available for online viewing.", 404
     except FileNotFoundError:
         return "File not found", 404
 
@@ -310,14 +354,26 @@ def fix_html_static_paths(content, html_filename, html_path):
     import re
     
     file_base = os.path.splitext(os.path.basename(html_filename))[0]
-    files_dir = f"{file_base}_files"
-    if files_dir in content:
-        # Get the directory where the HTML file is located
-        html_dir = os.path.dirname(html_path).replace('\\', '/')
-        # Replace src attributes
-        content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
-        # Replace href attributes  
-        content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+    
+    # Handle numbered bonus resource files (e.g., 01_R_vs_SAS_CheatSheet.html)
+    # Check if the filename starts with digits followed by underscore
+    if re.match(r'^\d+_', file_base):
+        # Remove the number prefix to find the actual files directory
+        base_without_number = re.sub(r'^\d+_', '', file_base)
+        files_dir_candidates = [f"{file_base}_files", f"{base_without_number}_files"]
+    else:
+        files_dir_candidates = [f"{file_base}_files"]
+    
+    # Try each possible files directory
+    for files_dir in files_dir_candidates:
+        if files_dir in content:
+            # Get the directory where the HTML file is located
+            html_dir = os.path.dirname(html_path).replace('\\', '/')
+            # Replace src attributes
+            content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+            # Replace href attributes  
+            content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+            break  # Stop after first match
     
     # Fix PDF links - convert relative PDF paths to view routes
     content = re.sub(r'href="([^"]+\.pdf)"', r'href="/view/\1"', content)
