@@ -161,8 +161,38 @@ BONUS_RESOURCES = {
     'sas_cheatsheet': {
         'title': 'R vs SAS Cheatsheet',
         'description': 'Quick reference comparing SAS and R syntax for data programming',
-        'file': 'bonus_resources/R_vs_SAS_CheatSheet.qmd',
-        'icon': '📋'
+        'file': 'bonus_resources/rendered/01_R_vs_SAS_CheatSheet.html',
+        'icon': '�'
+    },
+    'sdtm_programming': {
+        'title': 'SDTM Programming Guide',
+        'description': 'Complete examples for SDTM domain creation with sdtm.oak',
+        'file': 'bonus_resources/rendered/02_sdtm_programming_guide.html',
+        'icon': '📊'
+    },
+    'qc_validation': {
+        'title': 'QC Validation Toolkit',
+        'description': 'Quality control procedures and data validation scripts',
+        'file': 'bonus_resources/rendered/03_qc_validation_toolkit.html',
+        'icon': '✓'
+    },
+    'data_manipulation': {
+        'title': 'Data Manipulation Examples',
+        'description': 'dplyr operations and data manipulation techniques',
+        'file': 'bonus_resources/rendered/04_data_manipulation_examples.html',
+        'icon': '📊'
+    },
+    'custom_functions': {
+        'title': 'Custom Functions Library',
+        'description': 'Reusable R functions and SAS macro translations',
+        'file': 'bonus_resources/rendered/05_custom_functions_library.html',
+        'icon': '🔧'
+    },
+    'date_text_functions': {
+        'title': 'Date & Text Functions',
+        'description': 'lubridate and stringr practical examples',
+        'file': 'bonus_resources/rendered/06_date_text_functions.html',
+        'icon': '📅'
     },
     'copilot_prompts': {
         'title': 'GitHub Copilot Best Practices',
@@ -174,37 +204,7 @@ BONUS_RESOURCES = {
         'title': 'Report Template',
         'description': 'R Markdown template for data analysis reports',
         'file': 'bonus_resources/report_template.Rmd',
-        'icon': '📄'
-    },
-    'sdtm_programming': {
-        'title': 'SDTM Programming Guide',
-        'description': 'Complete examples for SDTM domain creation with sdtm.oak',
-        'file': 'bonus_resources/sdtm_programming_guide.qmd',
-        'icon': '📊'
-    },
-    'qc_validation': {
-        'title': 'QC Validation Toolkit',
-        'description': 'Quality control procedures and data validation scripts',
-        'file': 'bonus_resources/qc_validation_toolkit.qmd',
-        'icon': '✓'
-    },
-    'data_manipulation': {
-        'title': 'Data Manipulation Examples',
-        'description': 'dplyr operations and data manipulation techniques',
-        'file': 'bonus_resources/data_manipulation_examples.qmd',
-        'icon': '📊'
-    },
-    'custom_functions': {
-        'title': 'Custom Functions Library',
-        'description': 'Reusable R functions and SAS macro translations',
-        'file': 'bonus_resources/custom_functions_library.qmd',
-        'icon': '🔧'
-    },
-    'date_text_functions': {
-        'title': 'Date & Text Functions',
-        'description': 'lubridate and stringr practical examples',
-        'file': 'bonus_resources/date_text_functions.qmd',
-        'icon': '📅'
+        'icon': '�'
     },
     'sas_to_r_cheatsheet': {
         'title': 'SAS to R Migration Guide',
@@ -245,7 +245,11 @@ def download_file(filename):
                 file_path = os.path.join(root, filename)
                 return send_file(file_path, as_attachment=True)
         
-        # Then check bonus_resources directory
+        # Then check bonus_resources directory (including rendered subfolder)
+        rendered_path = os.path.join('bonus_resources', 'rendered', filename)
+        if os.path.exists(rendered_path):
+            return send_file(rendered_path, as_attachment=True)
+        
         bonus_path = os.path.join('bonus_resources', filename)
         if os.path.exists(bonus_path):
             return send_file(bonus_path, as_attachment=True)
@@ -275,6 +279,14 @@ def download_module_zip(module_id):
         download_name=f"module{module_id}_{module['title'].replace(' ', '_').lower()}.zip"
     )
 
+@app.route('/static_files/<path:filename>')
+def serve_static_files(filename):
+    """Serve supporting files for rendered HTML documents"""
+    try:
+        return send_file(filename)
+    except FileNotFoundError:
+        return "File not found", 404
+
 @app.route('/toggle_theme', methods=['POST'])
 def toggle_theme():
     data = request.get_json()
@@ -295,12 +307,19 @@ def view_file(filename):
                 base_dir = os.path.dirname(file_path)
                 break
         
-        # If not found, check bonus_resources directory
+        # If not found, check bonus_resources directory (including rendered subfolder)
         if not file_path:
-            bonus_path = os.path.join('bonus_resources', filename)
-            if os.path.exists(bonus_path):
-                file_path = bonus_path
-                base_dir = 'bonus_resources'
+            # First check rendered subfolder
+            rendered_path = os.path.join('bonus_resources', 'rendered', filename)
+            if os.path.exists(rendered_path):
+                file_path = rendered_path
+                base_dir = 'bonus_resources/rendered'
+            else:
+                # Then check main bonus_resources directory
+                bonus_path = os.path.join('bonus_resources', filename)
+                if os.path.exists(bonus_path):
+                    file_path = bonus_path
+                    base_dir = 'bonus_resources'
         
         if not file_path:
             return f"File not found: {filename}", 404
@@ -320,24 +339,30 @@ def view_file(filename):
                     html_path = os.path.join(root, html_filename)
                     break
             
-            # If not found, check bonus_resources directory
+            # If not found, check bonus_resources directories
             if not html_path:
-                bonus_html_path = os.path.join('bonus_resources', html_filename)
-                if os.path.exists(bonus_html_path):
-                    html_path = bonus_html_path
+                # First check rendered subfolder
+                bonus_rendered_path = os.path.join('bonus_resources', 'rendered', html_filename)
+                if os.path.exists(bonus_rendered_path):
+                    html_path = bonus_rendered_path
+                else:
+                    # Then check main bonus_resources directory
+                    bonus_html_path = os.path.join('bonus_resources', html_filename)
+                    if os.path.exists(bonus_html_path):
+                        html_path = bonus_html_path
             
             if html_path:
                 # Read and serve the rendered HTML
                 with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # Fix relative paths for supporting files
-                dir_name = os.path.dirname(html_filename)
-                if dir_name:
+                # Fix relative paths for supporting files based on location
+                if 'bonus_resources/rendered' in html_path:
+                    # For files in rendered folder, fix paths to point to supporting files
                     file_base = os.path.splitext(os.path.basename(html_filename))[0]
                     files_dir = f"{file_base}_files"
                     if files_dir in content:
-                        content = content.replace(f'{files_dir}/', f'/view_files/{os.path.basename(dir_name)}/{files_dir}/')
+                        content = content.replace(f'{files_dir}/', f'/static_files/bonus_resources/rendered/{files_dir}/')
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:

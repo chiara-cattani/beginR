@@ -35,14 +35,14 @@
         <div class="row g-4">
             {% for key, resource in resources.items() %}
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
+                <div class="card border-0 shadow-sm h-100 d-flex flex-column">
+                    <div class="card-body text-center d-flex flex-column">
                         <div class="feature-icon text-primary mb-3">
                             <span style="font-size: 2.5rem;">{{ resource.icon }}</span>
                         </div>
-                        <h5 class="card-title">{{ resource.title }}</h5>
-                        <p class="card-text text-muted">{{ resource.description }}</p>
-                        <div class="d-flex gap-2 justify-content-center">
+                        <h5 class="card-title" style="min-height: 3rem; display: flex; align-items: center; justify-content: center;">{{ resource.title }}</h5>
+                        <p class="card-text text-muted flex-grow-1" style="min-height: 4rem;">{{ resource.description }}</p>
+                        <div class="d-flex gap-2 justify-content-center mt-auto">
                             <a href="{{ url_for('view_file', filename=resource.file.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View
                             </a>
