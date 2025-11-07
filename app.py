@@ -245,17 +245,7 @@ def download_file(filename):
                 file_path = os.path.join(root, filename)
                 return send_file(file_path, as_attachment=True)
         
-        # Then check bonus_resources directory (including rendered subfolder)
-        rendered_path = os.path.join('bonus_resources', 'rendered', filename)
-        if os.path.exists(rendered_path):
-            return send_file(rendered_path, as_attachment=True)
-        
-        bonus_path = os.path.join('bonus_resources', filename)
-        if os.path.exists(bonus_path):
-            return send_file(bonus_path, as_attachment=True)
-        
-        # If the exact file doesn't exist, check if it's an HTML file request
-        # and try to find the corresponding QMD source file
+        # For HTML files, always try to find source files (QMD/RMD) instead of returning HTML
         if filename.endswith('.html'):
             base_name = os.path.splitext(filename)[0]
             import re
@@ -297,6 +287,16 @@ def download_file(filename):
             rmd_path = os.path.join('bonus_resources', 'rendered', rmd_name)
             if os.path.exists(rmd_path):
                 return send_file(rmd_path, as_attachment=True)
+        else:
+            # For non-HTML files (like PDFs), check bonus_resources directory
+            bonus_path = os.path.join('bonus_resources', filename)
+            if os.path.exists(bonus_path):
+                return send_file(bonus_path, as_attachment=True)
+            
+            # Also check rendered subfolder
+            rendered_path = os.path.join('bonus_resources', 'rendered', filename)
+            if os.path.exists(rendered_path):
+                return send_file(rendered_path, as_attachment=True)
         
         return f"Download not available for: {filename}. This resource is only available for online viewing.", 404
     except FileNotFoundError:
