@@ -1,0 +1,108 @@
+---
+title: "Module 4 Solution — TLF Listings in R"
+format: html
+editor: visual
+---
+
+# ✅ Module 4 — TLF Listings in R (Solution)
+
+## 🧾 Part 1 — Subject-Level Listing with `flextable`
+
+```{r}
+library(dplyr)
+library(flextable)
+
+subjects <- data.frame(
+  USUBJID = c("01-001", "01-002", "01-003"),
+  AGE = c(34, 60, 50),
+  SEX = c("M", "F", "F"),
+  COUNTRY = c("NL", "FR", "DE"),
+  stringsAsFactors = FALSE
+)
+
+ft <- flextable(subjects) %>%
+  set_caption("Subject-Level Listing") %>%
+  autofit()
+
+ft
+```
+
+------------------------------------------------------------------------
+
+## 🧾 Part 2 — Event-Level Listing with `gt`
+
+```{r}
+library(gt)
+
+aes <- data.frame(
+  USUBJID = c("01-001", "01-002", "01-003"),
+  AEDECOD = c("HEADACHE", "NAUSEA", "DIZZINESS"),
+  AESEV = c("MILD", "MODERATE", "SEVERE"),
+  AESER = c("N", "Y", "N"),
+  AESTDTC = as.Date(c("2023-01-01", "2023-01-03", "2023-01-02"))
+)
+
+gt_tbl <- aes %>%
+  gt() %>%
+  tab_header(title = "Adverse Events Listing") %>%
+  data_color(
+    columns = AESEV,
+    colors = scales::col_factor(
+      palette = c("MILD" = "lightgreen", "MODERATE" = "khaki", "SEVERE" = "lightcoral"),
+      domain = NULL
+    )
+  ) %>%
+  tab_style(
+    style = list(cell_text(weight = "bold")),
+    locations = cells_body(rows = AESER == "Y")
+  )
+
+gt_tbl
+```
+
+------------------------------------------------------------------------
+
+## 🌐 Part 3 — Interactive Listing with `reactable`
+
+```{r}
+library(reactable)
+
+reactable(
+  aes,
+  searchable = TRUE,
+  groupBy = "AEDECOD",
+  columns = list(
+    AESEV = colDef(style = function(value) {
+      if (value == "SEVERE") "color: red; font-weight: bold;"
+      else if (value == "MODERATE") "color: orange;"
+      else NULL
+    }),
+    AESER = colDef(name = "Serious?", align = "center")
+  )
+)
+```
+
+------------------------------------------------------------------------
+
+## 💾 Part 4 — Exporting Tables
+
+```{r eval=FALSE}
+# Export flextable to Word
+library(officer)
+doc <- read_docx()
+doc <- body_add_flextable(doc, ft)
+print(doc, target = "output/subject_listing.docx")
+
+# Export gt table to HTML
+library(webshot2)
+gtsave(gt_tbl, filename = "output/ae_listing.html")
+```
+
+------------------------------------------------------------------------
+
+## ✅ Summary
+
+-   Created static listings using `flextable` and `gt`
+-   Added formatting and conditional coloring
+-   Created interactive listings using `reactable`
+-   Practiced exporting tables to Word and HTML

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}{{ module.title }} - TransitionR{% endblock %}
+
+{% block content %}
+<!-- Module Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('modules') }}">Modules</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ module.title }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <div class="module-number">{{ module_id }}</div>
+                    <h1 class="mb-0 ms-3">{{ module.title }}</h1>
+                </div>
+                
+                <p class="lead text-muted">{{ module.description }}</p>
+                
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="badge bg-primary">Module {{ module_id }}/7</span>
+                    <span class="badge bg-secondary">Self-Paced</span>
+                    <span class="badge bg-success">Interactive</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-download me-2"></i>Download All
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('download_module_zip', module_id=module_id) }}">
+                            <i class="fas fa-file-archive me-2"></i>ZIP Archive
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% if 'theory' in module.files %}
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.theory) }}">
+                            <i class="fas fa-book me-2"></i>Theory (QMD)
+                        </a></li>
+                        {% endif %}
+                        {% if 'demo' in module.files %}
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.demo) }}">
+                            <i class="fas fa-play me-2"></i>Demo (R)
+                        </a></li>
+                        {% endif %}
+                        {% if 'exercise' in module.files %}
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.exercise) }}">
+                            <i class="fas fa-code me-2"></i>Exercise (R)
+                        </a></li>
+                        {% endif %}
+                        {% if 'solution' in module.files %}
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.solution) }}">
+                            <i class="fas fa-check-circle me-2"></i>Solution (QMD)
+                        </a></li>
+                        {% endif %}
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Learning Objectives -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="mb-4">
+                    <i class="fas fa-bullseye me-2 text-primary"></i>Learning Objectives
+                </h2>
+                
+                <!-- Progress Bar -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-line me-2 text-primary"></i>Progress
+                                </h6>
+                                <small class="text-muted">0 of {{ module.objectives|length }} objectives completed</small>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" 
+                                     data-progress-bar="{{ module_id }}" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    {% for objective in module.objectives %}
+                    <div class="col-md-6 mb-3">
+                        <div class="progress-item" style="padding: 12px; min-height: auto;">
+                            <input type="checkbox" class="progress-checkbox" data-module-id="{{ module_id }}" data-item-id="{{ loop.index }}">
+                            <div>
+                                <h6 class="mb-1" style="font-size: 0.9rem;">{{ objective }}</h6>
+                                <small class="text-muted">Objective {{ loop.index }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Download Resources -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="fas fa-download me-2 text-primary"></i>Training Materials
+        </h2>
+        
+        <div class="row g-4">
+            {% if 'theory' in module.files %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h5 class="card-title">Theory</h5>
+                        <p class="card-text text-muted">Overview of key concepts with annotated examples.</p>
+                        <div class="d-grid gap-2">
+                            {% if 'theory_html' in module.files %}
+                            <a href="{{ url_for('view_file', filename=module.files.theory) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>View Online
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('view_file', filename=module.files.theory) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>View Online
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('download_file', filename=module.files.theory) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-download me-2"></i>Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if 'demo' in module.files %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <h5 class="card-title">Demo</h5>
+                        <p class="card-text text-muted">Live coding demonstration with step-by-step explanations.</p>
+                        <a href="{{ url_for('download_file', filename=module.files.demo) }}" class="btn btn-primary download-btn">
+                            <i class="fas fa-download me-2"></i>Download Demo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if 'exercise' in module.files %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h5 class="card-title">Exercise</h5>
+                        <p class="card-text text-muted">Hands-on coding exercises to practice the concepts learned.</p>
+                        <a href="{{ url_for('download_file', filename=module.files.exercise) }}" class="btn btn-primary download-btn">
+                            <i class="fas fa-download me-2"></i>Download Exercise
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if 'solution' in module.files %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h5 class="card-title">Solution</h5>
+                        <p class="card-text text-muted">Complete solutions and explanations for all exercises.</p>
+                        <div class="d-grid gap-2">
+                            {% if 'solution_html' in module.files %}
+                            <a href="{{ url_for('view_file', filename=module.files.solution) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>View Online
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('view_file', filename=module.files.solution) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>View Online
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('download_file', filename=module.files.solution) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-download me-2"></i>Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+
+        </div>
+        
+        <!-- Download All Button -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('download_module_zip', module_id=module_id) }}" class="btn btn-success btn-lg">
+                <i class="fas fa-file-archive me-2"></i>Download All Module Files
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Navigation -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    {% if module_id > 1 %}
+                    <a href="{{ url_for('module_detail', module_id=module_id-1) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Previous Module
+                    </a>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+                    
+                    <div class="text-center">
+                        <span class="badge bg-primary">Module {{ module_id }} of 7</span>
+                    </div>
+                    
+                    {% if module_id < 7 %}
+                    <a href="{{ url_for('module_detail', module_id=module_id+1) }}" class="btn btn-primary">
+                        Next Module<i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('bonus') }}" class="btn btn-success">
+                        Bonus Resources<i class="fas fa-star ms-2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Module-specific progress tracking
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.progress-checkbox');
+    const progressBar = document.querySelector(`[data-progress-bar="{{ module_id }}"]`);
+
+    function updateModuleProgress() {
+        const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+        const progressPercentage = (checkedBoxes.length / checkboxes.length) * 100;
+
+        if (progressBar) {
+            progressBar.style.width = `${progressPercentage}%`;
+            progressBar.setAttribute('aria-valuenow', progressPercentage);
+        }
+
+        // Update ONLY the progress text in the progress card, not in the Theory card
+        const progressCard = progressBar?.closest('.card-body');
+        if (progressCard) {
+            const progressText = progressCard.querySelector('small.text-muted');
+            if (progressText) {
+                progressText.textContent = `${checkedBoxes.length} of ${checkboxes.length} objectives completed`;
+            }
+        }
+    }
+
+    // Load saved progress
+    checkboxes.forEach(checkbox => {
+        const itemId = checkbox.dataset.itemId;
+        const savedProgress = localStorage.getItem(`progress_{{ module_id }}_${itemId}`);
+
+        if (savedProgress === 'true') {
+            checkbox.checked = true;
+        }
+
+        checkbox.addEventListener('change', function() {
+            localStorage.setItem(`progress_{{ module_id }}_${itemId}`, this.checked);
+            updateModuleProgress();
+        });
+    });
+
+    updateModuleProgress();
+});
+</script>
+{% endblock %} 

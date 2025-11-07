@@ -1,0 +1,98 @@
+---
+title: "R vs SAS Cheat Sheet"
+format: html
+editor: visual
+---
+
+# 📝 R vs SAS Cheat Sheet — Clinical Programming
+
+This cheat sheet compares common tasks across R and SAS, based on the 7-module training program.
+
+------------------------------------------------------------------------
+
+## 📁 Module 1: Basics — Language & Environment
+
+| Task            | SAS              | R              |
+|-----------------|------------------|----------------|
+| Assign variable | `x = 5;`         | `x <- 5`       |
+| Print output    | `put x;`         | `print(x)`     |
+| Script file     | `.sas`           | `.R`           |
+| Notebook        | Not native       | `.Rmd`, `.qmd` |
+| IDE             | Enterprise Guide | RStudio        |
+| Extensions      | Macros           | Packages       |
+
+------------------------------------------------------------------------
+
+## 📦 Module 2: SDTM Programming
+
+| Task | SAS | R (tidyverse + lubridate) |
+|----|----|----|
+| Read CSV/XPT | `proc import` / `libname xpt` | `read_csv()` / `read_xpt()` |
+| Filter rows | `if visit=1;` | `filter(visit == 1)` |
+| Create variable | `var = a + b;` | `mutate(var = a + b)` |
+| Rename variables | `rename old=new;` | `rename(old = new)` |
+| Derive ISO date string | `put(date, yymmdd10.);` | `as.character(ymd(date))` |
+| Derive Study Day | `intnx('day',...)` + math | `--DY = date - RFSTDTC` |
+| Sequence number | `retain` + `by` block | `mutate(SEQ = row_number())` |
+
+------------------------------------------------------------------------
+
+## 🧬 Module 3: ADaM Programming
+
+| Task | SAS | R (admiral, dplyr) |
+|----|----|----|
+| Create ADSL from DM | `data adsl; set dm;` | `adsl <- dm %>% mutate(...)` |
+| Derive flags (e.g. ASEVFL) | `if AESEV = "SEVERE" then ...` | `mutate(ASEVFL = if_else(...))` |
+| Imputation | `if value = . then value = 0;` | `replace_na(value, 0)` |
+| Merge | `merge ae adsl;` | `left_join(ae, adsl)` |
+| Label variables | `label var = "Label";` | `xportr_label()` |
+| Export XPT | `libname xpt ...; proc copy;` | `xportr_write()` |
+
+------------------------------------------------------------------------
+
+## 📋 Module 4: Listings
+
+| Task | SAS | R (flextable, gt) |
+|----|----|----|
+| PROC PRINT | `proc print data=ae;` | `print()` or `flextable()` |
+| Custom listing | `proc report` | `gt()` or `flextable()` |
+| Export to Word | `ods rtf file="...";` | `flextable::save_as_docx()` |
+| Conditional formatting | `compute` blocks in REPORT | `theme_vanilla()`, `color()` |
+
+------------------------------------------------------------------------
+
+## 📊 Module 5: Summary Tables
+
+| Task            | SAS          | R (gtsummary)                   |
+|-----------------|--------------|---------------------------------|
+| PROC MEANS      | `proc means` | `summarise(mean(), sd())`       |
+| PROC FREQ       | `proc freq`  | `count()`, `tbl_summary()`      |
+| Grouped summary | `class trt;` | `group_by(trt) %>% summarise()` |
+| Export summary  | `ods`        | `as_flex_table()`               |
+
+------------------------------------------------------------------------
+
+## 📈 Module 6: Figures
+
+| Task | SAS/GRAPH or SGPLOT | R (ggplot2, survminer, patchwork) |
+|----|----|----|
+| Boxplot | `proc sgplot; vbox val / group=trt;` | `ggplot() + geom_boxplot()` |
+| Bar chart | `proc sgplot; vbar term / group=trt;` | `geom_col(position="dodge")` |
+| KM Plot | `proc lifetest` | `survfit() + ggsurvplot()` |
+| Combine plots | Panel layout | `patchwork` or `facet_wrap()` |
+
+------------------------------------------------------------------------
+
+## 🧠 Module 7: Full Workflow
+
+| Task          | SAS                           | R                           |
+|---------------|-------------------------------|-----------------------------|
+| Workflow      | SAS macros + batch processing | Scripts + Copilot + Quarto  |
+| Reuse code    | Macros                        | Functions, modules          |
+| AI Assistance | Not available                 | GitHub Copilot (free)       |
+| Debugging     | Log                           | R Console + inline comments |
+
+------------------------------------------------------------------------
+
+✅ For any SAS task, there’s a tidyverse or admiral equivalent in R.\
+🧠 Use Copilot to accelerate your learning: try comments like `# create summary table` or `# plot AE counts by severity`.

@@ -1,0 +1,62 @@
+
+---
+title: "Clinical Report Template"
+author: "Your Name"
+output:
+  word_document:
+    toc: true
+    toc_depth: 2
+params:
+  treatment: "Placebo"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(gt)
+library(lubridate)
+```
+
+# 1. Introduction
+
+This report presents results from a clinical study comparing `r params$treatment` to active comparators. The aim is to demonstrate the full R workflow from raw data to TLF output.
+
+# 2. SDTM to ADaM Derivation
+
+We derive key analysis variables using tidyverse functions and annotate dataset lineage.
+
+```{r derive_adam}
+# Example: Derive AAGE from BRTHDT and RANDDT
+adsl <- dm %>%
+  mutate(
+    AAGE = as.integer((as.Date(RANDDT) - as.Date(BRTHDT)) / 365.25),
+    SEX = factor(SEX, levels = c("M", "F"))
+  )
+```
+
+# 3. Tables, Listings and Figures (TLFs)
+
+## 3.1 Summary Table
+
+```{r summary_table}
+adsl %>%
+  group_by(SEX) %>%
+  summarise(N = n(), MeanAge = mean(AAGE, na.rm = TRUE)) %>%
+  gt()
+```
+
+## 3.2 Graph
+
+```{r age_histogram}
+ggplot(adsl, aes(x = AAGE, fill = SEX)) +
+  geom_histogram(binwidth = 2, position = "dodge") +
+  theme_minimal()
+```
+
+# 4. QC and Reproducibility
+
+All results are reproducible using this RMarkdown document. QC can be assisted with AI tools or validation scripts.
+
+# 5. Conclusion
+
+This document demonstrates the use of R for clinical data derivation and reporting following CDISC standards.

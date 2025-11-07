@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Bonus Resources - TransitionR{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-4">
+                    <i class="fas fa-star me-3 text-warning"></i>Bonus Resources
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Additional tools, templates, and reference materials to accelerate your R programming journey 
+                    and enhance your clinical programming workflow.
+                </p>
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <span class="badge bg-warning">Free Downloads</span>
+                    <span class="badge bg-success">Ready to Use</span>
+                    <span class="badge bg-info">Updated Regularly</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reference Materials -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="fas fa-book me-2 text-primary"></i>Reference Materials
+        </h2>
+        
+        <div class="row g-4">
+            {% for key, resource in resources.items() %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <span style="font-size: 2.5rem;">{{ resource.icon }}</span>
+                        </div>
+                        <h5 class="card-title">{{ resource.title }}</h5>
+                        <p class="card-text text-muted">{{ resource.description }}</p>
+                        <a href="{{ url_for('download_file', filename=resource.file) }}" class="btn btn-primary download-btn">
+                            <i class="fas fa-download me-2"></i>Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Quick Reference -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="fas fa-lightning-bolt me-2 text-primary"></i>Quick Reference
+        </h2>
+        
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-code me-2 text-primary"></i>Common R Commands
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>R Command</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Read CSV</td>
+                                        <td><code>read.csv("file.csv")</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Filter data</td>
+                                        <td><code>filter(data, condition)</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Group by</td>
+                                        <td><code>group_by(data, variable)</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Summarize</td>
+                                        <td><code>summarize(data, mean = mean(var))</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Create plot</td>
+                                        <td><code>ggplot(data, aes(x, y)) + geom_point()</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-robot me-2 text-primary"></i>Copilot Prompts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 px-0">
+                                <h6 class="mb-1">"Create a function to calculate descriptive statistics"</h6>
+                                <small class="text-muted">Generates statistical summary functions</small>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <h6 class="mb-1">"Filter data for patients with specific criteria"</h6>
+                                <small class="text-muted">Creates data filtering logic</small>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <h6 class="mb-1">"Generate a clinical trial table"</h6>
+                                <small class="text-muted">Creates formatted tables</small>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <h6 class="mb-1">"Create a survival analysis plot"</h6>
+                                <small class="text-muted">Generates survival curves</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Useful Links -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="fas fa-link me-2 text-primary"></i>Useful Links
+        </h2>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h6 class="card-title">R Documentation</h6>
+                        <p class="card-text small text-muted">Official R documentation and help</p>
+                        <a href="https://www.r-project.org/help.html" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Visit Site
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h6 class="card-title">RStudio Cheatsheets</h6>
+                        <p class="card-text small text-muted">Quick reference for RStudio features</p>
+                        <a href="https://www.rstudio.com/resources/cheatsheets/" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Visit Site
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h6 class="card-title">CDISC Standards</h6>
+                        <p class="card-text small text-muted">Clinical data standards documentation</p>
+                        <a href="https://www.cdisc.org/standards" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Visit Site
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <h6 class="card-title">GitHub Copilot</h6>
+                        <p class="card-text small text-muted">AI-powered code completion</p>
+                        <a href="https://github.com/features/copilot" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Visit Site
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tips and Tricks -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="fas fa-lightbulb me-2 text-primary"></i>Tips & Tricks
+        </h2>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-rocket text-primary me-2"></i>Productivity Tips
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use RStudio projects for organization</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Create reusable functions</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use version control (Git)</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Document your code thoroughly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-bug text-primary me-2"></i>Debugging Tips
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use browser() for debugging</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Check data types with str()</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use print() for variable inspection</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Test code in small chunks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-chart-line text-primary me-2"></i>Best Practices
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Write reproducible code</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use meaningful variable names</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Comment complex logic</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Validate your results</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">Ready to Apply Your Skills?</h2>
+                <p class="lead mb-4">
+                    Now that you have all the resources, start building your clinical programming projects 
+                    with confidence using R and AI assistance!
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('modules') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-graduation-cap me-2"></i>Review Modules
+                    </a>
+                    <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-question-circle me-2"></i>Get Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

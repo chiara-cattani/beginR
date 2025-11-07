@@ -1,0 +1,144 @@
+---
+title: "Module 1 Hands-On Exercise"
+format: html
+editor: visual
+---
+
+# 🧪 Getting Started with R --- Hands-On
+
+This document will guide you through your first real R programming task as a clinical programmer.\
+You'll create and manipulate a demographics dataset, label it, summarize it, and export it.
+
+------------------------------------------------------------------------
+
+## ✅ Part 1 --- Create a Demographics Dataset
+
+We'll start by creating a simple dataset with 5 subjects.
+
+```{r}
+# Create a mock DM dataset
+dm <- data.frame(
+  USUBJID = c("01-001", "01-002", "01-003", "01-004", "01-005"),
+  AGE = c(34, 50, 62, 41, 27),
+  SEX = c("M", "F", "M", "F", "F"),
+  stringsAsFactors = FALSE
+)
+
+# View first few rows
+head(dm)
+```
+
+------------------------------------------------------------------------
+
+## ✅ Part 2 --- Create Derived Variables
+
+We'll add a few new variables using `mutate()` from the `{dplyr}` package.
+
+```{r}
+library(dplyr)
+
+dm <- dm %>%
+  mutate(
+    AGEGRP = ifelse(AGE < 50, "YOUNG", "OLD"),
+    ISFEMALE = ifelse(SEX == "F", "Yes", "No")
+  )
+
+dm
+```
+
+------------------------------------------------------------------------
+
+## ✅ Part 3 --- Add Variable Labels
+
+Use `{labelled}` to assign labels to the variables, similar to SAS.
+
+```{r}
+library(labelled)
+
+var_label(dm$AGE) <- "Age at screening"
+var_label(dm$SEX) <- "Biological sex"
+var_label(dm$AGEGRP) <- "Age category"
+var_label(dm$ISFEMALE) <- "Is subject female?"
+
+# Display labelled dataset
+dm
+```
+
+------------------------------------------------------------------------
+
+## ✅ Part 4 --- Summarize the Dataset
+
+Let's calculate statistics grouped by variables of interest.
+
+```{r}
+# Summary by AGEGRP
+dm %>%
+  group_by(AGEGRP) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(AGE),
+    sd_age = sd(AGE)
+  )
+```
+
+```{r}
+# Count by SEX
+dm %>%
+  group_by(SEX) %>%
+  summarise(n = n())
+```
+
+------------------------------------------------------------------------
+
+## ✅ Part 5 --- Export to XPT Format
+
+Save the dataset to a .xpt file, just like in SAS.
+
+```{r}
+library(haven)
+
+# Create output folder if it doesn't exist
+if (!dir.exists("output")) dir.create("output")
+
+# Export
+write_xpt(dm, "output/dm_demo.xpt")
+```
+
+------------------------------------------------------------------------
+
+## 💡 Bonus --- Copilot Prompt Practice (Optional)
+
+Try writing the following comment and letting GitHub Copilot suggest code:
+
+``` r
+# Flag subjects over 60 as elderly
+```
+
+You might get something like:
+
+```{r}
+dm <- dm %>%
+  mutate(ELDERLY = ifelse(AGE > 60, "Yes", "No"))
+```
+
+------------------------------------------------------------------------
+
+## 📊 Bonus --- Plot Distribution by Sex
+
+Create a simple bar plot using `ggplot2`:
+
+```{r}
+library(ggplot2)
+
+ggplot(dm, aes(x = SEX)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Sex Distribution", x = "Sex", y = "Count")
+```
+
+------------------------------------------------------------------------
+
+## ✅ Summary
+
+In this exercise, you learned how to: - Create and manipulate a data frame - Add derived variables and labels - Summarize your dataset - Export to `.xpt` - Use AI (Copilot) for efficient coding
+
+You're now ready for SDTM programming in Module 2!

@@ -1,0 +1,100 @@
+---
+title: "Module 2 Exercise Solution — Build AE Domain"
+format: html
+editor: visual
+---
+
+# ✅ Module 2 Hands-On — AE Domain SDTM Derivation
+
+This document walks through a complete solution for the Module 2 exercise using the AE domain.
+
+------------------------------------------------------------------------
+
+## 🧪 Part 1 — Create Raw Dataset
+
+```{r}
+library(dplyr)
+library(lubridate)
+library(haven)
+library(labelled)
+
+# Simulated raw AE data
+ae_raw <- data.frame(
+  USUBJID  = c("01-001", "01-001", "01-002", "01-003", "01-003"),
+  AESTDAT  = c("2023-01-01", "2023-01-03", "2023-01-02", "2023-01-01", "2023-01-04"),
+  AETM     = c("08:00", "20:00", "08:00", "20:00", "08:00"),
+  FORMID   = c("F001", "F001", "F002", "F002", "F003"),
+  RFSTDTC  = c("2023-01-01", "2023-01-01", "2023-01-01", "2023-01-01", "2023-01-01"),
+  stringsAsFactors = FALSE
+)
+
+head(ae_raw)
+```
+
+------------------------------------------------------------------------
+
+## 🧱 Part 2 — Derive SDTM Variables
+
+```{r}
+ae <- ae_raw %>%
+  mutate(
+    AESTDTC = format(as.Date(AESTDAT), "%Y-%m-%d"),
+    AEDY = as.integer(as.Date(AESTDTC) - as.Date(RFSTDTC)) + 1,
+    AETPT = case_when(
+      AETM == "08:00" ~ "MORNING",
+      AETM == "20:00" ~ "EVENING",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  arrange(USUBJID, AESTDTC) %>%
+  group_by(USUBJID) %>%
+  mutate(AESEQ = row_number()) %>%
+  ungroup() %>%
+  mutate(AESPID = paste0("CRF_", FORMID))
+
+head(ae)
+```
+
+------------------------------------------------------------------------
+
+## 🏷️ Part 3 — Apply Labels
+
+```{r}
+var_label(ae$USUBJID)  <- "Unique Subject ID"
+var_label(ae$AESTDAT)  <- "Start Date (raw)"
+var_label(ae$AETM)     <- "Time of AE"
+var_label(ae$AESTDTC)  <- "Start Date (ISO)"
+var_label(ae$AEDY)     <- "Study Day"
+var_label(ae$AETPT)    <- "Timepoint Label"
+var_label(ae$AESEQ)    <- "Sequence Number"
+var_label(ae$AESPID)   <- "Source Procedure ID"
+var_label(ae$FORMID)   <- "Form ID"
+var_label(ae$RFSTDTC)  <- "Reference Start Date"
+
+print(ae)
+```
+
+------------------------------------------------------------------------
+
+## 📤 Part 4 — Export to XPT
+
+```{r}
+if (!dir.exists("output")) dir.create("output")
+write_xpt(ae, "output/ae_demo.xpt")
+```
+
+------------------------------------------------------------------------
+
+## 🤖 Bonus — Copilot Prompts Recap
+
+You can try these prompts in Copilot to assist you: - `# Convert AESTDAT to AESTDTC` - `# Derive AEDY from AESTDTC and RFSTDTC` - `# Create AETPT based on AETM` - `# Assign AESEQ by subject` - `# Create AESPID using FORMID`
+
+------------------------------------------------------------------------
+
+## ✅ Summary
+
+-   ✔ Created AE dataset from raw data
+-   ✔ Derived core SDTM variables: `AESTDTC`, `AEDY`, `AETPT`, `AESEQ`, `AESPID`
+-   ✔ Labeled variables using `labelled::var_label()`
+-   ✔ Exported dataset to `.xpt`
+-   ✔ Practiced prompting Copilot for R derivations

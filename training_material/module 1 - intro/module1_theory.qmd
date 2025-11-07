@@ -1,0 +1,151 @@
+---
+title: "Module 1 Theory — R for SAS Programmers: First Contact"
+format: html
+editor: visual
+---
+
+# 🧠 Module 1 Theory --- R for SAS Programmers: First Contact
+
+## 🎯 Learning Objectives
+
+By the end of this section, you will:
+
+-   Understand what R is and how it differs from SAS\
+-   Be familiar with the RStudio interface and file types\
+-   Learn how to write basic R code (variables, data frames, functions)\
+-   Know the key R packages for clinical programming\
+-   Understand how to use GitHub Copilot to assist you while coding
+
+------------------------------------------------------------------------
+
+## 🧪 1. What is R?
+
+R is an open-source language designed for data analysis, statistics, and graphics.
+
+Like SAS, it is widely used in clinical research, but:
+
+-   It is object-oriented and script-based\
+-   It offers greater flexibility and interactivity\
+-   It integrates easily with HTML, PDF, Word, and Shiny dashboards
+
+**SAS vs R Analogy:**
+
+| Feature       | SAS                         | R                            |
+|---------------|-----------------------------|------------------------------|
+| Interface     | Enterprise Guide / Base SAS | RStudio                      |
+| Language Type | Procedural                  | Functional / Object-Oriented |
+| Data          | Datasets                    | Data frames / tibbles        |
+| Output        | PROC PRINT, ODS             | Console, Plots, Markdown     |
+| Extensions    | Macros                      | Packages                     |
+| Licensing     | Commercial                  | Free / Open-source           |
+
+------------------------------------------------------------------------
+
+## 🧱 2. RStudio Overview
+
+RStudio is like Enterprise Guide but for R.
+
+### 🖥️ Main Panels:
+
+-   **Script Editor**: Write R scripts (`.R`) or notebooks (`.Rmd`)\
+-   **Console**: Execute code\
+-   **Environment**: See variables in memory\
+-   **Files/Plots/Packages/Help**: Navigate your files and visualize plots
+
+### 📁 File Types:
+
+-   `.R`: regular script (like a SAS `.sas` file)\
+-   `.Rmd`: RMarkdown document (mix of code + documentation)\
+-   `.Rproj`: RStudio project file to organize files and paths
+
+------------------------------------------------------------------------
+
+## 🧬 3. Writing R Code --- Core Concepts
+
+### ➕ Variables
+
+```{r}
+x <- 10          # Assign 10 to x
+name <- "Chiara" # Assign string to variable
+```
+
+### 🧱 Data Frames (similar to datasets)
+
+```{r}
+df <- data.frame(Name = c("John", "Anna"), Age = c(30, 25))
+```
+
+### 🔧 Functions
+
+```{r}
+mean(c(1, 2, 3))       # Calculates average
+sum(c(1, 2, 3))        # Adds values
+```
+
+### 💡 Pipe Operator (`%>%`)
+
+Like chaining multiple steps together (e.g., `DATA -> SET -> WHERE`)
+
+```{r}
+library(dplyr)
+
+df %>%
+  filter(Age > 26) %>%
+  select(Name)
+```
+
+------------------------------------------------------------------------
+
+## 📦 4. Key R Packages for Clinical Programming
+
+| Package     | Purpose                            |
+|-------------|------------------------------------|
+| `haven`     | Import/export SAS XPT files        |
+| `dplyr`     | Data manipulation (like DATA step) |
+| `stringr`   | String handling                    |
+| `lubridate` | Date/time manipulation             |
+| `admiral`   | Create ADaM datasets               |
+| `xportr`    | Label/export SDTM/ADaM to XPT      |
+| `ggplot2`   | Plots and visualizations           |
+| `flextable` | Export tables to Word/PDF          |
+
+------------------------------------------------------------------------
+
+## 🤖 5. Introduction to GitHub Copilot (Free Plan)
+
+### What is Copilot?
+
+GitHub Copilot is an AI pair programmer that suggests code in real time based on what you type.
+
+### How to Use:
+
+-   Install the Copilot extension in RStudio (via VS Code or browser plugin)\
+-   Write a comment or a partial function:
+
+```{r}
+# Read a SAS XPT file and convert to tibble
+```
+
+-   Press **Tab** to accept Copilot's suggestion.
+
+### Examples:
+
+| Prompt | Copilot Suggestion |
+|----|----|
+| `# Create a variable for age group` | `mutate(age_group = ifelse(Age < 50, "Y", "O"))` |
+| `# Summarize AEs by severity` | `group_by(SEV) %>% summarise(n = n())` |
+| `# Convert ISO date to date object` | `mutate(date = as.Date(date, format = "%Y-%m-%d"))` |
+
+> You can always edit or reject suggestions. Copilot is here to help, not to replace your reasoning.
+
+------------------------------------------------------------------------
+
+## 📝 Summary
+
+| Concept           | SAS Equivalent      | R Tool                    |
+|-------------------|---------------------|---------------------------|
+| Read XPT          | `libname in xpt`    | `haven::read_xpt()`       |
+| Data manipulation | `DATA step`         | `dplyr::mutate`, `filter` |
+| Export XPT        | `PROC COPY`         | `xportr_write()`          |
+| Output tables     | `PROC PRINT/REPORT` | `flextable`, `gt`         |
+| AI helper         | Not available       | GitHub Copilot (free)     |

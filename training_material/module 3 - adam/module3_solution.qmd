@@ -1,0 +1,88 @@
+---
+title: "Module 3 Solution — ADaM Programming in R"
+format: html
+editor: visual
+---
+
+```{r}
+# Load libraries
+library(dplyr)
+library(haven)
+library(admiral)
+library(pharmaversesdtm)
+#library(pharmaverseadam)
+library(labelled)
+library(xportr)
+```
+
+## Part 1 — ADSL Derivation
+
+```{r}
+# Load SDTM DM
+data(dm)
+
+# Derive ADSL
+adsl <- dm %>%
+  select(USUBJID, AGE, SEX, RACE, ARM, COUNTRY, RFSTDTC) %>%
+  mutate(TRTFL = ifelse(ARM != "SCREEN FAILURE", "Y", "N"))
+
+# Label variables
+var_label(adsl$USUBJID) <- "Unique Subject ID"
+var_label(adsl$AGE) <- "Age"
+var_label(adsl$SEX) <- "Sex"
+var_label(adsl$RACE) <- "Race"
+var_label(adsl$ARM) <- "Planned Arm"
+var_label(adsl$COUNTRY) <- "Country"
+var_label(adsl$RFSTDTC) <- "Reference Start Date"
+var_label(adsl$TRTFL) <- "Treatment Flag"
+```
+
+## Part 2 — ADAE Derivation
+
+```{r}
+# Load SDTM AE
+data(ae)
+
+# Filter for serious AEs
+adae <- ae %>%
+  filter(AESER == "Y")
+
+# Derive ADT from AESTDTC
+adae <- derive_vars_dt(
+  dataset = adae,
+  dtc = AESTDTC,
+  new_vars_prefix = "A"
+)
+
+# Merge RFSTDTC from ADSL
+adae <- derive_vars_merged(
+  dataset = adae,
+  dataset_add = adsl,
+  by_vars = exprs(USUBJID),
+  new_vars = exprs(RFSTDTC)
+)
+
+# Derive Study Day
+adae <- adae %>%
+  mutate(ADY = as.integer(as.Date(ADT) - as.Date(RFSTDTC)) + 1)
+
+# Add SAE Flag
+adae <- adae %>%
+  mutate(SAEFL = "Y")
+
+# Label variables
+var_label(adae$USUBJID) <- "Unique Subject ID"
+var_label(adae$AEDECOD) <- "AE Term"
+var_label(adae$ADT) <- "Analysis Date"
+var_label(adae$ADY) <- "Study Day"
+var_label(adae$SAEFL) <- "Serious AE Flag"
+```
+
+## Part 3 — Export
+
+```{r}
+if (!dir.exists("output")) dir.create("output")
+
+write_xpt(adsl, "output/adsl_exercise.xpt")
+write_xpt(adae, "output/adae_exercise.xpt")
+```

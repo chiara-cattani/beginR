@@ -1,0 +1,84 @@
+{% extends "module_template.html" %}
+
+{% block extra_content %}
+<!-- Module 1 Specific Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h2 class="mb-4">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>Getting Started
+                </h2>
+                
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Before You Begin</h5>
+                    <p class="mb-0">
+                        Make sure you have R and RStudio installed on your system. If you haven't installed them yet, 
+                        follow the installation guide in the slides.
+                    </p>
+                </div>
+                
+                <h3>What You'll Learn</h3>
+                <!-- Module Progress Bar -->
+                <div class="mb-3">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" data-progress-bar="1"></div>
+                    </div>
+                </div>
+                <ul class="list-unstyled">
+                    <li class="mb-2 progress-item">
+                        <input type="checkbox" class="form-check-input progress-checkbox me-2" data-module-id="1" data-item-id="1">
+                        <label class="form-check-label">R programming fundamentals and syntax</label>
+                    </li>
+                    <li class="mb-2 progress-item">
+                        <input type="checkbox" class="form-check-input progress-checkbox me-2" data-module-id="1" data-item-id="2">
+                        <label class="form-check-label">Data structures and manipulation</label>
+                    </li>
+                    <li class="mb-2 progress-item">
+                        <input type="checkbox" class="form-check-input progress-checkbox me-2" data-module-id="1" data-item-id="3">
+                        <label class="form-check-label">Basic statistical functions</label>
+                    </li>
+                    <li class="mb-2 progress-item">
+                        <input type="checkbox" class="form-check-input progress-checkbox me-2" data-module-id="1" data-item-id="4">
+                        <label class="form-check-label">R vs SAS comparison</label>
+                    </li>
+                </ul>
+                
+                <h3>Prerequisites</h3>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-download text-primary me-2"></i>R (version 4.0 or higher)</li>
+                            <li class="mb-2"><i class="fas fa-download text-primary me-2"></i>RStudio (latest version)</li>
+                            <li class="mb-2"><i class="fas fa-book text-primary me-2"></i>Basic programming concepts</li>
+                            <li class="mb-2"><i class="fas fa-chart-bar text-primary me-2"></i>Familiarity with SAS (helpful but not required)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-clock me-2 text-primary"></i>Estimated Time
+                        </h5>
+                        <p class="card-text">
+                            <strong>2-3 hours</strong> to complete this module, including exercises.
+                        </p>
+                        <hr>
+                        <h6>Module Contents:</h6>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-play-circle text-primary me-2"></i>Introduction to R</li>
+                            <li class="mb-1"><i class="fas fa-play-circle text-primary me-2"></i>R Environment Setup</li>
+                            <li class="mb-1"><i class="fas fa-play-circle text-primary me-2"></i>Basic Syntax</li>
+                            <li class="mb-1"><i class="fas fa-play-circle text-primary me-2"></i>Data Structures</li>
+                            <li class="mb-1"><i class="fas fa-play-circle text-primary me-2"></i>R vs SAS Comparison</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

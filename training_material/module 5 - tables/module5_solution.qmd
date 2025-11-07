@@ -1,0 +1,84 @@
+---
+title: "Module 5 Solution — TLF Tables (Summary Stats)"
+format: html
+editor: visual
+---
+
+# ✅ Solutions — Module 5: TLF Tables (Summary Statistics)
+
+## 📦 Load Libraries
+
+```{r}
+library(dplyr)
+library(gtsummary)
+library(gt)
+```
+
+------------------------------------------------------------------------
+
+## 🧪 Mock Dataset
+
+```{r}
+set.seed(123)
+
+demo <- tibble::tibble(
+  USUBJID = paste0("01-", sprintf("%03d", 1:12)),
+  AGE = sample(30:75, 12, replace = TRUE),
+  SEX = sample(c("M", "F"), 12, replace = TRUE),
+  RACE = sample(c("White", "Black", "Asian", "Other"), 12, replace = TRUE),
+  ARM = rep(c("Placebo", "Drug"), each = 6)
+)
+```
+
+------------------------------------------------------------------------
+
+## ✅ Task 1: Summary Table for AGE by ARM
+
+```{r}
+demo %>%
+  select(AGE, ARM) %>%
+  tbl_summary(by = ARM, statistic = list(all_continuous() ~ "{mean} ± {sd}")) %>%
+  add_overall() %>%
+  add_n() %>%
+  bold_labels()
+```
+
+------------------------------------------------------------------------
+
+## ✅ Task 2: Frequency Tables for SEX and RACE
+
+```{r}
+demo %>%
+  select(SEX, RACE, ARM) %>%
+  tbl_summary(by = ARM) %>%
+  add_overall() %>%
+  bold_labels()
+```
+
+------------------------------------------------------------------------
+
+## ✅ Task 3: AGEGR1 by ARM
+
+```{r}
+demo <- demo %>%
+  mutate(AGEGR1 = if_else(AGE < 50, "<50", ">=50"))
+
+demo %>%
+  select(AGEGR1, ARM) %>%
+  tbl_summary(by = ARM) %>%
+  add_overall() %>%
+  bold_labels()
+```
+
+------------------------------------------------------------------------
+
+## ✅ Task 4 (Optional): Export Table
+
+```{r eval=FALSE}
+demo %>%
+  select(AGE, ARM) %>%
+  tbl_summary(by = ARM) %>%
+  add_n() %>%
+  as_gt() %>%
+  gtsave("output/age_summary.html")
+```

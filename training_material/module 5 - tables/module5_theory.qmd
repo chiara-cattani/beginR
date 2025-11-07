@@ -1,0 +1,109 @@
+---
+title: "Module 5 Theory — TLF Tables (Summary Statistics)"
+format: html
+editor: visual
+---
+
+# 📊 Module 5 — TLF Tables: Summary Statistics
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Understand how to compute descriptive statistics by treatment arm
+-   Learn to create summary tables with `tidyverse` and `gtsummary`
+-   Create tables for continuous and categorical variables
+-   Practice exporting tables to Word or HTML
+-   Use Copilot to help build, format, and export summary tables
+
+------------------------------------------------------------------------
+
+## 📋 1. What Are Summary Tables?
+
+Summary tables report aggregated statistics such as: - N, mean, standard deviation (SD), median, min, max - Frequency counts and percentages
+
+They are commonly used to describe: - Baseline demographics (e.g., age, sex, race) - Safety/efficacy endpoints
+
+------------------------------------------------------------------------
+
+## 🧰 2. Key Packages for Summary Tables
+
+| Package     | Purpose                            |
+|-------------|------------------------------------|
+| `dplyr`     | Data manipulation                  |
+| `gtsummary` | Summary statistics tables          |
+| `tidyverse` | Core tools for data wrangling      |
+| `gt`        | Underlying engine for final output |
+
+------------------------------------------------------------------------
+
+## 📦 3. Example Data
+
+```{r}
+library(dplyr)
+library(gtsummary)
+
+demo <- tibble::tibble(
+  USUBJID = paste0("01-", sprintf("%03d", 1:10)),
+  AGE = c(34, 58, 45, 63, 39, 52, 60, 41, 50, 48),
+  SEX = c("M", "F", "M", "F", "F", "M", "F", "M", "F", "F"),
+  ARM = c("Placebo", "Drug", "Placebo", "Drug", "Placebo", "Drug", "Placebo", "Drug", "Placebo", "Drug")
+)
+```
+
+------------------------------------------------------------------------
+
+## 📈 4. Create Descriptive Stats Table (Continuous Variables)
+
+```{r}
+demo %>%
+  select(AGE, ARM) %>%
+  tbl_summary(by = ARM, statistic = list(all_continuous() ~ "{mean} ± {sd}")) %>%
+  add_n() %>%
+  add_overall() %>%
+  bold_labels()
+```
+
+------------------------------------------------------------------------
+
+## 📊 5. Frequency Table for Categorical Variables
+
+```{r}
+demo %>%
+  select(SEX, ARM) %>%
+  tbl_summary(by = ARM) %>%
+  add_n() %>%
+  add_overall() %>%
+  bold_labels()
+```
+
+------------------------------------------------------------------------
+
+## 📤 6. Export Summary Table
+
+```{r eval=FALSE}
+as_gt(last_tbl()) %>%
+  gt::gtsave(filename = "output/summary_table.html")
+```
+
+------------------------------------------------------------------------
+
+## 🤖 7. Copilot Prompt Ideas
+
+| Prompt                            | Copilot Suggestion         |
+|-----------------------------------|----------------------------|
+| `# Summary by treatment arm`      | `tbl_summary(by = ARM)`    |
+| `# Format as mean (SD)`           | `"{mean} ± {sd}"`          |
+| `# Export table to Word`          | `gt::gtsave()` + `as_gt()` |
+| `# Add overall column to summary` | `add_overall()`            |
+
+------------------------------------------------------------------------
+
+## ✅ Summary
+
+| Task                           | R Tool                     |
+|--------------------------------|----------------------------|
+| Descriptive stats (cont. vars) | `gtsummary::tbl_summary()` |
+| Frequencies (cat. vars)        | `gtsummary`                |
+| Export table                   | `as_gt()` + `gtsave()`     |
+| Copilot formatting support     | Prompt for templates       |

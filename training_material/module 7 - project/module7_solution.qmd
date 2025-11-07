@@ -1,0 +1,193 @@
+---
+title: "Module 7 — Final Project: Solution"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(gtsummary)
+library(flextable)
+library(tibble)
+```
+
+# ✅ Final Project: From SDTM to TLFs (Solution)
+
+This walkthrough shows a full mock clinical reporting workflow using R.
+
+------------------------------------------------------------------------
+
+## 🧪 Step 1: Load Raw Data
+
+```{r}
+# Generate mock DM data
+dm <- tibble::tibble(
+  USUBJID = paste0("01-701-", 1001:1005),
+  DOB = as.character(seq(as.Date("1970-01-01"), by = "10 years", length.out = 5)),
+  RFSTDTC = rep("2023-01-01", 5),
+  ARM = c("Placebo", "Drug A", "Drug B", "Placebo", "Drug A"),
+  SEX = c("F", "M", "F", "M", "F")
+)
+
+# Generate mock AE data
+ae <- tibble::tibble(
+  USUBJID = rep(dm$USUBJID, each = 2),
+  AETERM = rep(c("Headache", "Nausea"), times = 5),
+  AESEV = rep(c("MILD", "SEVERE"), times = 5),
+  AESTDTC = rep("2023-01-10", 10),
+  AEENDTC = rep("2023-01-12", 10),
+  RFSTDTC = rep("2023-01-01", 10)
+)
+
+# Generate mock EX data
+ex <- tibble::tibble(
+  USUBJID = dm$USUBJID,
+  EXTRT = dm$ARM,
+  EXSTDTC = rep("2023-01-01", 5),
+  EXENDTC = rep("2023-01-14", 5),
+  EXDOSE = c("0", "50", "75", "0", "50")
+)
+```
+
+------------------------------------------------------------------------
+
+```{r}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(gtsummary)
+library(flextable)
+library(tibble)
+```
+
+## 🧱 Step 2: SDTM Domains
+
+### DM
+
+```{r}
+dm_sdtm <- dm %>%
+  mutate(
+    BRTHDTC = ymd(DOB),
+    AGE = floor((ymd(RFSTDTC) - BRTHDTC) / 365.25),
+    ARMCD = substr(ARM, 1, 3),
+    DOMAIN = "DM"
+  )
+```
+
+### AE
+
+```{r}
+ae_sdtm <- ae %>%
+  mutate(
+    AESTDTC = ymd(AESTDTC),
+    AEENDTC = ymd(AEENDTC),
+    AESTDY = as.integer(AESTDTC - ymd(RFSTDTC)),
+    AEENDY = as.integer(AEENDTC - ymd(RFSTDTC)),
+    DOMAIN = "AE",
+    AESEQ = row_number()
+  )
+```
+
+### EX
+
+```{r}
+ex_sdtm <- ex %>%
+  mutate(
+    EXSTDTC = ymd(EXSTDTC),
+    EXENDTC = ymd(EXENDTC),
+    EXDOSE = as.numeric(EXDOSE),
+    DOMAIN = "EX"
+  )
+```
+
+------------------------------------------------------------------------
+
+## 📊 Step 3: ADaM Datasets
+
+### ADSL
+
+```{r}
+adsl <- dm_sdtm %>%
+  select(USUBJID, AGE, SEX, ARM, ARMCD) %>%
+  mutate(TRT01P = ARM)
+```
+
+### ADAE
+
+```{r}
+adae <- ae_sdtm %>%
+  left_join(adsl, by = "USUBJID") %>%
+  mutate(
+    ASEVFL = ifelse(AESEV == "SEVERE", "Y", "N"),
+    AVALC = AESEV
+  )
+```
+
+------------------------------------------------------------------------
+
+```{r}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(gtsummary)
+library(flextable)
+library(tibble)
+```
+
+## 📋 Step 4: TLFs
+
+### 1. AE Listing
+
+```{r}
+ae_listing <- adae %>%
+  select(USUBJID, AETERM, AESEV, AESTDTC, AEENDTC) %>%
+  flextable() %>%
+  autofit()
+ae_listing
+```
+
+### 2. Demographic Summary Table
+
+```{r}
+adsl %>%
+  select(AGE, SEX, ARM) %>%
+  tbl_summary(by = ARM, missing = "no")
+```
+
+### 3. AE Severity Bar Plot
+
+```{r}
+ae_fig <- adae %>%
+  count(ARM, AESEV) %>%
+  ggplot(aes(x = AESEV, y = n, fill = ARM)) +
+  geom_col(position = "dodge") +
+  labs(title = "Adverse Events by Severity", y = "Count") +
+  theme_minimal()
+ae_fig
+```
+
+------------------------------------------------------------------------
+
+## 🤖 BONUS: Custom Export Function (Copilot Suggestion)
+
+```{r}
+export_xpt <- function(df, name) {
+  path <- paste0("output/", name, ".xpt")
+  haven::write_xpt(df, path)
+}
+```
+
+You can use:
+
+```{r}
+export_xpt(adsl, "adsl")
+export_xpt(adae, "adae")
+```

@@ -1,0 +1,152 @@
+---
+title: "Module 2 Theory — Building SDTM Datasets in R"
+format: html
+editor: visual
+---
+
+# 🧱 Module 2 — Building SDTM Datasets in R
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Understand how to load raw clinical data from CSV, XPT, or Excel
+-   Learn the key tidyverse tools for SDTM derivations
+-   Be able to derive standard SDTM variables like `--DTC`, `--DY`, `--TPT`, `--SEQ`, `--SPID`
+-   Apply SDTM dataset labeling using `xportr`
+-   Compare SDTM mapping in R vs SAS macro-based approaches
+-   Use GitHub Copilot to assist with formatting, variable naming, and logic
+
+------------------------------------------------------------------------
+
+## 📥 1. Loading Raw Data
+
+You can import raw CRF-like data from various file types:
+
+``` r
+# Load CSV
+dm_csv <- read.csv("raw/dm.csv")
+
+# Load XPT
+library(haven)
+ae_xpt <- read_xpt("raw/ae.xpt")
+
+# Load Excel
+library(readxl)
+ex_xlsx <- read_excel("raw/ex.xlsx")
+```
+
+> ✅ Tip: Always use `tolower()` to standardize column names if source files are inconsistent.
+
+------------------------------------------------------------------------
+
+## 🧰 2. Key Packages for SDTM Programming
+
+| Package     | Purpose                                        |
+|-------------|------------------------------------------------|
+| `dplyr`     | Data manipulation (`mutate`, `filter`, `join`) |
+| `stringr`   | String cleaning and standardization            |
+| `lubridate` | Date formatting and calculations               |
+| `xportr`    | Add labels and export XPT files                |
+
+------------------------------------------------------------------------
+
+## 🏗️ 3. Deriving Standard SDTM Variables
+
+### 📆 `--DTC`: ISO 8601 Date
+
+``` r
+library(lubridate)
+
+ex <- ex %>%
+  mutate(EXDTC = format(as.Date(EXSTDAT), "%Y-%m-%d"))
+```
+
+### 📅 `--DY`: Study Day
+
+``` r
+ex <- ex %>%
+  mutate(EXDY = as.integer(as.Date(EXDTC) - as.Date(RFSTDTC)) + 1)
+```
+
+### 🕒 `--TPT`: Timepoint Label (if applicable)
+
+``` r
+ex <- ex %>%
+  mutate(EXTPT = case_when(
+    EXTM == "08:00" ~ "MORNING",
+    EXTM == "20:00" ~ "EVENING",
+    TRUE ~ NA_character_
+  ))
+```
+
+### 🔢 `--SEQ`: Sequence Number
+
+``` r
+ex <- ex %>%
+  arrange(USUBJID, EXDTC) %>%
+  group_by(USUBJID) %>%
+  mutate(EXSEQ = row_number())
+```
+
+### 🧬 `--SPID`: Source Procedure ID
+
+``` r
+ex <- ex %>%
+  mutate(EXSPID = paste0("CRF_", FORMID))
+```
+
+------------------------------------------------------------------------
+
+## 🏷️ 4. Labeling and Exporting with `xportr`
+
+``` r
+library(xportr)
+
+ex <- ex %>%
+  xportr_type(domain = "EX") %>%
+  xportr_length(domain = "EX") %>%
+  xportr_format(domain = "EX") %>%
+  xportr_label(domain = "EX", metadata = metacore) %>%
+  xportr_write(path = "output/ex.xpt")
+```
+
+> ⚠️ You must have a metadata object like `metacore` loaded or pre-defined.
+
+------------------------------------------------------------------------
+
+## 🔄 5. SDTM Mapping Styles: R vs SAS
+
+| Feature     | SAS Style (macro-based)  | R Style (tidyverse-based)     |
+|-------------|--------------------------|-------------------------------|
+| Structure   | `%sdtm_domain()` macros  | Modular pipes                 |
+| Readability | Requires macro knowledge | Intuitive with clear chaining |
+| Debugging   | Macro log-based          | Immediate console feedback    |
+| Flexibility | Fixed macro logic        | Full control with R functions |
+
+> R offers greater **transparency** and **modularity**, ideal for dynamic pipelines and automation.
+
+------------------------------------------------------------------------
+
+## 🤖 6. Using Copilot for Derivation Help
+
+### Sample Prompts to Try:
+
+| Prompt Comment | Copilot Suggestion |
+|----|----|
+| `# Derive EXDTC in ISO format from EXSTDAT` | `mutate(EXDTC = format(as.Date(EXSTDAT), "%Y-%m-%d"))` |
+| `# Create EXDY from EXDTC and RFSTDTC` | `mutate(EXDY = as.integer(as.Date(EXDTC) - as.Date(RFSTDTC)) + 1)` |
+| `# Label EXSPID based on form` | `mutate(EXSPID = paste0("CRF_", FORMID))` |
+| `# Sort and assign EXSEQ` | `arrange() %>% group_by() %>% mutate(EXSEQ = row_number())` |
+
+------------------------------------------------------------------------
+
+## ✅ Summary
+
+| Task                      | R Function/Tool                            |
+|---------------------------|--------------------------------------------|
+| Load data (CSV/XPT/Excel) | `read.csv()`, `read_xpt()`, `read_excel()` |
+| Manipulate variables      | `mutate()`, `case_when()`, `row_number()`  |
+| Handle dates              | `as.Date()`, `format()`, `lubridate`       |
+| Label and export datasets | `xportr_label()`, `xportr_write()`         |
+| AI assistance             | GitHub Copilot (comment + tab)             |

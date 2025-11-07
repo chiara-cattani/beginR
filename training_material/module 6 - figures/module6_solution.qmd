@@ -1,0 +1,101 @@
+---
+title: "Module 6 — TLF Figures: Exercise Solutions"
+format: html
+editor: visual
+---
+
+# ✅ Module 6 — Solution: Clinical Plots with ggplot2
+
+## 🧪 Dataset Setup
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+set.seed(2025)
+labs <- tibble::tibble(
+  USUBJID = rep(paste0("SUBJ", 1:10), each = 3),
+  VISIT = rep(c("Day 1", "Week 2", "Week 4"), times = 10),
+  ARM = rep(c("Placebo", "Drug"), each = 15),
+  HGB = round(rnorm(30, mean = 13, sd = 1.2), 1),
+  HCT = round(rnorm(30, mean = 38, sd = 3), 1)
+)
+
+labs_long <- labs %>%
+  pivot_longer(cols = c(HGB, HCT), names_to = "Test", values_to = "Value")
+```
+
+------------------------------------------------------------------------
+
+## 1. Line Plot: HGB & HCT Trajectories per Subject
+
+```{r}
+ggplot(labs_long, aes(x = VISIT, y = Value, group = USUBJID, color = ARM)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~Test, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Subject-Level Lab Value Trends", y = "Value")
+```
+
+------------------------------------------------------------------------
+
+## 2. Boxplot: HGB by Visit and Treatment
+
+```{r}
+ggplot(labs, aes(x = VISIT, y = HGB, fill = ARM)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "HGB Distribution by Visit and Arm", y = "Hemoglobin (g/dL)")
+```
+
+------------------------------------------------------------------------
+
+## 3. Heatmap: HGB per Subject and Visit
+
+```{r}
+labs_heat <- labs %>%
+  select(USUBJID, VISIT, HGB) %>%
+  pivot_wider(names_from = VISIT, values_from = HGB)
+
+labs_heat_long <- labs_heat %>%
+  pivot_longer(-USUBJID, names_to = "Visit", values_to = "HGB")
+
+ggplot(labs_heat_long, aes(x = Visit, y = USUBJID, fill = HGB)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "#ffffcc", high = "#990000") +
+  theme_minimal() +
+  labs(title = "Heatmap of HGB Values", fill = "HGB (g/dL)")
+```
+
+------------------------------------------------------------------------
+
+## 4. Mean ± SD of HCT by Visit and Arm
+
+```{r}
+summary_hct <- labs %>%
+  group_by(VISIT, ARM) %>%
+  summarise(mean_val = mean(HCT), sd_val = sd(HCT), .groups = "drop")
+
+ggplot(summary_hct, aes(x = VISIT, y = mean_val, color = ARM, group = ARM)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = mean_val - sd_val, ymax = mean_val + sd_val), width = 0.1) +
+  theme_minimal() +
+  labs(title = "Mean ± SD of HCT", y = "Hematocrit (%)")
+```
+
+------------------------------------------------------------------------
+
+## 5. BONUS: Combine Plots with patchwork
+
+```{r}
+p1 <- ggplot(labs, aes(x = VISIT, y = HGB, fill = ARM)) +
+  geom_boxplot() + theme_minimal()
+
+p2 <- ggplot(summary_hct, aes(x = VISIT, y = mean_val, color = ARM)) +
+  geom_line() + geom_point() + theme_minimal()
+
+p1 + p2
+```
