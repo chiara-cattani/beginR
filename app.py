@@ -7,17 +7,21 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from flask_mail import Mail, Message
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'clinical-r-transition-2024'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'clinical-r-transition-2024')
 
-# --- Flask-Mail config (user must fill in real values) ---
-app.config['MAIL_SERVER'] = 'smtp.example.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your@email.com'
-app.config['MAIL_PASSWORD'] = 'yourpassword'
-app.config['MAIL_DEFAULT_SENDER'] = 'your@email.com'
+# --- Flask-Mail config (user can set via environment variables) ---
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.example.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'your@email.com')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'yourpassword')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'your@email.com')
 mail = Mail(app)
 
 # Module data structure
@@ -636,4 +640,7 @@ def send_certificate():
     return redirect(url_for('modules'))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=debug_mode, host=host, port=port) 
