@@ -597,4 +597,59 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* Music Player & Theme Toggle Styles */
+#musicToggle, #themeToggle {
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#musicToggle.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+#musicIcon {
+    transition: all 0.3s ease;
+}
+
+/* Dark theme dropdown menu */
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: var(--dark-bg);
+    border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: var(--text-primary);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+    background-color: var(--border-color);
+    color: var(--secondary-color);
+}
+
+[data-bs-theme="dark"] .dropdown-header {
+    color: var(--text-secondary);
+}
+
+/* Music player glow effect when playing */
+#musicToggle.btn-primary #musicIcon {
+    animation: musicGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes musicGlow {
+    from {
+        text-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    to {
+        text-shadow: 0 0 15px rgba(0, 123, 255, 0.8);
+    }
+}
+
  

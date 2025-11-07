@@ -43,6 +43,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Music Player Functionality
+    const musicToggle = document.getElementById('musicToggle');
+    const musicIcon = document.getElementById('musicIcon');
+    
+    // YouTube links configuration
+    const youtubeLinks = {
+        house: 'https://www.youtube.com/watch?v=MJbb82S6FBo',
+        piano: 'https://www.youtube.com/watch?v=MiaPRJw-bFo',
+        organic: 'https://www.youtube.com/watch?v=sWOrd50HYa4&list=RDsWOrd50HYa4&start_radio=1&t=3354s',
+        natural: 'https://www.youtube.com/watch?v=uwEaQk5VeS4&t=1131s',
+        jazz: 'https://www.youtube.com/watch?v=Dx5qFachd3A'
+    };
+    
+    // Load saved genre preference
+    let currentGenre = localStorage.getItem('musicGenre') || 'organic';
+    
+    // Update button title with current genre
+    if (musicToggle) {
+        musicToggle.title = `Choose music genre`;
+    }
+    
+    // Genre selection handlers
+    document.querySelectorAll('[data-genre]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const genre = this.dataset.genre;
+            
+            // Open YouTube link in new tab
+            if (youtubeLinks[genre]) {
+                window.open(youtubeLinks[genre], '_blank');
+            }
+            
+            // Update current genre for display purposes
+            currentGenre = genre;
+            localStorage.setItem('musicGenre', genre);
+        });
+    });
+    
+
+    
     // Progress Tracking
     const progressCheckboxes = document.querySelectorAll('.progress-checkbox');
     progressCheckboxes.forEach(checkbox => {

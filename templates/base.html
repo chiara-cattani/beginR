@@ -52,8 +52,21 @@
                     </li>
                 </ul>
                 
-                <!-- Theme Toggle -->
-                <div class="d-flex align-items-center">
+                <!-- Music Player & Theme Toggle -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm" id="musicToggle" data-bs-toggle="dropdown" aria-expanded="false" title="Choose music genre">
+                            <i class="fas fa-music" id="musicIcon"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" id="musicDropdown">
+                            <li><button class="dropdown-item" data-genre="house">🏠 House</button></li>
+                            <li><button class="dropdown-item" data-genre="piano">🎹 Piano</button></li>
+                            <li><button class="dropdown-item" data-genre="organic">🪘 Organic</button></li>
+                            <li><button class="dropdown-item" data-genre="natural">🌱 Natural</button></li>
+                            <li><button class="dropdown-item" data-genre="jazz">🎷 Jazz</button></li>
+                        </ul>
+                    </div>
+                    
                     <button class="btn btn-outline-secondary btn-sm" id="themeToggle" title="Toggle theme">
                         <i class="fas fa-sun" id="lightIcon"></i>
                         <i class="fas fa-moon" id="darkIcon" style="display: none;"></i>
