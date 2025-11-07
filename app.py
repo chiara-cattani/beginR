@@ -305,6 +305,25 @@ def toggle_theme():
     theme = data.get('theme', 'light')
     return jsonify({'status': 'success', 'theme': theme})
 
+def fix_html_static_paths(content, html_filename, html_path):
+    """Fix relative paths for supporting files in HTML content"""
+    import re
+    
+    file_base = os.path.splitext(os.path.basename(html_filename))[0]
+    files_dir = f"{file_base}_files"
+    if files_dir in content:
+        # Get the directory where the HTML file is located
+        html_dir = os.path.dirname(html_path).replace('\\', '/')
+        # Replace src attributes
+        content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+        # Replace href attributes  
+        content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+    
+    # Fix PDF links - convert relative PDF paths to view routes
+    content = re.sub(r'href="([^"]+\.pdf)"', r'href="/view/\1"', content)
+    
+    return content
+
 @app.route('/view/<path:filename>')
 def view_file(filename):
     """View content of various file types with proper rendering"""
@@ -319,7 +338,7 @@ def view_file(filename):
                 base_dir = os.path.dirname(file_path)
                 break
         
-        # If not found, check bonus_resources directory (including rendered subfolder)
+        # If not found, check bonus_resources directory (including rendered and source subfolders)
         if not file_path:
             # First check rendered subfolder
             rendered_path = os.path.join('bonus_resources', 'rendered', filename)
@@ -327,11 +346,17 @@ def view_file(filename):
                 file_path = rendered_path
                 base_dir = 'bonus_resources/rendered'
             else:
-                # Then check main bonus_resources directory
-                bonus_path = os.path.join('bonus_resources', filename)
-                if os.path.exists(bonus_path):
-                    file_path = bonus_path
-                    base_dir = 'bonus_resources'
+                # Then check source subfolder
+                source_path = os.path.join('bonus_resources', 'source', filename)
+                if os.path.exists(source_path):
+                    file_path = source_path
+                    base_dir = 'bonus_resources/source'
+                else:
+                    # Finally check main bonus_resources directory
+                    bonus_path = os.path.join('bonus_resources', filename)
+                    if os.path.exists(bonus_path):
+                        file_path = bonus_path
+                        base_dir = 'bonus_resources'
         
         if not file_path:
             return f"File not found: {filename}", 404
@@ -358,10 +383,19 @@ def view_file(filename):
                 if os.path.exists(bonus_rendered_path):
                     html_path = bonus_rendered_path
                 else:
-                    # Then check main bonus_resources directory
-                    bonus_html_path = os.path.join('bonus_resources', html_filename)
-                    if os.path.exists(bonus_html_path):
-                        html_path = bonus_html_path
+                    # For files from source directory, try looking for numbered HTML files in rendered
+                    if base_dir == 'bonus_resources/source':
+                        # Look for files like 01_R_vs_SAS_CheatSheet.html in rendered directory
+                        for rendered_file in os.listdir('bonus_resources/rendered'):
+                            if rendered_file.endswith('.html') and html_filename.replace('.html', '') in rendered_file:
+                                html_path = os.path.join('bonus_resources', 'rendered', rendered_file)
+                                break
+                    
+                    # If still not found, check main bonus_resources directory
+                    if not html_path:
+                        bonus_html_path = os.path.join('bonus_resources', html_filename)
+                        if os.path.exists(bonus_html_path):
+                            html_path = bonus_html_path
             
             if html_path:
                 # Read and serve the rendered HTML
@@ -369,17 +403,7 @@ def view_file(filename):
                     content = f.read()
                 
                 # Fix relative paths for supporting files
-                file_base = os.path.splitext(os.path.basename(html_filename))[0]
-                files_dir = f"{file_base}_files"
-                if files_dir in content:
-                    # Get the directory where the HTML file is located
-                    html_dir = os.path.dirname(html_path).replace('\\', '/')
-                    # Replace all variations of the path references
-                    import re
-                    # Replace src attributes
-                    content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
-                    # Replace href attributes  
-                    content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+                content = fix_html_static_paths(content, html_filename, html_path)
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:
@@ -399,6 +423,10 @@ def view_file(filename):
             if os.path.exists(html_path):
                 with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
+                
+                # Fix relative paths for supporting files
+                content = fix_html_static_paths(content, html_filename, html_path)
+                
                 return content, 200, {'Content-Type': 'text/html'}
             else:
                 # Show RMD source with syntax highlighting
@@ -426,17 +454,7 @@ def view_file(filename):
                 content = f.read()
             
             # Fix relative paths for supporting files
-            file_base = os.path.splitext(os.path.basename(filename))[0]
-            files_dir = f"{file_base}_files"
-            if files_dir in content:
-                # Get the directory where the HTML file is located
-                html_dir = os.path.dirname(file_path).replace('\\', '/')
-                # Replace all variations of the path references
-                import re
-                # Replace src attributes
-                content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
-                # Replace href attributes  
-                content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+            content = fix_html_static_paths(content, filename, file_path)
             
             return content, 200, {'Content-Type': 'text/html'}
             
