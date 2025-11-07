@@ -1,0 +1,378 @@
+---
+title: "Module 6 Theory — SDTM Programming with sdtm.oak"
+format: html
+editor: visual
+---
+
+# �️ Module 6 — SDTM Programming with sdtm.oak
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Understand CDISC SDTM standards and domain structures
+-   Learn to use the `sdtm.oak` package for SDTM data creation
+-   Master metadata reading and domain specification
+-   Create standardized SDTM domains (DM, AE, VS, LB)
+-   Export datasets to XPT format for regulatory submission
+-   Use GitHub Copilot in RStudio to assist with SDTM programming
+
+------------------------------------------------------------------------
+
+## 📚 1. Understanding CDISC SDTM
+
+### What is SDTM?
+
+**Study Data Tabulation Model (SDTM)** is a standard for organizing and formatting clinical trial data for regulatory submission. It defines:
+
+- **Domain Structure**: How data should be organized (DM, AE, VS, LB, etc.)
+- **Variable Names and Labels**: Standardized naming conventions
+- **Controlled Terminology**: Consistent coding of values
+- **Data Relationships**: How domains connect via keys like USUBJID
+
+### Core SDTM Domains
+
+| Domain | Description | Key Variables |
+|--------|-------------|---------------|
+| **DM** | Demographics | USUBJID, AGE, SEX, RACE, ARMCD |
+| **AE** | Adverse Events | USUBJID, AETERM, AEDECOD, AESTDTC, AESEV |
+| **VS** | Vital Signs | USUBJID, VSTESTCD, VSORRES, VSSTRESC, VSDTC |
+| **LB** | Laboratory | USUBJID, LBTESTCD, LBORRES, LBSTRESC, LBDTC |
+| **EX** | Exposure | USUBJID, EXTRT, EXDOSE, EXSTDTC, EXENDTC |
+
+------------------------------------------------------------------------
+
+## 🛠️ 2. Introduction to sdtm.oak
+
+The `sdtm.oak` package provides tools for creating SDTM-compliant datasets in R, offering:
+
+- **Metadata Management**: Read and process SDTM metadata specifications
+- **Domain Creation**: Functions to build standard SDTM domains
+- **Data Validation**: Check compliance with SDTM standards
+- **XPT Export**: Export to SAS transport format for submission
+
+### Installation and Setup
+
+```r
+# Install sdtm.oak (example - check actual installation method)
+install.packages("sdtm.oak")  # if available on CRAN
+# or
+# remotes::install_github("pharmaverse/sdtm.oak")
+
+library(sdtm.oak)
+library(dplyr)
+library(haven)
+library(tibble)
+```
+
+------------------------------------------------------------------------
+
+## 🏗️ 3. Creating Demographics (DM) Domain
+
+### Basic DM Domain Structure
+
+```r
+# Sample raw demographics data
+raw_demo <- tibble(
+  subject_id = c("001-001", "001-002", "001-003", "001-004"),
+  age = c(25, 45, 67, 52),
+  sex = c("F", "M", "F", "M"),
+  race = c("WHITE", "BLACK", "ASIAN", "WHITE"),
+  treatment_arm = c("Placebo", "Active", "Placebo", "Active"),
+  ref_start_date = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18")
+)
+
+# Create SDTM DM domain
+dm_sdtm <- raw_demo %>%
+  transmute(
+    STUDYID = "STUDY001",
+    DOMAIN = "DM",
+    USUBJID = subject_id,
+    SUBJID = str_extract(subject_id, "\\d+$"),
+    RFSTDTC = ref_start_date,
+    RFXSTDTC = ref_start_date,
+    RFXENDTC = "",  # To be populated when known
+    RFPENDTC = "",  # To be populated when known
+    DTHDTC = "",    # Date of death if applicable
+    DTHFL = "",     # Death flag
+    SITEID = str_extract(subject_id, "^\\d+-"),
+    AGE = age,
+    AGEU = "YEARS",
+    SEX = sex,
+    RACE = race,
+    ARMCD = case_when(
+      treatment_arm == "Placebo" ~ "PBO",
+      treatment_arm == "Active" ~ "TRT",
+      TRUE ~ ""
+    ),
+    ARM = treatment_arm,
+    ACTARMCD = ARMCD,  # Actual arm (same as planned for now)
+    ACTARM = ARM
+  ) %>%
+  # Add required SDTM variables
+  mutate(
+    DMDTC = "",      # Date of demographics collection
+    DMDY = NA_real_  # Study day of demographics collection
+  )
+
+print("SDTM DM Domain:")
+print(dm_sdtm)
+```
+
+------------------------------------------------------------------------
+
+## 🚨 4. Creating Adverse Events (AE) Domain
+
+### AE Domain with Study Days
+
+```r
+# Sample raw AE data
+raw_ae <- tibble(
+  subject_id = c("001-001", "001-001", "001-002", "001-003"),
+  ae_term = c("Headache", "Nausea", "Fatigue", "Dizziness"),
+  ae_start_date = c("2024-01-20", "2024-01-25", "2024-01-18", "2024-01-22"),
+  ae_end_date = c("2024-01-22", "2024-01-26", "2024-01-20", "2024-01-23"),
+  severity = c("MILD", "MODERATE", "MILD", "SEVERE"),
+  serious = c("N", "N", "N", "Y"),
+  outcome = c("RECOVERED", "RECOVERED", "RECOVERED", "ONGOING")
+)
+
+# Create SDTM AE domain
+ae_sdtm <- raw_ae %>%
+  left_join(dm_sdtm %>% select(USUBJID, RFSTDTC), 
+            by = c("subject_id" = "USUBJID")) %>%
+  transmute(
+    STUDYID = "STUDY001",
+    DOMAIN = "AE",
+    USUBJID = subject_id,
+    AESEQ = row_number(),
+    AETERM = str_to_upper(ae_term),
+    AEDECOD = AETERM,  # In real scenario, map to MedDRA
+    AEBODSYS = case_when(  # Body system (simplified mapping)
+      str_detect(AETERM, "HEADACHE|DIZZINESS") ~ "NERVOUS SYSTEM DISORDERS",
+      str_detect(AETERM, "NAUSEA") ~ "GASTROINTESTINAL DISORDERS",
+      str_detect(AETERM, "FATIGUE") ~ "GENERAL DISORDERS",
+      TRUE ~ "OTHER"
+    ),
+    AESEV = severity,
+    AESER = serious,
+    AEOUT = outcome,
+    AESTDTC = ae_start_date,
+    AEENDTC = ae_end_date,
+    # Calculate study days
+    AESTDY = case_when(
+      !is.na(ymd(ae_start_date)) & !is.na(ymd(RFSTDTC)) ~ 
+        as.numeric(ymd(ae_start_date) - ymd(RFSTDTC)) + 1,
+      TRUE ~ NA_real_
+    ),
+    AEENDY = case_when(
+      !is.na(ymd(ae_end_date)) & !is.na(ymd(RFSTDTC)) ~ 
+        as.numeric(ymd(ae_end_date) - ymd(RFSTDTC)) + 1,
+      TRUE ~ NA_real_
+    )
+  )
+
+print("SDTM AE Domain:")
+print(ae_sdtm)
+```
+
+------------------------------------------------------------------------
+
+## 🔬 5. Creating Vital Signs (VS) Domain
+
+### VS Domain Example
+
+```r
+# Sample raw vital signs data
+raw_vs <- tibble(
+  subject_id = rep(c("001-001", "001-002"), each = 6),
+  visit = rep(c("Baseline", "Week 2", "Week 4"), each = 2, times = 2),
+  test = rep(c("Systolic BP", "Diastolic BP"), times = 6),
+  result = c(120, 80, 118, 78, 122, 82, 135, 85, 130, 82, 128, 80),
+  test_date = rep(c("2024-01-15", "2024-01-29", "2024-02-12"), each = 2, times = 2)
+)
+
+# Create SDTM VS domain
+vs_sdtm <- raw_vs %>%
+  left_join(dm_sdtm %>% select(USUBJID, RFSTDTC), 
+            by = c("subject_id" = "USUBJID")) %>%
+  transmute(
+    STUDYID = "STUDY001",
+    DOMAIN = "VS",
+    USUBJID = subject_id,
+    VSSEQ = row_number(),
+    VSTESTCD = case_when(
+      test == "Systolic BP" ~ "SYSBP",
+      test == "Diastolic BP" ~ "DIABP",
+      TRUE ~ ""
+    ),
+    VSTEST = test,
+    VSCAT = "VITAL SIGNS",
+    VSORRES = as.character(result),
+    VSORRESU = "mmHg",
+    VSSTRESC = as.character(result),
+    VSSTRESN = result,
+    VSSTRESU = "mmHg",
+    VSSTAT = "",
+    VSREASND = "",
+    VSDTC = test_date,
+    VSDY = case_when(
+      !is.na(ymd(test_date)) & !is.na(ymd(RFSTDTC)) ~ 
+        as.numeric(ymd(test_date) - ymd(RFSTDTC)) + 1,
+      TRUE ~ NA_real_
+    ),
+    VISIT = visit,
+    VISITNUM = case_when(
+      visit == "Baseline" ~ 1,
+      visit == "Week 2" ~ 2,
+      visit == "Week 4" ~ 3,
+      TRUE ~ NA_real_
+    )
+  )
+
+print("SDTM VS Domain:")
+print(vs_sdtm)
+```
+
+------------------------------------------------------------------------
+
+## 📊 6. Data Validation and Quality Checks
+
+### Basic SDTM Validation
+
+```r
+# Function to validate SDTM domain structure
+validate_sdtm_domain <- function(data, domain_type) {
+  
+  # Common required variables for all domains
+  common_vars <- c("STUDYID", "DOMAIN", "USUBJID")
+  
+  # Domain-specific required variables
+  domain_vars <- switch(domain_type,
+    "DM" = c(common_vars, "SUBJID", "RFSTDTC", "AGE", "SEX"),
+    "AE" = c(common_vars, "AESEQ", "AETERM", "AESTDTC"),
+    "VS" = c(common_vars, "VSSEQ", "VSTESTCD", "VSORRES"),
+    common_vars
+  )
+  
+  # Check for required variables
+  missing_vars <- setdiff(domain_vars, names(data))
+  
+  # Check for duplicate keys
+  key_vars <- switch(domain_type,
+    "DM" = "USUBJID",
+    "AE" = c("USUBJID", "AESEQ"),
+    "VS" = c("USUBJID", "VSTESTCD", "VSDTC"),
+    "USUBJID"
+  )
+  
+  duplicates <- data %>%
+    group_by(across(all_of(key_vars))) %>%
+    filter(n() > 1) %>%
+    nrow()
+  
+  # Return validation report
+  list(
+    domain = domain_type,
+    missing_required_vars = missing_vars,
+    duplicate_records = duplicates,
+    total_records = nrow(data),
+    validation_passed = length(missing_vars) == 0 && duplicates == 0
+  )
+}
+
+# Validate our domains
+dm_validation <- validate_sdtm_domain(dm_sdtm, "DM")
+ae_validation <- validate_sdtm_domain(ae_sdtm, "AE")
+vs_validation <- validate_sdtm_domain(vs_sdtm, "VS")
+
+print("DM Validation:")
+print(dm_validation)
+```
+
+------------------------------------------------------------------------
+
+## 📦 7. Export to XPT Format
+
+### Creating Submission-Ready Files
+
+```r
+# Export SDTM domains to XPT format for regulatory submission
+export_sdtm_to_xpt <- function(data, domain_name, output_dir = "sdtm") {
+  
+  # Create output directory if it doesn't exist
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+  
+  # Create file path
+  file_path <- file.path(output_dir, paste0(tolower(domain_name), ".xpt"))
+  
+  # Add SDTM dataset label
+  attr(data, "label") <- paste("SDTM", toupper(domain_name), "Domain")
+  
+  # Export to XPT
+  haven::write_xpt(data, file_path)
+  
+  cat("Exported", nrow(data), "records to", file_path, "\n")
+  
+  return(file_path)
+}
+
+# Export all domains
+dm_file <- export_sdtm_to_xpt(dm_sdtm, "dm")
+ae_file <- export_sdtm_to_xpt(ae_sdtm, "ae")
+vs_file <- export_sdtm_to_xpt(vs_sdtm, "vs")
+```
+
+------------------------------------------------------------------------
+
+## 🤖 8. GitHub Copilot in RStudio for SDTM Programming
+
+### Effective Copilot Prompts for SDTM
+
+| Comment Prompt | Expected Copilot Suggestion |
+|----|----|
+| `# Create SDTM DM domain from raw demographics` | Domain structure with required variables |
+| `# Calculate study days for adverse events` | Date arithmetic with RFSTDTC |
+| `# Map raw lab values to SDTM LB structure` | Standard LB domain variables |
+| `# Validate SDTM domain for missing variables` | Validation function with checks |
+| `# Export multiple domains to XPT format` | Loop with haven::write_xpt |
+
+### SDTM Programming Best Practices with Copilot
+
+```r
+# Good: Descriptive comment for domain creation
+# Create SDTM AE domain with proper sequencing and study day calculation
+
+# Good: Specify CDISC compliance
+# Map adverse event terms to MedDRA preferred terms following CDISC conventions
+
+# Good: Include validation requirements
+# Validate AE domain for required variables and duplicate USUBJID/AESEQ combinations
+```
+
+------------------------------------------------------------------------
+
+## ✅ Summary: SDTM Programming Workflow
+
+| Step | Task | R Tools |
+|------|------|---------|
+| **1. Planning** | Define domain structure and metadata | CDISC specifications |
+| **2. Data Mapping** | Map raw data to SDTM variables | dplyr, case_when |
+| **3. Domain Creation** | Build standardized domains | sdtm.oak, transmute |
+| **4. Validation** | Check compliance and quality | Custom validation functions |
+| **5. Export** | Create XPT files for submission | haven::write_xpt |
+| **6. Documentation** | Document mappings and assumptions | Comments, metadata |
+
+------------------------------------------------------------------------
+
+## 🎯 Next Steps
+
+In the demo and exercise, you'll practice:
+- Creating multiple SDTM domains from raw clinical data
+- Implementing proper variable mappings and derivations
+- Using validation functions to ensure data quality  
+- Exporting domains to XPT format for regulatory submission
+- Leveraging GitHub Copilot in RStudio for efficient SDTM programming
+

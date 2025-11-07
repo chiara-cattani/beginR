@@ -1,0 +1,319 @@
+
+---
+title: "Clinical Study Report: Efficacy and Safety Analysis"
+subtitle: "Protocol ABC-123: Phase III Randomized Controlled Trial"
+author: "Clinical Programming Team"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: true
+    toc_depth: 3
+    reference_docx: "clinical_report_style.docx"  # Optional style template
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+params:
+  study_drug: "Study Drug 10mg"
+  study_id: "ABC-123"
+  data_cutoff: "2024-12-31"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,          # Hide code in final report
+  warning = FALSE,       # Hide warnings
+  message = FALSE,       # Hide messages
+  fig.width = 8,
+  fig.height = 6,
+  fig.align = "center"
+)
+
+# Load clinical programming packages
+library(dplyr)
+library(tibble)
+library(gt)
+library(flextable)
+library(lubridate)
+library(stringr)
+library(ggplot2)
+library(haven)         # For SAS file reading
+library(tidyr)
+
+# Set global options for clinical reporting
+options(gt.html_tag_check = FALSE)
+```
+
+# Executive Summary
+
+This Clinical Study Report presents the efficacy and safety results from Protocol `r params$study_id`, a Phase III randomized, double-blind, placebo-controlled study evaluating `r params$study_drug` versus placebo in [indication]. The data cutoff date was `r params$data_cutoff`.
+
+**Key Findings:**
+- Primary endpoint: [To be completed based on study results]
+- Safety profile: [To be completed based on safety analysis]
+- Study population: [To be completed based on demographics]
+
+# 1. Study Overview and Objectives
+
+## 1.1 Study Design
+This was a multicenter, randomized, double-blind, placebo-controlled Phase III study designed to evaluate the efficacy and safety of `r params$study_drug`.
+
+# 2. Data Sources and Processing
+
+## 2.1 CDISC Standards Compliance
+All datasets follow CDISC SDTM v1.7 and ADaM v1.1 standards for regulatory submission.
+
+```{r data_setup}
+# Load CDISC-compliant datasets
+# Note: In production, these would be validated SAS7BDAT or XPT files
+
+# Create example demographics data (ADSL)
+set.seed(123)
+adsl <- tibble(
+  USUBJID = paste0("001-", sprintf("%03d", 1:100)),
+  AGE = sample(18:75, 100, replace = TRUE),
+  SEX = sample(c("M", "F"), 100, replace = TRUE, prob = c(0.55, 0.45)),
+  RACE = sample(c("WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN", "OTHER"), 
+                100, replace = TRUE, prob = c(0.75, 0.15, 0.08, 0.02)),
+  TRT01P = sample(c("Placebo", "Study Drug 5mg", "Study Drug 10mg"), 
+                  100, replace = TRUE),
+  TRT01A = TRT01P,  # Actual treatment (same as planned for this example)
+  SAFFL = "Y",      # Safety population flag
+  ITTFL = "Y",      # Intent-to-treat population flag
+  RFSTDTC = as.Date("2024-01-15"),
+  RFENDTC = as.Date("2024-01-15") + sample(28:84, 100, replace = TRUE)
+) %>%
+  mutate(
+    TRTDUR = as.numeric(RFENDTC - RFSTDTC) + 1,
+    TRT01PN = case_when(
+      TRT01P == "Placebo" ~ 0,
+      TRT01P == "Study Drug 5mg" ~ 5,
+      TRT01P == "Study Drug 10mg" ~ 10
+    )
+  )
+
+# Create adverse events data (ADAE)
+ae_data <- tibble(
+  USUBJID = sample(adsl$USUBJID, 150, replace = TRUE),
+  AESEQ = ave(USUBJID, USUBJID, FUN = seq_along),
+  AETERM = sample(c("HEADACHE", "NAUSEA", "FATIGUE", "DIZZINESS", "RASH",
+                    "UPPER RESPIRATORY INFECTION", "BACK PAIN", "INSOMNIA"), 
+                  150, replace = TRUE),
+  AESEV = sample(c("MILD", "MODERATE", "SEVERE"), 150, replace = TRUE, 
+                 prob = c(0.6, 0.3, 0.1)),
+  AESER = sample(c("N", "Y"), 150, replace = TRUE, prob = c(0.9, 0.1)),
+  AEREL = sample(c("NOT RELATED", "UNLIKELY", "POSSIBLE", "PROBABLE"), 
+                 150, replace = TRUE, prob = c(0.4, 0.3, 0.2, 0.1))
+) %>%
+  left_join(adsl %>% select(USUBJID, TRT01P, RFSTDTC), by = "USUBJID") %>%
+  mutate(
+    AESTDTC = RFSTDTC + sample(1:60, n(), replace = TRUE),
+    AESTDY = as.numeric(AESTDTC - RFSTDTC) + 1
+  )
+```
+
+# 3. Study Population and Demographics
+
+## 3.1 Subject Disposition
+A total of `r nrow(adsl)` subjects were randomized in this study.
+
+```{r disposition_table}
+disposition_summary <- adsl %>%
+  count(TRT01P, name = "Randomized") %>%
+  mutate(
+    `Completed Study` = Randomized - sample(0:3, n(), replace = TRUE),
+    `Early Discontinuation` = Randomized - `Completed Study`,
+    `Safety Population` = Randomized,
+    `ITT Population` = Randomized
+  )
+
+disposition_table <- disposition_summary %>%
+  pivot_longer(cols = -TRT01P, names_to = "Category", values_to = "N") %>%
+  pivot_wider(names_from = TRT01P, values_from = N) %>%
+  gt() %>%
+  tab_header(
+    title = "Subject Disposition",
+    subtitle = "Intent-to-Treat Population"
+  ) %>%
+  cols_label(Category = "Disposition Category") %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  ) %>%
+  tab_options(
+    table.font.size = 12,
+    table.border.top.style = "solid",
+    table.border.bottom.style = "solid"
+  )
+
+disposition_table
+```
+
+## 3.2 Demographics and Baseline Characteristics
+
+```{r demographics_table}
+# Create comprehensive demographics table
+demo_summary <- adsl %>%
+  group_by(TRT01P) %>%
+  summarise(
+    N = n(),
+    `Age (years)` = paste0(
+      format(round(mean(AGE, na.rm = TRUE), 1), nsmall = 1), " (",
+      format(round(sd(AGE, na.rm = TRUE), 1), nsmall = 1), ")"
+    ),
+    `Age Range` = paste0(min(AGE, na.rm = TRUE), "-", max(AGE, na.rm = TRUE)),
+    `Male, n (%)` = {
+      male_n <- sum(SEX == "M", na.rm = TRUE)
+      paste0(male_n, " (", format(round(male_n/N * 100, 1), nsmall = 1), "%)")
+    },
+    `White Race, n (%)` = {
+      white_n <- sum(RACE == "WHITE", na.rm = TRUE)
+      paste0(white_n, " (", format(round(white_n/N * 100, 1), nsmall = 1), "%)")
+    },
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = -TRT01P, names_to = "Characteristic", values_to = "Value") %>%
+  pivot_wider(names_from = TRT01P, values_from = Value)
+
+# Add total column
+total_stats <- adsl %>%
+  summarise(
+    N = n(),
+    `Age (years)` = paste0(
+      format(round(mean(AGE, na.rm = TRUE), 1), nsmall = 1), " (",
+      format(round(sd(AGE, na.rm = TRUE), 1), nsmall = 1), ")"
+    ),
+    `Age Range` = paste0(min(AGE, na.rm = TRUE), "-", max(AGE, na.rm = TRUE)),
+    `Male, n (%)` = {
+      male_n <- sum(SEX == "M", na.rm = TRUE)
+      paste0(male_n, " (", format(round(male_n/N * 100, 1), nsmall = 1), "%)")
+    },
+    `White Race, n (%)` = {
+      white_n <- sum(RACE == "WHITE", na.rm = TRUE)
+      paste0(white_n, " (", format(round(white_n/N * 100, 1), nsmall = 1), "%)")
+    }
+  ) %>%
+  pivot_longer(everything(), names_to = "Characteristic", values_to = "Total")
+
+demo_table <- demo_summary %>%
+  left_join(total_stats, by = "Characteristic") %>%
+  select(Characteristic, everything()) %>%
+  gt() %>%
+  tab_header(
+    title = "Demographics and Baseline Characteristics",
+    subtitle = "Safety Population"
+  ) %>%
+  tab_footnote(
+    footnote = "Age presented as mean (SD)",
+    locations = cells_body(columns = Characteristic, rows = 2)
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  ) %>%
+  cols_align(align = "center", columns = -Characteristic) %>%
+  tab_options(
+    table.font.size = 11,
+    table.border.top.style = "solid",
+    table.border.bottom.style = "solid"
+  )
+
+demo_table
+```
+
+# 4. Safety Analysis
+
+## 4.1 Adverse Events Overview
+
+```{r ae_overview}
+ae_overview <- ae_data %>%
+  group_by(TRT01P) %>%
+  summarise(
+    N_subjects = n_distinct(USUBJID),
+    N_events = n(),
+    `Subjects with ≥1 AE` = n_distinct(USUBJID),
+    `Subjects with Severe AE` = n_distinct(USUBJID[AESEV == "SEVERE"]),
+    `Subjects with Related AE` = n_distinct(USUBJID[AEREL %in% c("POSSIBLE", "PROBABLE")]),
+    .groups = "drop"
+  ) %>%
+  left_join(
+    adsl %>% count(TRT01P, name = "Total_N"), 
+    by = "TRT01P"
+  ) %>%
+  mutate(
+    `Any AE, n (%)` = paste0(
+      `Subjects with ≥1 AE`, " (", 
+      format(round(`Subjects with ≥1 AE`/Total_N * 100, 1), nsmall = 1), "%)"
+    ),
+    `Severe AE, n (%)` = paste0(
+      `Subjects with Severe AE`, " (", 
+      format(round(`Subjects with Severe AE`/Total_N * 100, 1), nsmall = 1), "%)"
+    ),
+    `Related AE, n (%)` = paste0(
+      `Subjects with Related AE`, " (", 
+      format(round(`Subjects with Related AE`/Total_N * 100, 1), nsmall = 1), "%)"
+    )
+  ) %>%
+  select(TRT01P, Total_N, `Any AE, n (%)`, `Severe AE, n (%)`, `Related AE, n (%)`) %>%
+  pivot_longer(cols = -TRT01P, names_to = "Category", values_to = "Value") %>%
+  pivot_wider(names_from = TRT01P, values_from = Value)
+
+ae_table <- ae_overview %>%
+  gt() %>%
+  tab_header(
+    title = "Adverse Events Overview",
+    subtitle = "Safety Population"
+  ) %>%
+  cols_label(Category = "AE Category") %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  ) %>%
+  tab_options(
+    table.font.size = 11,
+    table.border.top.style = "solid",
+    table.border.bottom.style = "solid"
+  )
+
+ae_table
+```
+
+# 5. Data Quality and Validation
+
+## 5.1 Quality Control Procedures
+This report was generated using validated R scripts with the following QC measures:
+
+- **Double Programming**: Key analyses cross-validated using independent R scripts
+- **Data Validation**: All datasets verified against CDISC standards
+- **Statistical Review**: All computations reviewed by independent statistician
+- **Regulatory Compliance**: Output format follows ICH E3 guidelines
+
+## 5.2 Reproducibility Statement
+This report is fully reproducible using R version `r R.version.string`. All analyses can be regenerated from source data using this RMarkdown document.
+
+```{r session_info}
+# Document computational environment for reproducibility
+session_info <- sessionInfo()
+cat("R version:", session_info$R.version$version.string, "\n")
+cat("Platform:", session_info$platform, "\n")
+cat("Key packages:", paste(names(session_info$otherPkgs), collapse = ", "), "\n")
+```
+
+# 6. Conclusions
+
+## 6.1 Key Findings
+[To be completed based on study-specific results]
+
+## 6.2 Clinical Implications
+[To be completed based on medical review]
+
+## 6.3 Regulatory Considerations
+This analysis supports the regulatory submission for [indication] and demonstrates [key regulatory points].
+
+---
+
+**Report Generation Information:**
+- Generated on: `r Sys.time()`
+- R Version: `r R.version.string`
+- Document: Clinical Report Template for R Programming Training
+- Contact: Clinical Programming Team

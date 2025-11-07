@@ -23,13 +23,13 @@ mail = Mail(app)
 # Module data structure
 MODULES = {
     1: {
-        'title': 'R for SAS Programmers: First Contact',
-        'description': 'Introduction to R programming fundamentals, environment setup, and basic syntax for clinical programmers transitioning from SAS.',
+        'title': 'RStudio & Environment Setup',
+        'description': 'Learn to install R/RStudio, set up nutriciaconfig for environment management, navigate RStudio interface, and get started with GitHub Copilot.',
         'objectives': [
-            'Understand what R is and how it differs from SAS',
-            'Be familiar with the RStudio interface and file types',
-            'Learn how to write basic R code (variables, data frames, functions)',
-            'Know the key R packages for clinical programming',
+            'Install R and RStudio with proper configuration',
+            'Set up nutriciaconfig for environment and working directory management',
+            'Navigate RStudio panes and understand R file types',
+            'Load essential packages (dplyr, haven, tibble) for clinical programming',
             'Understand how to use GitHub Copilot to assist you while coding'
         ],
         'files': {
@@ -42,162 +42,171 @@ MODULES = {
         }
     },
     2: {
-        'title': 'Building SDTM Datasets in R',
-        'description': 'Learn to build SDTM datasets using R, focusing on data loading, variable derivation, and CDISC compliance.',
+        'title': 'Data Manipulation Basics',
+        'description': 'Master fundamental data manipulation using dplyr functions, understand tibbles and data types, and learn how R operations compare to SAS DATA step logic.',
         'objectives': [
-            'Understand how to load raw clinical data from CSV, XPT, or Excel',
-            'Learn the key tidyverse tools for SDTM derivations',
-            'Be able to derive standard SDTM variables like --DTC, --DY, --TPT, --SEQ, --SPID',
-            'Apply SDTM dataset labeling using xportr',
-            'Compare SDTM mapping in R vs SAS macro-based approaches',
-            'Use GitHub Copilot to assist with formatting, variable naming, and logic'
+            'Understand tibbles and R data types (character, numeric, logical, date)',
+            'Use dplyr functions: filter, select, mutate, arrange for data manipulation',
+            'Compare R data wrangling operations with SAS DATA step logic',
+            'Practice deriving clinical variables like elderly flag (age >= 65)',
+            'Apply best practices for readable and efficient data transformations'
         ],
         'files': {
-            'theory': 'training_material/module 2 - sdtm/module2_theory.qmd',
-            'theory_html': 'training_material/module 2 - sdtm/module2_theory.html',
-            'demo': 'training_material/module 2 - sdtm/module2_demo.R',
-            'exercise': 'training_material/module 2 - sdtm/module2_exercise.R',
-            'solution': 'training_material/module 2 - sdtm/module2_solution.qmd',
-            'solution_html': 'training_material/module 2 - sdtm/module2_solution.html'
+            'theory': 'training_material/module 2 - data_manipulation/module2_theory.qmd',
+            'theory_html': 'training_material/module 2 - data_manipulation/module2_theory.html',
+            'demo': 'training_material/module 2 - data_manipulation/module2_demo.R',
+            'exercise': 'training_material/module 2 - data_manipulation/module2_exercise.R',
+            'solution': 'training_material/module 2 - data_manipulation/module2_solution.qmd',
+            'solution_html': 'training_material/module 2 - data_manipulation/module2_solution.html'
         }
     },
     3: {
-        'title': 'ADaM Programming in R',
-        'description': 'Master ADaM dataset creation using R, focusing on pharmaverse packages, admiral toolkit, and AI assistance.',
+        'title': 'Joins and Summaries',
+        'description': 'Learn to combine datasets using join operations, create grouped summaries, and generate frequency tables for clinical data analysis.',
         'objectives': [
-            'Understand how to use pharmaverse packages for ADaM',
-            'Learn how to derive ADSL and BDS datasets (e.g., ADVS, ADAE)',
-            'Apply key functions from admiral to handle derivations and flags',
-            'Use Copilot to build mutate chains and ADaM derivation templates'
+            'Perform join operations using left_join, inner_join, and other dplyr join functions',
+            'Use group_by and summarise to create summary statistics by treatment groups',
+            'Generate frequency tables using count and n functions',
+            'Practice with clinical scenarios: summarizing adverse events by elderly vs non-elderly patients',
+            'Handle missing data and edge cases in join operations'
         ],
         'files': {
-            'theory': 'training_material/module 3 - adam/module3_theory.qmd',
-            'theory_html': 'training_material/module 3 - adam/module3_theory.html',
-            'demo': 'training_material/module 3 - adam/module3_demo.R',
-            'exercise': 'training_material/module 3 - adam/module3_exercise.R',
-            'solution': 'training_material/module 3 - adam/module3_solution.qmd',
-            'solution_html': 'training_material/module 3 - adam/module3_solution.html'
+            'theory': 'training_material/module 3 - joins_summaries/module3_theory.qmd',
+            'theory_html': 'training_material/module 3 - joins_summaries/module3_theory.html',
+            'demo': 'training_material/module 3 - joins_summaries/module3_demo.R',
+            'exercise': 'training_material/module 3 - joins_summaries/module3_exercise.R',
+            'solution': 'training_material/module 3 - joins_summaries/module3_solution.qmd',
+            'solution_html': 'training_material/module 3 - joins_summaries/module3_solution.html'
         }
     },
     4: {
-        'title': 'TLF Listings in R',
-        'description': 'Create professional listings for clinical data using R, with focus on flextable, gt, and reactable packages.',
+        'title': 'Date & Text Handling',
+        'description': 'Master date conversions, study day calculations, and string manipulation essential for clinical programming and CDISC standards.',
         'objectives': [
-            'Understand what listings are and when they are used',
-            'Learn to build subject- and event-level listings in R',
-            'Apply conditional formatting and export to Word/HTML/PDF',
-            'Use Copilot to format and enhance table output'
+            'Convert dates using lubridate functions (ymd, dmy, mdy) for clinical data',
+            'Calculate study days (e.g., AESTDY = AESTDTC - RFSTDTC + 1)',
+            'Use stringr functions for text manipulation (str_detect, str_replace, str_trim)',
+            'Practice deriving AESTDY and cleaning adverse event terms',
+            'Handle date/time formats and missing date scenarios in clinical contexts'
         ],
         'files': {
-            'theory': 'training_material/module 4 - listings/module4_theory.qmd',
-            'theory_html': 'training_material/module 4 - listings/module4_theory.html',
-            'demo': 'training_material/module 4 - listings/module4_demo.R',
-            'exercise': 'training_material/module 4 - listings/module4_exercise.R',
-            'solution': 'training_material/module 4 - listings/module4_solution.qmd',
-            'solution_html': 'training_material/module 4 - listings/module4_solution.html'
+            'theory': 'training_material/module 4 - dates_text/module4_theory.qmd',
+            'theory_html': 'training_material/module 4 - dates_text/module4_theory.html',
+            'demo': 'training_material/module 4 - dates_text/module4_demo.R',
+            'exercise': 'training_material/module 4 - dates_text/module4_exercise.R',
+            'solution': 'training_material/module 4 - dates_text/module4_solution.qmd',
+            'solution_html': 'training_material/module 4 - dates_text/module4_solution.html'
         }
     },
     5: {
-        'title': 'TLF Tables: Summary Statistics',
-        'description': 'Generate summary statistics tables for clinical trials using gtsummary, tidyverse, and AI assistance.',
+        'title': 'Functions & Macro Translation',
+        'description': 'Learn to write reusable R functions for clinical programming tasks and translate SAS macros into efficient R code.',
         'objectives': [
-            'Understand how to compute descriptive statistics by treatment arm',
-            'Learn to create summary tables with tidyverse and gtsummary',
-            'Create tables for continuous and categorical variables',
-            'Practice exporting tables to Word or HTML',
-            'Use Copilot to help build, format, and export summary tables'
+            'Write custom R functions with proper arguments and return values',
+            'Understand scope, debugging, and documentation for R functions',
+            'Translate simple SAS macros into equivalent R functions',
+            'Use purrr package for functional programming and iteration',
+            'Create reusable functions for common clinical programming tasks'
         ],
         'files': {
-            'theory': 'training_material/module 5 - tables/module5_theory.qmd',
-            'theory_html': 'training_material/module 5 - tables/module5_theory.html',
-            'demo': 'training_material/module 5 - tables/module5_demo.R',
-            'exercise': 'training_material/module 5 - tables/module5_exercise.R',
-            'solution': 'training_material/module 5 - tables/module5_solution.qmd',
-            'solution_html': 'training_material/module 5 - tables/module5_solution.html'
+            'theory': 'training_material/module 5 - functions_macros/module5_theory.qmd',
+            'theory_html': 'training_material/module 5 - functions_macros/module5_theory.html',
+            'demo': 'training_material/module 5 - functions_macros/module5_demo.R',
+            'exercise': 'training_material/module 5 - functions_macros/module5_exercise.R',
+            'solution': 'training_material/module 5 - functions_macros/module5_solution.qmd',
+            'solution_html': 'training_material/module 5 - functions_macros/module5_solution.html'
         }
     },
     6: {
-        'title': 'TLF Figures: Clinical Visualizations',
-        'description': 'Create professional clinical plots and figures using ggplot2, survminer, and patchwork with AI assistance.',
+        'title': 'SDTM Programming with sdtm.oak',
+        'description': 'Build CDISC-compliant SDTM domains using the sdtm.oak package, from metadata reading to XPT file export.',
         'objectives': [
-            'Learn to create common clinical plots using ggplot2, survminer, and patchwork',
-            'Understand how to visualize lab values, adverse events, and survival curves',
-            'Learn to group plots by treatment arm or facet by visit',
-            'Use AI (Copilot) to accelerate plot creation'
+            'Read study metadata and specifications using readxl',
+            'Load raw clinical datasets using haven and other R packages',
+            'Create SDTM domains using sdtm.oak::create_domain functions',
+            'Apply data transformations, derivations, and post-processing steps',
+            'Export SDTM datasets to XPT format using haven::write_xpt'
         ],
         'files': {
-            'theory': 'training_material/module 6 - figures/module6_theory.qmd',
-            'theory_html': 'training_material/module 6 - figures/module6_theory.html',
-            'demo': 'training_material/module 6 - figures/module6_demo.R',
-            'exercise': 'training_material/module 6 - figures/module6_exercise.R',
-            'solution': 'training_material/module 6 - figures/module6_solution.qmd',
-            'solution_html': 'training_material/module 6 - figures/module6_solution.html'
+            'theory': 'training_material/module 6 - sdtm_programming/module6_theory.qmd',
+            'theory_html': 'training_material/module 6 - sdtm_programming/module6_theory.html',
+            'demo': 'training_material/module 6 - sdtm_programming/module6_demo.R',
+            'exercise': 'training_material/module 6 - sdtm_programming/module6_exercise.R',
+            'solution': 'training_material/module 6 - sdtm_programming/module6_solution.qmd',
+            'solution_html': 'training_material/module 6 - sdtm_programming/module6_solution.html'
         }
     },
     7: {
-        'title': 'Final Project: From SDTM to TLFs',
-        'description': 'Complete a comprehensive clinical analysis project, from raw data to TLFs, using GitHub Copilot as your AI assistant.',
+        'title': 'Post-Processing, QC & Reporting',
+        'description': 'Master final data formatting, quality control procedures, report generation, and GitHub Copilot best practices for clinical programming. Future: SAS validation integration.',
         'objectives': [
-            'Apply everything learned in previous modules to complete a mock clinical analysis project',
-            'Build SDTM datasets from raw data using dplyr, lubridate, and stringr',
-            'Derive ADaM datasets using admiral and pharmaverse packages',
-            'Generate TLFs (listings, tables, figures) for clinical reporting',
-            'Use GitHub Copilot to assist with debugging, formatting, and optimization'
+            'Format date/time variables to ISO8601 standards and reorder columns per specifications',
+            'Implement double-programming QC by comparing R outputs against SAS results',
+            'Generate professional tables and reports using gt (future: SAS validation procedures)',
+            'Apply GitHub Copilot best practices for clinical programming workflows',
+            'Understand learning outcomes and plan next steps in R clinical programming journey'
         ],
         'files': {
-            'theory': 'training_material/module 7 - project/module7_theory.qmd',
-            'theory_html': 'training_material/module 7 - project/module7_theory.html',
-            'demo': 'training_material/module 7 - project/module7_demo.R',
-            'exercise': 'training_material/module 7 - project/module7_exercise.R',
-            'solution': 'training_material/module 7 - project/module7_solution.qmd',
-            'solution_html': 'training_material/module 7 - project/module7_solution.html'
+            'theory': 'training_material/module 7 - qc_reporting/module7_theory.qmd',
+            'theory_html': 'training_material/module 7 - qc_reporting/module7_theory.html',
+            'demo': 'training_material/module 7 - qc_reporting/module7_demo.R',
+            'exercise': 'training_material/module 7 - qc_reporting/module7_exercise.R',
+            'solution': 'training_material/module 7 - qc_reporting/module7_solution.qmd',
+            'solution_html': 'training_material/module 7 - qc_reporting/module7_solution.html'
         }
     }
 }
 
 BONUS_RESOURCES = {
     'sas_cheatsheet': {
-        'title': 'SAS to R Cheatsheet',
-        'description': 'Quick reference guide for SAS users transitioning to R',
-        'file': '_sas_to_r_cheatsheet.pdf',
+        'title': 'R vs SAS Cheatsheet',
+        'description': 'Quick reference comparing SAS and R syntax for data programming',
+        'file': 'bonus_resources/R_vs_SAS_CheatSheet.qmd',
         'icon': '📋'
     },
     'copilot_prompts': {
-        'title': 'Copilot Prompt Library',
-        'description': 'Collection of effective prompts for GitHub Copilot',
-        'file': '_copilot_prompt_library.pdf',
+        'title': 'GitHub Copilot Best Practices',
+        'description': 'Effective prompting strategies for R programming with AI',
+        'file': 'bonus_resources/copilot_prompt_library.pdf',
         'icon': '🤖'
     },
-    'clinical_template': {
-        'title': 'Clinical Report Template',
-        'description': 'R Markdown template for clinical trial reports',
-        'file': '_clinical_report_template.Rmd',
+    'report_template': {
+        'title': 'Report Template',
+        'description': 'R Markdown template for data analysis reports',
+        'file': 'bonus_resources/report_template.Rmd',
         'icon': '📄'
     },
-    'sdtm_derive': {
-        'title': 'SDTM Derivation Examples',
-        'description': 'Example scripts for SDTM dataset creation',
-        'file': '_sdtm_derive.R',
+    'sdtm_programming': {
+        'title': 'SDTM Programming Guide',
+        'description': 'Complete examples for SDTM domain creation with sdtm.oak',
+        'file': 'bonus_resources/sdtm_programming_guide.R',
         'icon': '📊'
     },
-    'adam_build': {
-        'title': 'ADaM Build Examples',
-        'description': 'Example scripts for ADaM dataset creation',
-        'file': '_adam_build.R',
-        'icon': '📈'
+    'qc_validation': {
+        'title': 'QC Validation Toolkit',
+        'description': 'Quality control procedures and data validation scripts',
+        'file': 'bonus_resources/qc_validation_toolkit.R',
+        'icon': '✓'
     },
-    'tlf_generator': {
-        'title': 'TLF Generator',
-        'description': 'Automated TLF generation scripts',
-        'file': '_tlf_generator.R',
-        'icon': '📋'
+    'data_manipulation': {
+        'title': 'Data Manipulation Examples',
+        'description': 'dplyr operations and data manipulation techniques',
+        'file': 'bonus_resources/data_manipulation_examples.R',
+        'icon': '📊'
     },
-    'qc_with_ai': {
-        'title': 'QC with AI',
-        'description': 'Quality control procedures using AI assistance',
-        'file': '_qc_with_ai.R',
-        'icon': '🔍'
-    }
+    'custom_functions': {
+        'title': 'Custom Functions Library',
+        'description': 'Reusable R functions and SAS macro translations',
+        'file': 'bonus_resources/custom_functions_library.R',
+        'icon': '🔧'
+    },
+    'date_text_functions': {
+        'title': 'Date & Text Functions',
+        'description': 'lubridate and stringr practical examples',
+        'file': 'bonus_resources/date_text_functions.R',
+        'icon': '📅'
+    },
+
 }
 
 @app.route('/')
