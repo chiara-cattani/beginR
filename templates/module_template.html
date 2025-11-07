@@ -134,7 +134,7 @@
                         <p class="card-text text-muted">Overview of key concepts with annotated examples.</p>
                         <div class="d-grid gap-2">
                             {% if 'theory_html' in module.files %}
-                            <a href="{{ url_for('view_file', filename=module.files.theory.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.theory_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% else %}
@@ -196,7 +196,7 @@
                         <p class="card-text text-muted">Complete solutions and explanations for all exercises.</p>
                         <div class="d-grid gap-2">
                             {% if 'solution_html' in module.files %}
-                            <a href="{{ url_for('view_file', filename=module.files.solution.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.solution_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% else %}

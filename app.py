@@ -203,8 +203,8 @@ BONUS_RESOURCES = {
     'report_template': {
         'title': 'Report Template',
         'description': 'R Markdown template for data analysis reports',
-        'file': 'bonus_resources/report_template.Rmd',
-        'icon': '�'
+        'file': 'bonus_resources/rendered/report_template.Rmd',
+        'icon': '📄'
     },
     'sas_to_r_cheatsheet': {
         'title': 'SAS to R Migration Guide',
@@ -283,9 +283,13 @@ def download_module_zip(module_id):
 def serve_static_files(filename):
     """Serve supporting files for rendered HTML documents"""
     try:
-        return send_file(filename)
-    except FileNotFoundError:
+        # Clean up path separators for Windows
+        clean_filename = filename.replace('/', os.sep)
+        if os.path.exists(clean_filename):
+            return send_file(clean_filename)
         return "File not found", 404
+    except Exception as e:
+        return f"Error: {str(e)}", 404
 
 @app.route('/toggle_theme', methods=['POST'])
 def toggle_theme():
@@ -356,13 +360,13 @@ def view_file(filename):
                 with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # Fix relative paths for supporting files based on location
-                if 'bonus_resources/rendered' in html_path:
-                    # For files in rendered folder, fix paths to point to supporting files
-                    file_base = os.path.splitext(os.path.basename(html_filename))[0]
-                    files_dir = f"{file_base}_files"
-                    if files_dir in content:
-                        content = content.replace(f'{files_dir}/', f'/static_files/bonus_resources/rendered/{files_dir}/')
+                # Fix relative paths for supporting files
+                file_base = os.path.splitext(os.path.basename(html_filename))[0]
+                files_dir = f"{file_base}_files"
+                if files_dir in content:
+                    # Get the directory where the HTML file is located
+                    html_dir = os.path.dirname(html_path)
+                    content = content.replace(f'{files_dir}/', f'/static_files/{html_dir}/{files_dir}/')
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:
