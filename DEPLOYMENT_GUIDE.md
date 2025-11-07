@@ -1,4 +1,4 @@
-# Deployment Guide for Vibe Coding in R Course
+# Deployment Guide for beginR - Clinical R Training
 
 ## Prerequisites
 
@@ -58,20 +58,30 @@ For production, consider setting these environment variables:
 
 ## File Structure
 ```
-Vibe Coding in R prod/
+beginR/
 ├── app.py                 # ✅ Flask application entry point
+├── run.py                # ✅ Alternative startup script
 ├── requirements.txt       # ✅ Python dependencies
+├── start_app.bat         # ✅ Windows launcher
+├── start_app.sh          # ✅ Unix/Linux launcher
 ├── static/               # ✅ Static files (CSS, JS)
-├── templates/            # ✅ HTML templates
+│   ├── css/styles.css    # ✅ Custom styling with music player
+│   └── js/main.js        # ✅ JavaScript with music functionality
+├── templates/            # ✅ HTML templates with music player
+├── training_material/    # ✅ Course modules and exercises
+├── bonus_resources/      # ✅ Additional learning resources
 ├── DEPLOYMENT_GUIDE.md   # ✅ This guide
-└── [course materials]    # ✅ Your course files
+└── README.md            # ✅ Project documentation
 ```
 
 ## Testing Deployment
 After deployment, test these features:
 - ✅ Homepage loads correctly
 - ✅ Module pages are accessible
-- ✅ File downloads work
+- ✅ File downloads work (QMD source files prioritized)
+- ✅ Music player dropdown functionality
+- ✅ Theme toggle (light/dark mode)
+- ✅ Progress tracking persistence
 - ✅ Certificate generation works
 - ✅ Email functionality (if configured)
 

@@ -27,6 +27,7 @@ A modular web-based training platform for transitioning from SAS to R programmin
 - **Resource management**: Downloadable exercises, solutions, templates, and reference materials
 - **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators
 - **Theme support**: Light/dark mode with CSS variables and user preference persistence
+- **Music integration**: Built-in music player with curated study playlists (House, Piano, Organic, Natural, Jazz)
 - **Responsive design**: Mobile-first Bootstrap 5 implementation with cross-device compatibility
 
 ## Installation
