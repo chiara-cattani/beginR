@@ -84,9 +84,17 @@
 let syntaxHighlightingEnabled = true;
 let lineNumbersEnabled = true;
 
-// Load the QMD content
+// Load the content
 document.addEventListener('DOMContentLoaded', function() {
-    loadQmdContent();
+    const hasContent = {{ 'true' if content else 'false' }};
+    if (hasContent) {
+        // Content is already provided (for R files)
+        const content = {{ content | tojson | safe if content else '""' }};
+        displayContent(content);
+    } else {
+        // Need to fetch QMD content
+        loadQmdContent();
+    }
 });
 
 function loadQmdContent() {

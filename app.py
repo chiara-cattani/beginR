@@ -267,7 +267,7 @@ def toggle_theme():
 
 @app.route('/view/<path:filename>')
 def view_file(filename):
-    """View HTML content of Quarto files"""
+    """View content of various file types"""
     try:
         # Check if it's a Quarto file
         if filename.endswith('.qmd'):
@@ -291,6 +291,12 @@ def view_file(filename):
                 # Fallback to the QMD viewer if HTML doesn't exist
                 return render_template('qmd_viewer.html', filename=filename, 
                                      message=f"HTML version not available for {filename}. Showing QMD content instead.")
+        elif filename.endswith(('.R', '.Rmd')):
+            # For R files, display as plain text with syntax highlighting
+            with open(filename, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return render_template('qmd_viewer.html', filename=filename, content=content, 
+                                 file_type='r', message=f"Viewing R script: {os.path.basename(filename)}")
         else:
             return "File type not supported for viewing", 400
     except FileNotFoundError:
