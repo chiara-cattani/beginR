@@ -286,7 +286,15 @@ def serve_static_files(filename):
         # Clean up path separators for Windows
         clean_filename = filename.replace('/', os.sep)
         if os.path.exists(clean_filename):
-            return send_file(clean_filename)
+            # Determine the correct MIME type based on file extension
+            if filename.endswith('.css'):
+                return send_file(clean_filename, mimetype='text/css')
+            elif filename.endswith('.js'):
+                return send_file(clean_filename, mimetype='application/javascript')
+            elif filename.endswith('.woff') or filename.endswith('.woff2'):
+                return send_file(clean_filename, mimetype='font/woff')
+            else:
+                return send_file(clean_filename)
         return "File not found", 404
     except Exception as e:
         return f"Error: {str(e)}", 404
@@ -365,8 +373,13 @@ def view_file(filename):
                 files_dir = f"{file_base}_files"
                 if files_dir in content:
                     # Get the directory where the HTML file is located
-                    html_dir = os.path.dirname(html_path)
-                    content = content.replace(f'{files_dir}/', f'/static_files/{html_dir}/{files_dir}/')
+                    html_dir = os.path.dirname(html_path).replace('\\', '/')
+                    # Replace all variations of the path references
+                    import re
+                    # Replace src attributes
+                    content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+                    # Replace href attributes  
+                    content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:
@@ -408,9 +421,23 @@ def view_file(filename):
                                  message="R Script")
                                  
         elif filename.endswith(('.html', '.htm')):
-            # For HTML files, serve directly
+            # For HTML files, serve with proper static file paths
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
+            
+            # Fix relative paths for supporting files
+            file_base = os.path.splitext(os.path.basename(filename))[0]
+            files_dir = f"{file_base}_files"
+            if files_dir in content:
+                # Get the directory where the HTML file is located
+                html_dir = os.path.dirname(file_path).replace('\\', '/')
+                # Replace all variations of the path references
+                import re
+                # Replace src attributes
+                content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+                # Replace href attributes  
+                content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+            
             return content, 200, {'Content-Type': 'text/html'}
             
         else:
