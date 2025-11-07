@@ -1,0 +1,283 @@
+---
+title: "Module 5 Theory — Functions & Macro Translation"
+format: html
+editor: visual
+---
+
+# � Module 5 — Functions & Macro Translation
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Understand R function creation and best practices for clinical programming
+-   Learn to translate SAS macros to R functions
+-   Master function arguments, return values, and error handling
+-   Introduction to functional programming with `purrr`
+-   Use GitHub Copilot in RStudio to assist with function development and debugging
+
+------------------------------------------------------------------------
+
+## � 1. Understanding R Functions
+
+Functions are reusable blocks of code that perform specific tasks. In clinical programming, functions help standardize processes and reduce errors.
+
+### Basic Function Structure
+
+```r
+function_name <- function(argument1, argument2 = default_value) {
+  # Function body
+  result <- some_operations
+  return(result)
+}
+```
+
+### Simple Example: Age Category Function
+
+```r
+create_age_category <- function(age) {
+  case_when(
+    age < 18 ~ "Pediatric",
+    age >= 18 & age < 65 ~ "Adult", 
+    age >= 65 ~ "Elderly",
+    TRUE ~ "Unknown"
+  )
+}
+
+# Usage
+ages <- c(16, 45, 72, NA)
+create_age_category(ages)
+```
+
+------------------------------------------------------------------------
+
+## 🔄 2. SAS Macro to R Function Translation
+
+### SAS Macro Example: Calculate Study Day
+
+```sas
+%macro calc_study_day(indata=, outdata=, event_date=, ref_date=);
+  data &outdata;
+    set &indata;
+    if not missing(&event_date) and not missing(&ref_date) then do;
+      if &event_date >= &ref_date then 
+        study_day = &event_date - &ref_date + 1;
+      else 
+        study_day = &event_date - &ref_date;
+    end;
+  run;
+%mend calc_study_day;
+```
+
+### R Function Translation
+
+```r
+calc_study_day <- function(data, event_date, ref_date) {
+  data %>%
+    mutate(
+      study_day = case_when(
+        is.na({{ event_date }}) | is.na({{ ref_date }}) ~ NA_real_,
+        {{ event_date }} >= {{ ref_date }} ~ as.numeric({{ event_date }} - {{ ref_date }}) + 1,
+        {{ event_date }} < {{ ref_date }} ~ as.numeric({{ event_date }} - {{ ref_date }})
+      )
+    )
+}
+
+# Usage
+ae_data <- ae_data %>%
+  calc_study_day(event_date = AESTDT, ref_date = RFSTDT)
+```
+
+------------------------------------------------------------------------
+
+## 🎯 3. Clinical Programming Function Examples
+
+### Derive Elderly Flag
+
+```r
+derive_elderly_flag <- function(data, age_var, cutoff = 65) {
+  data %>%
+    mutate(
+      ELDERLY = case_when(
+        is.na({{ age_var }}) ~ "U",
+        {{ age_var }} >= cutoff ~ "Y",
+        {{ age_var }} < cutoff ~ "N"
+      )
+    )
+}
+```
+
+### Standardize Adverse Event Terms
+
+```r
+standardize_ae_terms <- function(data, ae_var) {
+  data %>%
+    mutate(
+      {{ ae_var }} := {{ ae_var }} %>%
+        str_trim() %>%           # Remove leading/trailing spaces
+        str_to_upper() %>%       # Convert to uppercase
+        str_replace_all("\\s+", " ")  # Replace multiple spaces with single
+    )
+}
+```
+
+### Calculate Duration in Days
+
+```r
+calc_duration_days <- function(data, start_date, end_date) {
+  data %>%
+    mutate(
+      duration_days = case_when(
+        is.na({{ start_date }}) | is.na({{ end_date }}) ~ NA_real_,
+        {{ end_date }} >= {{ start_date }} ~ as.numeric({{ end_date }} - {{ start_date }}) + 1,
+        TRUE ~ NA_real_
+      )
+    )
+}
+```
+
+------------------------------------------------------------------------
+
+## � 4. Advanced Function Features
+
+### Default Arguments and Error Handling
+
+```r
+derive_bmi_category <- function(data, weight_var, height_var, unit = "metric") {
+  # Input validation
+  if (!unit %in% c("metric", "imperial")) {
+    stop("unit must be either 'metric' or 'imperial'")
+  }
+  
+  data %>%
+    mutate(
+      bmi = if (unit == "metric") {
+        {{ weight_var }} / ({{ height_var }} / 100)^2
+      } else {
+        ({{ weight_var }} * 703) / {{ height_var }}^2
+      },
+      bmi_category = case_when(
+        is.na(bmi) ~ "Unknown",
+        bmi < 18.5 ~ "Underweight",
+        bmi >= 18.5 & bmi < 25 ~ "Normal",
+        bmi >= 25 & bmi < 30 ~ "Overweight",
+        bmi >= 30 ~ "Obese"
+      )
+    )
+}
+```
+
+### Function with Multiple Return Options
+
+```r
+summarize_ae_data <- function(data, return_type = "summary") {
+  base_summary <- data %>%
+    group_by(AEDECOD) %>%
+    summarise(
+      n_events = n(),
+      n_subjects = n_distinct(USUBJID),
+      .groups = "drop"
+    )
+  
+  switch(return_type,
+    "summary" = base_summary,
+    "detailed" = base_summary %>%
+      mutate(
+        event_rate = n_events / n_subjects,
+        severity_breakdown = "Additional analysis needed"
+      ),
+    "count_only" = nrow(base_summary)
+  )
+}
+```
+
+------------------------------------------------------------------------
+
+## 🎨 5. Introduction to `purrr` - Functional Programming
+
+The `purrr` package makes it easy to apply functions to multiple elements or datasets.
+
+### Basic `map()` Functions
+
+```r
+library(purrr)
+
+# Apply function to each element
+ages <- list(c(25, 45, 67), c(34, 52, 71), c(28, 49, 63))
+ages %>% map(~ create_age_category(.x))
+
+# Apply function to columns in a data frame
+ae_data %>% 
+  select(where(is.character)) %>%
+  map(~ str_to_upper(.x))
+```
+
+### Process Multiple Datasets
+
+```r
+# Process multiple studies with same function
+study_files <- c("study_001.csv", "study_002.csv", "study_003.csv")
+
+process_all_studies <- function(file_path) {
+  read_csv(file_path) %>%
+    derive_elderly_flag(AGE) %>%
+    calc_study_day(AESTDT, RFSTDT)
+}
+
+# Process all files
+all_studies <- study_files %>%
+  map(process_all_studies) %>%
+  set_names(c("Study 001", "Study 002", "Study 003"))
+```
+
+------------------------------------------------------------------------
+
+## 🤖 6. GitHub Copilot in RStudio for Functions
+
+### Effective Copilot Prompts for Functions
+
+| Comment Prompt | Expected Copilot Suggestion |
+|----|----|
+| `# Create function to derive safety flag` | Function template with safety logic |
+| `# Function to calculate percent change from baseline` | Mathematical formula implementation |
+| `# Translate SAS macro for lab normal ranges` | R function with lab reference logic |
+| `# Function with error handling for missing data` | Try-catch blocks and validation |
+
+### Copilot Best Practices
+
+```r
+# Good: Descriptive comment for function purpose
+# Create function to standardize lab values and flag abnormal results
+
+# Good: Specific parameter expectations  
+# Function parameters: data (tibble), lab_var (column name), ref_low (numeric), ref_high (numeric)
+
+# Good: Expected output format
+# Returns: tibble with added columns for standardized values and abnormal flags
+```
+
+------------------------------------------------------------------------
+
+## ✅ Summary: SAS vs R Functions
+
+| Aspect | SAS Macros | R Functions |
+|--------|------------|-------------|
+| **Syntax** | `%macro name(params); ... %mend;` | `name <- function(params) { ... }` |
+| **Scope** | Global macro variables | Local function environment |
+| **Parameters** | Macro parameters with `&` | Function arguments |
+| **Return Values** | Dataset modification | Explicit `return()` or last expression |
+| **Error Handling** | Limited options | `stop()`, `warning()`, `try()` |
+| **Reusability** | Macro calls | Function calls with piping |
+| **Debugging** | `%put` statements | `print()`, `cat()`, RStudio debugger |
+| **Testing** | Manual verification | Unit tests with `testthat` |
+
+------------------------------------------------------------------------
+
+## 🎯 Next Steps
+
+In the demo and exercise, you'll practice:
+- Creating clinical programming functions
+- Translating common SAS macros to R
+- Using `purrr` for batch processing
+- Leveraging GitHub Copilot in RStudio for function development
+- Implementing error handling and validation

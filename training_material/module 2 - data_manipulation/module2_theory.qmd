@@ -1,0 +1,287 @@
+---
+title: "Module 2 Theory — Data Wrangling Basics"
+format: html
+editor: visual
+---
+
+# 🧱 Module 2 — Data Wrangling Basics
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Understand tibbles and R data types (character, numeric, logical, date)
+-   Use dplyr functions: `filter`, `select`, `mutate`, `arrange` for data manipulation
+-   Compare R data wrangling operations with SAS DATA step logic
+-   Practice deriving clinical variables like elderly flag (age >= 65)
+-   Apply best practices for readable and efficient data transformations
+
+------------------------------------------------------------------------
+
+## � 1. Understanding Tibbles and Data Types
+
+### What are Tibbles?
+Tibbles are enhanced data frames that are central to the tidyverse approach. They provide better printing, stricter subsetting, and clearer error messages.
+
+```r
+library(tibble)
+library(dplyr)
+
+# Create a tibble
+dm <- tibble(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  AGE = c(45, 67, 52),
+  SEX = c("M", "F", "M"),
+  RFSTDTC = c("2024-01-15", "2024-01-16", "2024-01-17")
+)
+
+# View structure
+glimpse(dm)
+```
+
+### R Data Types for Clinical Programming:
+
+| Data Type | Description | Clinical Examples |
+|-----------|-------------|-------------------|
+| `character` | Text strings | USUBJID, SEX, AEDECOD |
+| `numeric` | Numbers (integer/double) | AGE, DOSE, LAB values |
+| `logical` | TRUE/FALSE | Flags, eligibility criteria |
+| `Date` | Date objects | RFSTDT, AESTDT |
+
+### `filter()` - Subset Rows (like WHERE clause)
+
+```r
+# SAS: WHERE AGE >= 18;
+# R equivalent:
+adults <- dm %>% 
+  filter(AGE >= 18)
+
+# Multiple conditions
+eligible <- dm %>%
+  filter(AGE >= 18 & SEX == "F")
+```
+
+### `select()` - Choose Columns (like KEEP statement)
+
+```r
+# SAS: KEEP USUBJID AGE SEX;
+# R equivalent:
+dm_subset <- dm %>%
+  select(USUBJID, AGE, SEX)
+
+# Drop columns (like DROP statement)
+dm_no_sex <- dm %>%
+  select(-SEX)
+```
+
+### `mutate()` - Create/Modify Variables (like assignment statements)
+
+```r
+# SAS: ELDERLY = (AGE >= 65);
+# R equivalent:
+dm <- dm %>%
+  mutate(
+    ELDERLY = ifelse(AGE >= 65, "Y", "N"),
+    AGEYR = AGE,  # Rename/copy
+    AGE_MONTHS = AGE * 12
+  )
+```
+
+### `arrange()` - Sort Data (like PROC SORT)
+
+```r
+# SAS: PROC SORT DATA=dm; BY USUBJID AGE; RUN;
+# R equivalent:
+dm_sorted <- dm %>%
+  arrange(USUBJID, AGE)
+
+# Descending order
+dm_sorted_desc <- dm %>%
+  arrange(desc(AGE))
+```
+
+------------------------------------------------------------------------
+
+## 🔄 3. R vs SAS DATA Step Comparison
+
+### Creating Conditional Variables
+
+**SAS DATA Step:**
+```sas
+DATA dm;
+  SET raw_dm;
+  
+  /* Create age groups */
+  IF AGE < 65 THEN ELDERLY = "N";
+  ELSE ELDERLY = "Y";
+  
+  /* Multiple conditions */  
+  IF AGE < 40 THEN AGEGRP = "Young";
+  ELSE IF AGE < 65 THEN AGEGRP = "Middle";
+  ELSE AGEGRP = "Elderly";
+RUN;
+```
+
+**R dplyr equivalent:**
+```r
+dm <- raw_dm %>%
+  mutate(
+    ELDERLY = ifelse(AGE < 65, "N", "Y"),
+    
+    AGEGRP = case_when(
+      AGE < 40 ~ "Young",
+      AGE < 65 ~ "Middle", 
+      TRUE ~ "Elderly"  # Default case (like ELSE)
+    )
+  )
+```
+
+### Subsetting and Processing
+
+**SAS:**
+```sas
+DATA adults;
+  SET dm;
+  WHERE AGE >= 18;
+  
+  AGEGRP = PUT(AGE, AGEGRP.);
+  KEEP USUBJID AGE SEX AGEGRP;
+RUN;
+```
+
+**R:**
+```r
+adults <- dm %>%
+  filter(AGE >= 18) %>%
+  mutate(AGEGRP = case_when(
+    AGE < 40 ~ "Young",
+    AGE < 65 ~ "Middle",
+    TRUE ~ "Elderly"
+  )) %>%
+  select(USUBJID, AGE, SEX, AGEGRP)
+```
+
+------------------------------------------------------------------------
+
+## 🚀 4. Practical Example: Deriving Elderly Flag
+
+Let's work through a complete example of deriving an elderly flag, a common clinical programming task:
+
+```r
+library(dplyr)
+library(tibble)
+
+# Sample demographics data
+dm <- tibble(
+  USUBJID = c("001-001", "001-002", "001-003", "001-004", "001-005"),
+  AGE = c(45, 67, 52, 71, 28),
+  SEX = c("M", "F", "M", "F", "F"),
+  RFSTDTC = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18", "2024-01-19")
+)
+
+# Step 1: Create elderly flag (age >= 65)
+dm <- dm %>%
+  mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N"))
+
+# Step 2: Create more detailed age groups
+dm <- dm %>%
+  mutate(
+    AGEGRP = case_when(
+      AGE < 40 ~ "Young Adult",
+      AGE >= 40 & AGE < 65 ~ "Middle Age", 
+      AGE >= 65 ~ "Elderly"
+    ),
+    AGEGRPN = case_when(
+      AGE < 40 ~ 1,
+      AGE >= 40 & AGE < 65 ~ 2,
+      AGE >= 65 ~ 3
+    )
+  )
+
+# View results
+dm
+```
+
+------------------------------------------------------------------------
+
+## 🏃‍♂️ 5. Best Practices for Data Wrangling
+
+### 1. **Readable Code Structure**
+```r
+# Good: Clear pipe chain with meaningful intermediate steps
+dm_processed <- dm %>%
+  filter(AGE >= 18) %>%          # Include only adults
+  mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N")) %>%  # Create flag
+  arrange(USUBJID) %>%           # Sort by subject
+  select(USUBJID, AGE, SEX, ELDERLY)  # Keep relevant variables
+
+# Less ideal: Everything in one complex pipe
+dm_processed <- dm %>% filter(AGE >= 18) %>% mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N"), AGEGRP = case_when(AGE < 40 ~ "Young", TRUE ~ "Old")) %>% arrange(USUBJID)
+```
+
+### 2. **Consistent Naming Conventions**
+```r
+# Use CDISC-compliant variable names
+dm <- dm %>%
+  mutate(
+    AGEFL = ifelse(AGE >= 65, "Y", "N"),  # Flag with FL suffix
+    AGEGR1 = case_when(                   # Grouping with GR + number
+      AGE < 65 ~ "< 65",
+      AGE >= 65 ~ ">= 65"
+    )
+  )
+```
+
+### 3. **Handle Missing Values Explicitly**
+```r
+dm <- dm %>%
+  mutate(
+    ELDERLY = case_when(
+      is.na(AGE) ~ NA_character_,  # Handle missing ages
+      AGE >= 65 ~ "Y",
+      TRUE ~ "N"
+    )
+  )
+```
+
+------------------------------------------------------------------------
+
+## 🤖 6. GitHub Copilot for Data Wrangling
+
+### Effective Prompts for Clinical Data:
+
+| Comment Prompt | Expected Copilot Suggestion |
+|----|----|
+| `# Create elderly flag where age >= 65` | `mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N"))` |
+| `# Filter subjects enrolled after 2024-01-01` | `filter(as.Date(RFSTDTC) > as.Date("2024-01-01"))` |
+| `# Create BMI categories using WHO standards` | `mutate(BMICAT = case_when(...))` |
+| `# Sort by subject ID and visit date` | `arrange(USUBJID, as.Date(VISIT_DATE))` |
+
+------------------------------------------------------------------------
+
+## 📝 Module Summary
+
+By completing this module, you should now be able to:
+
+✅ **Understand tibbles** and R data types for clinical programming  
+✅ **Use dplyr verbs** (filter, select, mutate, arrange) effectively  
+✅ **Compare R and SAS** approaches to data manipulation  
+✅ **Create clinical flags** like elderly indicators  
+✅ **Write readable, maintainable** data wrangling code  
+
+### 🚀 Next Steps:
+- Practice with the demo exercises
+- Try deriving elderly flags on your own data  
+- Prepare for Module 3: Joins and Summaries
+
+------------------------------------------------------------------------
+
+## 💡 Key Takeaways
+
+1. **dplyr provides intuitive verbs** that map well to SAS DATA step concepts
+2. **Pipe operator (%>%)** creates readable, step-by-step data transformations
+3. **case_when()** is your friend for complex conditional logic
+4. **Consistent naming** and **explicit missing value handling** are essential
+5. **GitHub Copilot** can accelerate coding when given clear, descriptive comments
+
+Ready to learn about joins and summaries? Let's move to Module 3!

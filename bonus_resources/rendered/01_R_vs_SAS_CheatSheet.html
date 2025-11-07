@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>R vs SAS Clinical Programming Cheat Sheet</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="R_vs_SAS_CheatSheet_files/libs/clipboard/clipboard.min.js"></script>
+<script src="R_vs_SAS_CheatSheet_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="R_vs_SAS_CheatSheet_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="R_vs_SAS_CheatSheet_files/libs/quarto-html/popper.min.js"></script>
+<script src="R_vs_SAS_CheatSheet_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="R_vs_SAS_CheatSheet_files/libs/quarto-html/anchor.min.js"></script>
+<link href="R_vs_SAS_CheatSheet_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="R_vs_SAS_CheatSheet_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="R_vs_SAS_CheatSheet_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="R_vs_SAS_CheatSheet_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="R_vs_SAS_CheatSheet_files/libs/bootstrap/bootstrap-6e5ff12f349f7d7ee99023e5a7f49be9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#r-vs-sas-clinical-programming-cheat-sheet" id="toc-r-vs-sas-clinical-programming-cheat-sheet" class="nav-link active" data-scroll-target="#r-vs-sas-clinical-programming-cheat-sheet">📝 R vs SAS Clinical Programming Cheat Sheet</a>
+  <ul class="collapse">
+  <li><a href="#module-1-rstudio-environment-setup" id="toc-module-1-rstudio-environment-setup" class="nav-link" data-scroll-target="#module-1-rstudio-environment-setup">📁 Module 1: RStudio Environment &amp; Setup</a></li>
+  <li><a href="#module-2-data-wrangling-basic-operations" id="toc-module-2-data-wrangling-basic-operations" class="nav-link" data-scroll-target="#module-2-data-wrangling-basic-operations">� Module 2: Data Wrangling &amp; Basic Operations</a></li>
+  <li><a href="#module-3-joins-summarizations" id="toc-module-3-joins-summarizations" class="nav-link" data-scroll-target="#module-3-joins-summarizations">🔗 Module 3: Joins &amp; Summarizations</a></li>
+  <li><a href="#module-4-datetime-text-processing" id="toc-module-4-datetime-text-processing" class="nav-link" data-scroll-target="#module-4-datetime-text-processing">📅 Module 4: Date/Time &amp; Text Processing</a></li>
+  <li><a href="#module-5-functions-control-structures" id="toc-module-5-functions-control-structures" class="nav-link" data-scroll-target="#module-5-functions-control-structures">⚙️ Module 5: Functions &amp; Control Structures</a></li>
+  <li><a href="#module-6-cdisc-sdtm-programming" id="toc-module-6-cdisc-sdtm-programming" class="nav-link" data-scroll-target="#module-6-cdisc-sdtm-programming">📋 Module 6: CDISC SDTM Programming</a></li>
+  <li><a href="#module-7-post-processing-qc-clinical-reporting" id="toc-module-7-post-processing-qc-clinical-reporting" class="nav-link" data-scroll-target="#module-7-post-processing-qc-clinical-reporting">🎯 Module 7: Post-Processing, QC &amp; Clinical Reporting</a>
+  <ul class="collapse">
+  <li><a href="#quality-control-procedures" id="toc-quality-control-procedures" class="nav-link" data-scroll-target="#quality-control-procedures">Quality Control Procedures</a></li>
+  <li><a href="#professional-reporting" id="toc-professional-reporting" class="nav-link" data-scroll-target="#professional-reporting">Professional Reporting</a></li>
+  <li><a href="#advanced-reporting-features" id="toc-advanced-reporting-features" class="nav-link" data-scroll-target="#advanced-reporting-features">Advanced Reporting Features</a></li>
+  </ul></li>
+  <li><a href="#github-copilot-integration-tips" id="toc-github-copilot-integration-tips" class="nav-link" data-scroll-target="#github-copilot-integration-tips">🤖 GitHub Copilot Integration Tips</a>
+  <ul class="collapse">
+  <li><a href="#effective-prompts-for-clinical-programming" id="toc-effective-prompts-for-clinical-programming" class="nav-link" data-scroll-target="#effective-prompts-for-clinical-programming">Effective Prompts for Clinical Programming</a></li>
+  </ul></li>
+  <li><a href="#additional-resources" id="toc-additional-resources" class="nav-link" data-scroll-target="#additional-resources">📚 Additional Resources</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="R_vs_SAS_CheatSheet.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">R vs SAS Clinical Programming Cheat Sheet</h1>
+<p class="subtitle lead">Complete Reference for SAS-to-R Transition</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="r-vs-sas-clinical-programming-cheat-sheet" class="level1">
+<h1>📝 R vs SAS Clinical Programming Cheat Sheet</h1>
+<p>This comprehensive cheat sheet compares clinical programming tasks across R and SAS, organized by the 7-module training curriculum. Designed for SAS programmers transitioning to R for regulatory submissions.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Target Audience</strong>: Clinical programmers with SAS experience learning R for CDISC SDTM, ADaM, and TLF programming.</p>
+</div>
+</div>
+<hr>
+<section id="module-1-rstudio-environment-setup" class="level2">
+<h2 class="anchored" data-anchor-id="module-1-rstudio-environment-setup">📁 Module 1: RStudio Environment &amp; Setup</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 29%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R + RStudio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Assign variable</td>
+<td><code>x = 5;</code></td>
+<td><code>x &lt;- 5</code></td>
+</tr>
+<tr class="even">
+<td>Print output</td>
+<td><code>put x;</code></td>
+<td><code>print(x)</code> or <code>cat(x)</code></td>
+</tr>
+<tr class="odd">
+<td>Script file</td>
+<td><code>.sas</code></td>
+<td><code>.R</code></td>
+</tr>
+<tr class="even">
+<td>Report file</td>
+<td><code>.sas</code> with ODS</td>
+<td><code>.Rmd</code>, <code>.qmd</code></td>
+</tr>
+<tr class="odd">
+<td>IDE</td>
+<td>SAS Enterprise Guide</td>
+<td>RStudio Desktop/Server</td>
+</tr>
+<tr class="even">
+<td>Extensions</td>
+<td>SAS Macros</td>
+<td>R Packages</td>
+</tr>
+<tr class="odd">
+<td>Libraries</td>
+<td><code>libname mylib "path";</code></td>
+<td><code>library(package)</code></td>
+</tr>
+<tr class="even">
+<td>Working directory</td>
+<td><code>%let path = ...;</code></td>
+<td><code>setwd()</code> or RStudio Projects</td>
+</tr>
+<tr class="odd">
+<td>Help system</td>
+<td><code>help proc means;</code></td>
+<td><code>?function</code> or <code>help(function)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-2-data-wrangling-basic-operations" class="level2">
+<h2 class="anchored" data-anchor-id="module-2-data-wrangling-basic-operations">� Module 2: Data Wrangling &amp; Basic Operations</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R (dplyr + tidyverse)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Read CSV</td>
+<td><code>proc import datafile="file.csv"</code></td>
+<td><code>read_csv("file.csv")</code></td>
+</tr>
+<tr class="even">
+<td>Read SAS files</td>
+<td>Native</td>
+<td><code>read_sas("file.sas7bdat")</code></td>
+</tr>
+<tr class="odd">
+<td>Read XPT files</td>
+<td><code>libname xpt xport "file.xpt"</code></td>
+<td><code>read_xpt("file.xpt")</code></td>
+</tr>
+<tr class="even">
+<td>Filter rows</td>
+<td><code>where visit=1;</code> or <code>if visit=1;</code></td>
+<td><code>filter(visit == 1)</code></td>
+</tr>
+<tr class="odd">
+<td>Select columns</td>
+<td><code>keep var1 var2;</code></td>
+<td><code>select(var1, var2)</code></td>
+</tr>
+<tr class="even">
+<td>Create variable</td>
+<td><code>new_var = old_var * 2;</code></td>
+<td><code>mutate(new_var = old_var * 2)</code></td>
+</tr>
+<tr class="odd">
+<td>Rename variables</td>
+<td><code>rename old_var=new_var;</code></td>
+<td><code>rename(new_var = old_var)</code></td>
+</tr>
+<tr class="even">
+<td>Sort data</td>
+<td><code>proc sort; by var;</code></td>
+<td><code>arrange(var)</code></td>
+</tr>
+<tr class="odd">
+<td>Remove duplicates</td>
+<td><code>proc sort nodupkey;</code></td>
+<td><code>distinct()</code></td>
+</tr>
+<tr class="even">
+<td>First/Last observations</td>
+<td><code>first.var</code> / <code>last.var</code></td>
+<td><code>slice_head(n=1)</code> / <code>slice_tail(n=1)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-3-joins-summarizations" class="level2">
+<h2 class="anchored" data-anchor-id="module-3-joins-summarizations">🔗 Module 3: Joins &amp; Summarizations</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R (dplyr)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Inner join</td>
+<td><code>data c; merge a b; by id;</code></td>
+<td><code>inner_join(a, b, by = "id")</code></td>
+</tr>
+<tr class="even">
+<td>Left join</td>
+<td><code>merge a(in=ina) b; by id; if ina;</code></td>
+<td><code>left_join(a, b, by = "id")</code></td>
+</tr>
+<tr class="odd">
+<td>Full join</td>
+<td><code>merge a b; by id;</code></td>
+<td><code>full_join(a, b, by = "id")</code></td>
+</tr>
+<tr class="even">
+<td>Multiple join keys</td>
+<td><code>by var1 var2;</code></td>
+<td><code>by = c("var1", "var2")</code></td>
+</tr>
+<tr class="odd">
+<td>Group operations</td>
+<td><code>proc means; by group; var value;</code></td>
+<td><code>group_by(group) %&gt;% summarise(mean_val = mean(value))</code></td>
+</tr>
+<tr class="even">
+<td>Count records</td>
+<td><code>proc freq; tables group;</code></td>
+<td><code>count(group)</code></td>
+</tr>
+<tr class="odd">
+<td>Aggregate functions</td>
+<td><code>proc summary; by group;</code></td>
+<td><code>group_by(group) %&gt;% summarise(...)</code></td>
+</tr>
+<tr class="even">
+<td>Frequency tables</td>
+<td><code>proc freq; tables var1*var2;</code></td>
+<td><code>count(var1, var2)</code> or <code>table(var1, var2)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-4-datetime-text-processing" class="level2">
+<h2 class="anchored" data-anchor-id="module-4-datetime-text-processing">📅 Module 4: Date/Time &amp; Text Processing</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R (lubridate + stringr)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Parse dates</td>
+<td><code>input(date_str, yymmdd10.)</code></td>
+<td><code>ymd("2024-01-15")</code> or <code>dmy("15/01/2024")</code></td>
+</tr>
+<tr class="even">
+<td>Format dates</td>
+<td><code>put(date, yymmdd10.)</code></td>
+<td><code>format(date, "%Y-%m-%d")</code></td>
+</tr>
+<tr class="odd">
+<td>Study day calculation</td>
+<td><code>study_day = date - rfstdtc + 1</code></td>
+<td><code>study_day = as.numeric(date - rfstdtc) + 1</code></td>
+</tr>
+<tr class="even">
+<td>Date arithmetic</td>
+<td><code>intnx('day', date, 30)</code></td>
+<td><code>date + days(30)</code></td>
+</tr>
+<tr class="odd">
+<td>Extract date parts</td>
+<td><code>year(date)</code>, <code>month(date)</code></td>
+<td><code>year(date)</code>, <code>month(date)</code></td>
+</tr>
+<tr class="even">
+<td>String length</td>
+<td><code>length(var)</code></td>
+<td><code>str_length(var)</code></td>
+</tr>
+<tr class="odd">
+<td>Substring</td>
+<td><code>substr(var, 1, 5)</code></td>
+<td><code>str_sub(var, 1, 5)</code></td>
+</tr>
+<tr class="even">
+<td>Find/replace text</td>
+<td><code>tranwrd(var, "old", "new")</code></td>
+<td><code>str_replace(var, "old", "new")</code></td>
+</tr>
+<tr class="odd">
+<td>Upper/lower case</td>
+<td><code>upcase(var)</code>, <code>lowcase(var)</code></td>
+<td><code>str_to_upper(var)</code>, <code>str_to_lower(var)</code></td>
+</tr>
+<tr class="even">
+<td>Pattern matching</td>
+<td><code>prxmatch('/pattern/', var)</code></td>
+<td><code>str_detect(var, "pattern")</code></td>
+</tr>
+<tr class="odd">
+<td>String concatenation</td>
+<td><code>var1 || var2</code></td>
+<td><code>paste0(var1, var2)</code> or <code>str_c(var1, var2)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-5-functions-control-structures" class="level2">
+<h2 class="anchored" data-anchor-id="module-5-functions-control-structures">⚙️ Module 5: Functions &amp; Control Structures</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Define function</td>
+<td><code>%macro myfunc(param); ... %mend;</code></td>
+<td><code>myfunc &lt;- function(param) { ... }</code></td>
+</tr>
+<tr class="even">
+<td>Call function</td>
+<td><code>%myfunc(value)</code></td>
+<td><code>myfunc(value)</code></td>
+</tr>
+<tr class="odd">
+<td>If-then-else</td>
+<td><code>if condition then x=1; else x=0;</code></td>
+<td><code>if (condition) x &lt;- 1 else x &lt;- 0</code></td>
+</tr>
+<tr class="even">
+<td>Case/when logic</td>
+<td><code>select; when(...) do; ...; end;</code></td>
+<td><code>case_when(condition1 ~ value1, condition2 ~ value2)</code></td>
+</tr>
+<tr class="odd">
+<td>Loops</td>
+<td><code>do i=1 to 10; ...; end;</code></td>
+<td><code>for (i in 1:10) { ... }</code></td>
+</tr>
+<tr class="even">
+<td>Apply function to groups</td>
+<td><code>by</code> processing with macros</td>
+<td><code>map()</code>, <code>purrr::walk()</code>, <code>group_modify()</code></td>
+</tr>
+<tr class="odd">
+<td>Conditional assignment</td>
+<td><code>if var &gt; 5 then flag = "Y";</code></td>
+<td><code>mutate(flag = if_else(var &gt; 5, "Y", "N"))</code></td>
+</tr>
+<tr class="even">
+<td>Missing value check</td>
+<td><code>if missing(var)</code></td>
+<td><code>is.na(var)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-6-cdisc-sdtm-programming" class="level2">
+<h2 class="anchored" data-anchor-id="module-6-cdisc-sdtm-programming">📋 Module 6: CDISC SDTM Programming</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R (haven + sdtm.oak)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Create SDTM domains</td>
+<td><code>data dm; set raw_dm;</code></td>
+<td><code>dm_sdtm &lt;- raw_dm %&gt;% mutate(...)</code></td>
+</tr>
+<tr class="even">
+<td>USUBJID derivation</td>
+<td><code>USUBJID = study || "-" || subjid;</code></td>
+<td><code>mutate(USUBJID = paste0(study, "-", subjid))</code></td>
+</tr>
+<tr class="odd">
+<td>Date formatting</td>
+<td><code>AESTDTC = put(ae_date, yymmdd10.);</code></td>
+<td><code>mutate(AESTDTC = format(ae_date, "%Y-%m-%d"))</code></td>
+</tr>
+<tr class="even">
+<td>Study day calculation</td>
+<td><code>AESTDY = ae_date - rfstdtc + 1;</code></td>
+<td><code>mutate(AESTDY = as.numeric(ae_date - rfstdtc) + 1)</code></td>
+</tr>
+<tr class="odd">
+<td>Sequence numbers</td>
+<td><code>retain aeseq; aeseq + 1;</code></td>
+<td><code>mutate(AESEQ = row_number())</code></td>
+</tr>
+<tr class="even">
+<td>Domain assignment</td>
+<td><code>DOMAIN = "AE";</code></td>
+<td><code>mutate(DOMAIN = "AE")</code></td>
+</tr>
+<tr class="odd">
+<td>Controlled terminology</td>
+<td>Manual mapping</td>
+<td><code>sdtm.oak::create_mapping()</code> functions</td>
+</tr>
+<tr class="even">
+<td>Export to XPT</td>
+<td><code>libname xpt xport "dm.xpt"; data xpt.dm; set dm;</code></td>
+<td><code>haven::write_xpt(dm, "dm.xpt")</code></td>
+</tr>
+<tr class="odd">
+<td>Metadata validation</td>
+<td>Custom programming</td>
+<td><code>sdtm.oak::check_variables()</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="module-7-post-processing-qc-clinical-reporting" class="level2">
+<h2 class="anchored" data-anchor-id="module-7-post-processing-qc-clinical-reporting">🎯 Module 7: Post-Processing, QC &amp; Clinical Reporting</h2>
+<section id="quality-control-procedures" class="level3">
+<h3 class="anchored" data-anchor-id="quality-control-procedures">Quality Control Procedures</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Compare datasets</td>
+<td><code>proc compare base=a compare=b;</code></td>
+<td><code>all.equal()</code> or <code>dplyr::anti_join()</code></td>
+</tr>
+<tr class="even">
+<td>Missing value checks</td>
+<td><code>proc means nmiss;</code></td>
+<td><code>summarise(across(everything(), ~sum(is.na(.))))</code></td>
+</tr>
+<tr class="odd">
+<td>Duplicate detection</td>
+<td><code>proc sort; by _all_; proc freq; tables _freq_;</code></td>
+<td><code>get_dupes()</code> or custom duplicate checks<code>| | Range validation |</code>proc univariate;<code>|</code>summary()<code>or custom range checks</code></td>
+</tr>
+<tr class="even">
+<td>Frequency tables</td>
+<td><code>proc freq;</code></td>
+<td><code>count()</code> or <code>table()</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="professional-reporting" class="level3">
+<h3 class="anchored" data-anchor-id="professional-reporting">Professional Reporting</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Basic table output</td>
+<td><code>proc tabulate;</code></td>
+<td><code>gt()</code> package</td>
+</tr>
+<tr class="even">
+<td>Demographics table</td>
+<td><code>proc means; proc freq;</code> + formatting</td>
+<td><code>gt()</code> with <code>group_by() %&gt;% summarise()</code></td>
+</tr>
+<tr class="odd">
+<td>AE summary tables</td>
+<td><code>proc freq; tables aebodsys*aedecod;</code></td>
+<td><code>count()</code> + <code>pivot_wider()</code> + <code>gt()</code></td>
+</tr>
+<tr class="even">
+<td>Listing generation</td>
+<td><code>proc print;</code> with formatting</td>
+<td><code>flextable()</code> or <code>gt()</code></td>
+</tr>
+<tr class="odd">
+<td>Figure creation</td>
+<td><code>proc sgplot;</code></td>
+<td><code>ggplot2</code></td>
+</tr>
+<tr class="even">
+<td>RTF/PDF export</td>
+<td><code>ods rtf;</code></td>
+<td><code>gtsave()</code> or R Markdown to Word/PDF</td>
+</tr>
+<tr class="odd">
+<td>Table styling</td>
+<td>ODS styles</td>
+<td><code>gt()</code> styling functions</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="advanced-reporting-features" class="level3">
+<h3 class="anchored" data-anchor-id="advanced-reporting-features">Advanced Reporting Features</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>SAS</th>
+<th>R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Conditional formatting</td>
+<td>ODS style overrides</td>
+<td><code>tab_style()</code> with conditions</td>
+</tr>
+<tr class="even">
+<td>Footnotes</td>
+<td><code>footnote</code> statements</td>
+<td><code>tab_footnote()</code></td>
+</tr>
+<tr class="odd">
+<td>Headers/titles</td>
+<td><code>title</code> statements</td>
+<td><code>tab_header()</code></td>
+</tr>
+<tr class="even">
+<td>Page breaks</td>
+<td>ODS controls</td>
+<td>R Markdown page breaks</td>
+</tr>
+<tr class="odd">
+<td>Table of contents</td>
+<td>ODS contents</td>
+<td>R Markdown TOC</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="github-copilot-integration-tips" class="level2">
+<h2 class="anchored" data-anchor-id="github-copilot-integration-tips">🤖 GitHub Copilot Integration Tips</h2>
+<section id="effective-prompts-for-clinical-programming" class="level3">
+<h3 class="anchored" data-anchor-id="effective-prompts-for-clinical-programming">Effective Prompts for Clinical Programming</h3>
+<p><strong>SDTM Programming:</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create CDISC SDTM AE domain from raw adverse event data with proper date formatting</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Derive study day variables following CDISC conventions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate sequence numbers for SDTM domains by subject</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>ADaM Programming:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create ADSL dataset from SDTM DM with treatment flags and population indicators</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Derive baseline values and change from baseline for laboratory parameters</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create analysis flags for efficacy and safety populations</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>QC and Validation:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate comprehensive data quality report for clinical datasets</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare R dataset output against SAS reference for validation</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create automated checks for CDISC compliance and data integrity</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Clinical Reporting:</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create regulatory-compliant demographics table with proper formatting</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate adverse event summary table by system organ class and preferred term</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Build laboratory shift table showing baseline to endpoint changes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+</section>
+<section id="additional-resources" class="level2">
+<h2 class="anchored" data-anchor-id="additional-resources">📚 Additional Resources</h2>
+<ul>
+<li><strong>R Packages for Clinical Programming</strong>: <code>dplyr</code>, <code>haven</code>, <code>gt</code>, <code>flextable</code>, <code>admiral</code>, <code>sdtm.oak</code></li>
+<li><strong>CDISC Implementation</strong>: Official CDISC Study Data Tabulation Model (SDTM) and Analysis Data Model (ADaM) guides</li>
+<li><strong>Regulatory Guidance</strong>: FDA Study Data Standards and submissions requirements</li>
+<li><strong>Community</strong>: R/Pharma conference, PhUSE working groups, Posit (formerly RStudio) clinical resources</li>
+</ul>
+<hr>
+<p><em>This cheat sheet supports the clinical programming training curriculum and serves as a quick reference for daily SAS-to-R programming tasks.</em></p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,202 @@
+---
+title: "R vs SAS Clinical Programming Cheat Sheet"
+subtitle: "Complete Reference for SAS-to-R Transition"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+  pdf:
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# 📝 R vs SAS Clinical Programming Cheat Sheet
+
+This comprehensive cheat sheet compares clinical programming tasks across R and SAS, organized by the 7-module training curriculum. Designed for SAS programmers transitioning to R for regulatory submissions.
+
+::: {.callout-note}
+**Target Audience**: Clinical programmers with SAS experience learning R for CDISC SDTM, ADaM, and TLF programming.
+:::
+
+------------------------------------------------------------------------
+
+## 📁 Module 1: RStudio Environment & Setup
+
+| Task            | SAS              | R + RStudio              |
+|-----------------|------------------|--------------------------|
+| Assign variable | `x = 5;`         | `x <- 5`                 |
+| Print output    | `put x;`         | `print(x)` or `cat(x)`   |
+| Script file     | `.sas`           | `.R`                     |
+| Report file     | `.sas` with ODS  | `.Rmd`, `.qmd`           |
+| IDE             | SAS Enterprise Guide | RStudio Desktop/Server |
+| Extensions      | SAS Macros       | R Packages               |
+| Libraries       | `libname mylib "path";` | `library(package)`    |
+| Working directory | `%let path = ...;` | `setwd()` or RStudio Projects |
+| Help system     | `help proc means;` | `?function` or `help(function)` |
+
+------------------------------------------------------------------------
+
+## � Module 2: Data Wrangling & Basic Operations
+
+| Task | SAS | R (dplyr + tidyverse) |
+|----|----|----|
+| Read CSV | `proc import datafile="file.csv"` | `read_csv("file.csv")` |
+| Read SAS files | Native | `read_sas("file.sas7bdat")` |
+| Read XPT files | `libname xpt xport "file.xpt"` | `read_xpt("file.xpt")` |
+| Filter rows | `where visit=1;` or `if visit=1;` | `filter(visit == 1)` |
+| Select columns | `keep var1 var2;` | `select(var1, var2)` |
+| Create variable | `new_var = old_var * 2;` | `mutate(new_var = old_var * 2)` |
+| Rename variables | `rename old_var=new_var;` | `rename(new_var = old_var)` |
+| Sort data | `proc sort; by var;` | `arrange(var)` |
+| Remove duplicates | `proc sort nodupkey;` | `distinct()` |
+| First/Last observations | `first.var` / `last.var` | `slice_head(n=1)` / `slice_tail(n=1)` |
+
+------------------------------------------------------------------------
+
+## 🔗 Module 3: Joins & Summarizations
+
+| Task | SAS | R (dplyr) |
+|----|----|----|
+| Inner join | `data c; merge a b; by id;` | `inner_join(a, b, by = "id")` |
+| Left join | `merge a(in=ina) b; by id; if ina;` | `left_join(a, b, by = "id")` |
+| Full join | `merge a b; by id;` | `full_join(a, b, by = "id")` |
+| Multiple join keys | `by var1 var2;` | `by = c("var1", "var2")` |
+| Group operations | `proc means; by group; var value;` | `group_by(group) %>% summarise(mean_val = mean(value))` |
+| Count records | `proc freq; tables group;` | `count(group)` |
+| Aggregate functions | `proc summary; by group;` | `group_by(group) %>% summarise(...)` |
+| Frequency tables | `proc freq; tables var1*var2;` | `count(var1, var2)` or `table(var1, var2)` |
+
+------------------------------------------------------------------------
+
+## 📅 Module 4: Date/Time & Text Processing
+
+| Task | SAS | R (lubridate + stringr) |
+|----|----|----|
+| Parse dates | `input(date_str, yymmdd10.)` | `ymd("2024-01-15")` or `dmy("15/01/2024")` |
+| Format dates | `put(date, yymmdd10.)` | `format(date, "%Y-%m-%d")` |
+| Study day calculation | `study_day = date - rfstdtc + 1` | `study_day = as.numeric(date - rfstdtc) + 1` |
+| Date arithmetic | `intnx('day', date, 30)` | `date + days(30)` |
+| Extract date parts | `year(date)`, `month(date)` | `year(date)`, `month(date)` |
+| String length | `length(var)` | `str_length(var)` |
+| Substring | `substr(var, 1, 5)` | `str_sub(var, 1, 5)` |
+| Find/replace text | `tranwrd(var, "old", "new")` | `str_replace(var, "old", "new")` |
+| Upper/lower case | `upcase(var)`, `lowcase(var)` | `str_to_upper(var)`, `str_to_lower(var)` |
+| Pattern matching | `prxmatch('/pattern/', var)` | `str_detect(var, "pattern")` |
+| String concatenation | `var1 || var2` | `paste0(var1, var2)` or `str_c(var1, var2)` |
+
+------------------------------------------------------------------------
+
+## ⚙️ Module 5: Functions & Control Structures
+
+| Task | SAS | R |
+|----|----|----|
+| Define function | `%macro myfunc(param); ... %mend;` | `myfunc <- function(param) { ... }` |
+| Call function | `%myfunc(value)` | `myfunc(value)` |
+| If-then-else | `if condition then x=1; else x=0;` | `if (condition) x <- 1 else x <- 0` |
+| Case/when logic | `select; when(...) do; ...; end;` | `case_when(condition1 ~ value1, condition2 ~ value2)` |
+| Loops | `do i=1 to 10; ...; end;` | `for (i in 1:10) { ... }` |
+| Apply function to groups | `by` processing with macros | `map()`, `purrr::walk()`, `group_modify()` |
+| Conditional assignment | `if var > 5 then flag = "Y";` | `mutate(flag = if_else(var > 5, "Y", "N"))` |
+| Missing value check | `if missing(var)` | `is.na(var)` |
+
+------------------------------------------------------------------------
+
+## 📋 Module 6: CDISC SDTM Programming
+
+| Task | SAS | R (haven + sdtm.oak) |
+|----|----|----|
+| Create SDTM domains | `data dm; set raw_dm;` | `dm_sdtm <- raw_dm %>% mutate(...)` |
+| USUBJID derivation | `USUBJID = study || "-" || subjid;` | `mutate(USUBJID = paste0(study, "-", subjid))` |
+| Date formatting | `AESTDTC = put(ae_date, yymmdd10.);` | `mutate(AESTDTC = format(ae_date, "%Y-%m-%d"))` |
+| Study day calculation | `AESTDY = ae_date - rfstdtc + 1;` | `mutate(AESTDY = as.numeric(ae_date - rfstdtc) + 1)` |
+| Sequence numbers | `retain aeseq; aeseq + 1;` | `mutate(AESEQ = row_number())` |
+| Domain assignment | `DOMAIN = "AE";` | `mutate(DOMAIN = "AE")` |
+| Controlled terminology | Manual mapping | `sdtm.oak::create_mapping()` functions |
+| Export to XPT | `libname xpt xport "dm.xpt"; data xpt.dm; set dm;` | `haven::write_xpt(dm, "dm.xpt")` |
+| Metadata validation | Custom programming | `sdtm.oak::check_variables()` |
+
+------------------------------------------------------------------------
+
+## 🎯 Module 7: Post-Processing, QC & Clinical Reporting
+
+### Quality Control Procedures
+
+| Task | SAS | R |
+|----|----|----|
+| Compare datasets | `proc compare base=a compare=b;` | `all.equal()` or `dplyr::anti_join()` |
+| Missing value checks | `proc means nmiss;` | `summarise(across(everything(), ~sum(is.na(.))))` |
+| Duplicate detection | `proc sort; by _all_; proc freq; tables _freq_;` | `get_dupes()` or custom duplicate checks` |
+| Range validation | `proc univariate;` | `summary()` or custom range checks` |
+| Frequency tables | `proc freq;` | `count()` or `table()` |
+
+### Professional Reporting
+
+| Task | SAS | R |
+|----|----|----|
+| Basic table output | `proc tabulate;` | `gt()` package |
+| Demographics table | `proc means; proc freq;` + formatting | `gt()` with `group_by() %>% summarise()` |
+| AE summary tables | `proc freq; tables aebodsys*aedecod;` | `count()` + `pivot_wider()` + `gt()` |
+| Listing generation | `proc print;` with formatting | `flextable()` or `gt()` |
+| Figure creation | `proc sgplot;` | `ggplot2` |
+| RTF/PDF export | `ods rtf;` | `gtsave()` or R Markdown to Word/PDF |
+| Table styling | ODS styles | `gt()` styling functions |
+
+### Advanced Reporting Features
+
+| Task | SAS | R |
+|----|----|----|
+| Conditional formatting | ODS style overrides | `tab_style()` with conditions |
+| Footnotes | `footnote` statements | `tab_footnote()` |
+| Headers/titles | `title` statements | `tab_header()` |
+| Page breaks | ODS controls | R Markdown page breaks |
+| Table of contents | ODS contents | R Markdown TOC |
+
+------------------------------------------------------------------------
+
+## 🤖 GitHub Copilot Integration Tips
+
+### Effective Prompts for Clinical Programming
+
+**SDTM Programming:**
+```r
+# Create CDISC SDTM AE domain from raw adverse event data with proper date formatting
+# Derive study day variables following CDISC conventions
+# Generate sequence numbers for SDTM domains by subject
+```
+
+**ADaM Programming:**
+```r
+# Create ADSL dataset from SDTM DM with treatment flags and population indicators
+# Derive baseline values and change from baseline for laboratory parameters
+# Create analysis flags for efficacy and safety populations
+```
+
+**QC and Validation:**
+```r
+# Generate comprehensive data quality report for clinical datasets
+# Compare R dataset output against SAS reference for validation
+# Create automated checks for CDISC compliance and data integrity
+```
+
+**Clinical Reporting:**
+```r
+# Create regulatory-compliant demographics table with proper formatting
+# Generate adverse event summary table by system organ class and preferred term
+# Build laboratory shift table showing baseline to endpoint changes
+```
+
+------------------------------------------------------------------------
+
+## 📚 Additional Resources
+
+- **R Packages for Clinical Programming**: `dplyr`, `haven`, `gt`, `flextable`, `admiral`, `sdtm.oak`
+- **CDISC Implementation**: Official CDISC Study Data Tabulation Model (SDTM) and Analysis Data Model (ADaM) guides
+- **Regulatory Guidance**: FDA Study Data Standards and submissions requirements
+- **Community**: R/Pharma conference, PhUSE working groups, Posit (formerly RStudio) clinical resources
+
+---
+
+*This cheat sheet supports the clinical programming training curriculum and serves as a quick reference for daily SAS-to-R programming tasks.*
+

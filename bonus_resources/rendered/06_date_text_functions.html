@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Date &amp; Text Functions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="date_text_functions_files/libs/clipboard/clipboard.min.js"></script>
+<script src="date_text_functions_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="date_text_functions_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="date_text_functions_files/libs/quarto-html/popper.min.js"></script>
+<script src="date_text_functions_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="date_text_functions_files/libs/quarto-html/anchor.min.js"></script>
+<link href="date_text_functions_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="date_text_functions_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="date_text_functions_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="date_text_functions_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="date_text_functions_files/libs/bootstrap/bootstrap-6e5ff12f349f7d7ee99023e5a7f49be9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#date-text-functions" id="toc-date-text-functions" class="nav-link active" data-scroll-target="#date-text-functions">📅 Date &amp; Text Functions</a>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#required-libraries" id="toc-required-libraries" class="nav-link" data-scroll-target="#required-libraries">Required Libraries</a></li>
+  <li><a href="#datetime-operations-with-lubridate" id="toc-datetime-operations-with-lubridate" class="nav-link" data-scroll-target="#datetime-operations-with-lubridate">Date/Time Operations with lubridate</a>
+  <ul class="collapse">
+  <li><a href="#basic-date-creation-and-parsing" id="toc-basic-date-creation-and-parsing" class="nav-link" data-scroll-target="#basic-date-creation-and-parsing">1. Basic Date Creation and Parsing</a></li>
+  <li><a href="#study-day-calculations" id="toc-study-day-calculations" class="nav-link" data-scroll-target="#study-day-calculations">2. Study Day Calculations</a></li>
+  <li><a href="#age-calculations-and-date-arithmetic" id="toc-age-calculations-and-date-arithmetic" class="nav-link" data-scroll-target="#age-calculations-and-date-arithmetic">3. Age Calculations and Date Arithmetic</a></li>
+  <li><a href="#date-validation-and-quality-control" id="toc-date-validation-and-quality-control" class="nav-link" data-scroll-target="#date-validation-and-quality-control">4. Date Validation and Quality Control</a></li>
+  </ul></li>
+  <li><a href="#text-processing-with-stringr" id="toc-text-processing-with-stringr" class="nav-link" data-scroll-target="#text-processing-with-stringr">Text Processing with stringr</a>
+  <ul class="collapse">
+  <li><a href="#basic-string-operations" id="toc-basic-string-operations" class="nav-link" data-scroll-target="#basic-string-operations">1. Basic String Operations</a></li>
+  <li><a href="#pattern-matching-and-extraction" id="toc-pattern-matching-and-extraction" class="nav-link" data-scroll-target="#pattern-matching-and-extraction">2. Pattern Matching and Extraction</a></li>
+  <li><a href="#medical-term-standardization" id="toc-medical-term-standardization" class="nav-link" data-scroll-target="#medical-term-standardization">3. Medical Term Standardization</a></li>
+  <li><a href="#data-validation-with-regex" id="toc-data-validation-with-regex" class="nav-link" data-scroll-target="#data-validation-with-regex">4. Data Validation with Regex</a></li>
+  </ul></li>
+  <li><a href="#advanced-datetime-operations" id="toc-advanced-datetime-operations" class="nav-link" data-scroll-target="#advanced-datetime-operations">Advanced Date/Time Operations</a>
+  <ul class="collapse">
+  <li><a href="#time-zone-handling" id="toc-time-zone-handling" class="nav-link" data-scroll-target="#time-zone-handling">1. Time Zone Handling</a></li>
+  <li><a href="#date-sequences-and-intervals" id="toc-date-sequences-and-intervals" class="nav-link" data-scroll-target="#date-sequences-and-intervals">2. Date Sequences and Intervals</a></li>
+  </ul></li>
+  <li><a href="#advanced-string-operations" id="toc-advanced-string-operations" class="nav-link" data-scroll-target="#advanced-string-operations">Advanced String Operations</a>
+  <ul class="collapse">
+  <li><a href="#complex-text-parsing" id="toc-complex-text-parsing" class="nav-link" data-scroll-target="#complex-text-parsing">1. Complex Text Parsing</a></li>
+  <li><a href="#text-quality-assessment" id="toc-text-quality-assessment" class="nav-link" data-scroll-target="#text-quality-assessment">2. Text Quality Assessment</a></li>
+  </ul></li>
+  <li><a href="#integration-examples" id="toc-integration-examples" class="nav-link" data-scroll-target="#integration-examples">Integration Examples</a>
+  <ul class="collapse">
+  <li><a href="#complete-data-processing-pipeline" id="toc-complete-data-processing-pipeline" class="nav-link" data-scroll-target="#complete-data-processing-pipeline">1. Complete Data Processing Pipeline</a></li>
+  </ul></li>
+  <li><a href="#best-practices-summary" id="toc-best-practices-summary" class="nav-link" data-scroll-target="#best-practices-summary">Best Practices Summary</a>
+  <ul class="collapse">
+  <li><a href="#datetime-best-practices" id="toc-datetime-best-practices" class="nav-link" data-scroll-target="#datetime-best-practices">Date/Time Best Practices</a></li>
+  <li><a href="#text-processing-best-practices" id="toc-text-processing-best-practices" class="nav-link" data-scroll-target="#text-processing-best-practices">Text Processing Best Practices</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="..\date_text_functions.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Date &amp; Text Functions</h1>
+<p class="subtitle lead">lubridate and stringr Practical Examples</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="date-text-functions" class="level1">
+<h1>📅 Date &amp; Text Functions</h1>
+<p><strong>lubridate and stringr Practical Examples</strong></p>
+<p>This guide demonstrates practical applications of date/time manipulation with <code>lubridate</code> and text processing with <code>stringr</code> for clinical programming scenarios.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Clinical programming frequently involves:</p>
+<ul>
+<li><strong>Date Operations</strong>: Study day calculations, age derivations, date validations</li>
+<li><strong>Text Processing</strong>: Term standardization, ID parsing, data cleaning</li>
+<li><strong>Format Conversions</strong>: ISO 8601 compliance, controlled terminology</li>
+<li><strong>Pattern Matching</strong>: Validation rules, data extraction</li>
+</ul>
+</section>
+<section id="required-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="required-libraries">Required Libraries</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Date &amp; Text Functions Guide ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Date &amp; Text Functions Guide ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"lubridate and stringr for clinical programming</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>lubridate and stringr for clinical programming</code></pre>
+</div>
+</div>
+</section>
+<section id="datetime-operations-with-lubridate" class="level2">
+<h2 class="anchored" data-anchor-id="datetime-operations-with-lubridate">Date/Time Operations with lubridate</h2>
+<section id="basic-date-creation-and-parsing" class="level3">
+<h3 class="anchored" data-anchor-id="basic-date-creation-and-parsing">1. Basic Date Creation and Parsing</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Date Creation and Parsing ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Date Creation and Parsing ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiple ways to create dates</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>dates_example <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># From strings with different formats</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">date_ymd =</span> <span class="fu">ymd</span>(<span class="st">"2024-03-15"</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">date_mdy =</span> <span class="fu">mdy</span>(<span class="st">"03/15/2024"</span>), </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">date_dmy =</span> <span class="fu">dmy</span>(<span class="st">"15/03/2024"</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># From components</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">date_make =</span> <span class="fu">make_date</span>(<span class="dv">2024</span>, <span class="dv">3</span>, <span class="dv">15</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Current date/time</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">today_date =</span> <span class="fu">today</span>(),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">now_datetime =</span> <span class="fu">now</span>(),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># From ISO 8601 strings (common in clinical data)</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">iso_datetime =</span> <span class="fu">ymd_hms</span>(<span class="st">"2024-03-15 14:30:25"</span>),</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">iso_date_only =</span> <span class="fu">ymd</span>(<span class="st">"2024-03-15"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Date creation examples:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Date creation examples:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(dates_example)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 1
+Columns: 8
+$ date_ymd      &lt;date&gt; 2024-03-15
+$ date_mdy      &lt;date&gt; 2024-03-15
+$ date_dmy      &lt;date&gt; 2024-03-15
+$ date_make     &lt;date&gt; 2024-03-15
+$ today_date    &lt;date&gt; 2025-11-07
+$ now_datetime  &lt;dttm&gt; 2025-11-07 23:05:54
+$ iso_datetime  &lt;dttm&gt; 2024-03-15 14:30:25
+$ iso_date_only &lt;date&gt; 2024-03-15</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Parsing clinical date formats commonly seen in EDC systems</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>clinical_dates <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2024-01-15"</span>,           <span class="co"># ISO standard</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"15-JAN-2024"</span>,          <span class="co"># SAS-like format</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"01/15/24"</span>,             <span class="co"># US format short year</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2024-01-15T10:30:00"</span>,  <span class="co"># ISO with time</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"15JAN2024:10:30:00"</span>    <span class="co"># SAS datetime format</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>parsed_dates <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">original =</span> clinical_dates,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">parsed =</span> <span class="fu">c</span>(</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ymd</span>(clinical_dates[<span class="dv">1</span>]),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dmy</span>(clinical_dates[<span class="dv">2</span>], <span class="at">locale =</span> <span class="st">"en_US.UTF-8"</span>),</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mdy</span>(clinical_dates[<span class="dv">3</span>]),</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ymd_hms</span>(clinical_dates[<span class="dv">4</span>]),</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dmy_hms</span>(clinical_dates[<span class="dv">5</span>], <span class="at">locale =</span> <span class="st">"en_US.UTF-8"</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Clinical date parsing:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nClinical date parsing:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(parsed_dates)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 2
+  original            parsed    
+  &lt;chr&gt;               &lt;date&gt;    
+1 2024-01-15          2024-01-15
+2 15-JAN-2024         2024-01-15
+3 01/15/24            2024-01-15
+4 2024-01-15T10:30:00 2024-01-15
+5 15JAN2024:10:30:00  2024-01-15</code></pre>
+</div>
+</div>
+</section>
+<section id="study-day-calculations" class="level3">
+<h3 class="anchored" data-anchor-id="study-day-calculations">2. Study Day Calculations</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Study Day Calculations ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Study Day Calculations ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create sample clinical data with study reference dates</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>study_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="fu">paste0</span>(<span class="st">"STUDY-001-"</span>, <span class="fu">sprintf</span>(<span class="st">"%03d"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>)),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference dates</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">RFSTDTC =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-15"</span>),  <span class="co"># Study start date</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">RFENDTC =</span> <span class="fu">as.Date</span>(<span class="st">"2024-07-15"</span>),  <span class="co"># Study end date</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Event dates</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">CONSENT_DATE =</span> RFSTDTC <span class="sc">-</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">14</span>, <span class="dv">8</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">RANDOMIZATION_DATE =</span> RFSTDTC <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">7</span>, <span class="dv">8</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">FIRST_DOSE_DATE =</span> RANDOMIZATION_DATE <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">8</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">LAST_VISIT_DATE =</span> RFSTDTC <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">80</span><span class="sc">:</span><span class="dv">180</span>, <span class="dv">8</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">AE_START_DATE =</span> FIRST_DOSE_DATE <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">60</span>, <span class="dv">8</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate study days using different conventions</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>study_days_calculated <span class="ot">&lt;-</span> study_data <span class="sc">%&gt;%</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Standard study day calculation (Day 1 = first day of study)</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">CONSENT_STDY =</span> <span class="fu">as.numeric</span>(CONSENT_DATE <span class="sc">-</span> RFSTDTC),</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">RANDOM_STDY =</span> <span class="fu">as.numeric</span>(RANDOMIZATION_DATE <span class="sc">-</span> RFSTDTC) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">FIRST_DOSE_STDY =</span> <span class="fu">as.numeric</span>(FIRST_DOSE_DATE <span class="sc">-</span> RFSTDTC) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">AE_STDY =</span> <span class="fu">as.numeric</span>(AE_START_DATE <span class="sc">-</span> RFSTDTC) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Relative day calculations</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DAYS_FROM_FIRST_DOSE =</span> <span class="fu">as.numeric</span>(AE_START_DATE <span class="sc">-</span> FIRST_DOSE_DATE),</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">DAYS_TO_STUDY_END =</span> <span class="fu">as.numeric</span>(RFENDTC <span class="sc">-</span> LAST_VISIT_DATE),</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Treatment duration</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">TREATMENT_DURATION =</span> <span class="fu">as.numeric</span>(LAST_VISIT_DATE <span class="sc">-</span> FIRST_DOSE_DATE),</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Format for CDISC (ISO 8601)</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">RFSTDTC_ISO =</span> <span class="fu">format</span>(RFSTDTC, <span class="st">"%Y-%m-%d"</span>),</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">AE_START_ISO =</span> <span class="fu">format</span>(AE_START_DATE, <span class="st">"%Y-%m-%d"</span>)</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Study day calculations:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Study day calculations:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(study_days_calculated <span class="sc">%&gt;%</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, RFSTDTC, FIRST_DOSE_DATE, AE_START_DATE, </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>              FIRST_DOSE_STDY, AE_STDY, DAYS_FROM_FIRST_DOSE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 7
+  USUBJID       RFSTDTC    FIRST_DOSE_DATE AE_START_DATE FIRST_DOSE_STDY AE_STDY
+  &lt;chr&gt;         &lt;date&gt;     &lt;date&gt;          &lt;date&gt;                  &lt;dbl&gt;   &lt;dbl&gt;
+1 STUDY-001-001 2024-01-15 2024-01-21      2024-02-08                  7      25
+2 STUDY-001-002 2024-01-15 2024-01-17      2024-03-07                  3      53
+3 STUDY-001-003 2024-01-15 2024-01-16      2024-01-22                  2       8
+4 STUDY-001-004 2024-01-15 2024-01-17      2024-03-12                  3      58
+5 STUDY-001-005 2024-01-15 2024-01-19      2024-02-11                  5      28
+6 STUDY-001-006 2024-01-15 2024-01-22      2024-02-15                  8      32
+7 STUDY-001-007 2024-01-15 2024-01-21      2024-02-07                  7      24
+8 STUDY-001-008 2024-01-15 2024-01-17      2024-02-05                  3      22
+# ℹ 1 more variable: DAYS_FROM_FIRST_DOSE &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="age-calculations-and-date-arithmetic" class="level3">
+<h3 class="anchored" data-anchor-id="age-calculations-and-date-arithmetic">3. Age Calculations and Date Arithmetic</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Age Calculations ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Age Calculations ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Demographics with birth dates</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>demographics <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="fu">paste0</span>(<span class="st">"STUDY-001-"</span>, <span class="fu">sprintf</span>(<span class="st">"%03d"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)),</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">BIRTH_DATE =</span> <span class="fu">sample</span>(<span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"1950-01-01"</span>), <span class="fu">as.Date</span>(<span class="st">"1995-12-31"</span>), <span class="at">by =</span> <span class="st">"day"</span>), <span class="dv">10</span>),</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ICF_DATE =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-10"</span>) <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">20</span>, <span class="dv">10</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">RFSTDTC =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-15"</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiple age calculation methods</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>age_calculations <span class="ot">&lt;-</span> demographics <span class="sc">%&gt;%</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Age at informed consent</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE_AT_ICF =</span> <span class="fu">floor</span>(<span class="fu">as.numeric</span>(<span class="fu">difftime</span>(ICF_DATE, BIRTH_DATE, <span class="at">units =</span> <span class="st">"days"</span>)) <span class="sc">/</span> <span class="fl">365.25</span>),</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Age at study start (standard)</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE =</span> <span class="fu">floor</span>(<span class="fu">as.numeric</span>(<span class="fu">difftime</span>(RFSTDTC, BIRTH_DATE, <span class="at">units =</span> <span class="st">"days"</span>)) <span class="sc">/</span> <span class="fl">365.25</span>),</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Using lubridate interval for precise calculation</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE_PRECISE =</span> <span class="fu">floor</span>(<span class="fu">time_length</span>(<span class="fu">interval</span>(BIRTH_DATE, RFSTDTC), <span class="st">"years"</span>)),</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Age in months (for pediatric studies)</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE_MONTHS =</span> <span class="fu">floor</span>(<span class="fu">time_length</span>(<span class="fu">interval</span>(BIRTH_DATE, RFSTDTC), <span class="st">"months"</span>)),</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Age groups for analysis</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGEGROUP =</span> <span class="fu">case_when</span>(</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>      AGE <span class="sc">&lt;</span> <span class="dv">30</span> <span class="sc">~</span> <span class="st">"18-29"</span>,</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>      AGE <span class="sc">&lt;</span> <span class="dv">50</span> <span class="sc">~</span> <span class="st">"30-49"</span>,</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>      AGE <span class="sc">&lt;</span> <span class="dv">65</span> <span class="sc">~</span> <span class="st">"50-64"</span>, </span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"65+"</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Birth year for cohort analysis</span></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">BIRTH_YEAR =</span> <span class="fu">year</span>(BIRTH_DATE),</span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Days since birth (for very precise calculations)</span></span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">DAYS_SINCE_BIRTH =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(RFSTDTC, BIRTH_DATE, <span class="at">units =</span> <span class="st">"days"</span>))</span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Age calculations:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Age calculations:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(age_calculations <span class="sc">%&gt;%</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, BIRTH_DATE, RFSTDTC, AGE, AGE_PRECISE, AGEGROUP))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 6
+   USUBJID       BIRTH_DATE RFSTDTC      AGE AGE_PRECISE AGEGROUP
+   &lt;chr&gt;         &lt;date&gt;     &lt;date&gt;     &lt;dbl&gt;       &lt;dbl&gt; &lt;chr&gt;   
+ 1 STUDY-001-001 1957-11-10 2024-01-15    66          66 65+     
+ 2 STUDY-001-002 1951-02-27 2024-01-15    72          72 65+     
+ 3 STUDY-001-003 1960-07-11 2024-01-15    63          63 50-64   
+ 4 STUDY-001-004 1995-12-04 2024-01-15    28          28 18-29   
+ 5 STUDY-001-005 1991-03-27 2024-01-15    32          32 30-49   
+ 6 STUDY-001-006 1983-09-02 2024-01-15    40          40 30-49   
+ 7 STUDY-001-007 1995-06-28 2024-01-15    28          28 18-29   
+ 8 STUDY-001-008 1961-07-22 2024-01-15    62          62 50-64   
+ 9 STUDY-001-009 1990-07-24 2024-01-15    33          33 30-49   
+10 STUDY-001-010 1964-04-05 2024-01-15    59          59 50-64   </code></pre>
+</div>
+</div>
+</section>
+<section id="date-validation-and-quality-control" class="level3">
+<h3 class="anchored" data-anchor-id="date-validation-and-quality-control">4. Date Validation and Quality Control</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Date Validation ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Date Validation ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data with potential date issues</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>problematic_dates <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="fu">paste0</span>(<span class="st">"SUBJ-"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">BIRTH_DATE =</span> <span class="fu">c</span>(</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1975-06-15"</span>),</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2010-03-20"</span>),  <span class="co"># Too young</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1920-01-01"</span>),  <span class="co"># Too old</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1985-12-31"</span>),</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1992-02-29"</span>),  <span class="co"># Leap year - valid</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1992-08-15"</span>),</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1899-01-01"</span>),  <span class="co"># Very old</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"1988-04-10"</span>)</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">STUDY_START =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-15"</span>),</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">VISIT_DATE =</span> <span class="fu">c</span>(</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-01-20"</span>),</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-01-10"</span>),  <span class="co"># Before study start</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-03-15"</span>), </span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2023-12-01"</span>),  <span class="co"># Before study start</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-02-28"</span>),</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-04-15"</span>),</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2025-01-01"</span>),  <span class="co"># Future date</span></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(<span class="st">"2024-01-18"</span>)</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Validation checks</span></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>date_validation <span class="ot">&lt;-</span> problematic_dates <span class="sc">%&gt;%</span></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Age validation</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE =</span> <span class="fu">floor</span>(<span class="fu">as.numeric</span>(<span class="fu">difftime</span>(STUDY_START, BIRTH_DATE, <span class="at">units =</span> <span class="st">"days"</span>)) <span class="sc">/</span> <span class="fl">365.25</span>),</span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE_VALID =</span> <span class="fu">between</span>(AGE, <span class="dv">18</span>, <span class="dv">85</span>),</span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">AGE_FLAG =</span> <span class="fu">case_when</span>(</span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>      AGE <span class="sc">&lt;</span> <span class="dv">18</span> <span class="sc">~</span> <span class="st">"TOO_YOUNG"</span>,</span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>      AGE <span class="sc">&gt;</span> <span class="dv">85</span> <span class="sc">~</span> <span class="st">"TOO_OLD"</span>,</span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"VALID"</span></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Visit date validation</span></span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_BEFORE_STUDY =</span> VISIT_DATE <span class="sc">&lt;</span> STUDY_START,</span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_FUTURE =</span> VISIT_DATE <span class="sc">&gt;</span> <span class="fu">today</span>(),</span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_FLAG =</span> <span class="fu">case_when</span>(</span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a>      VISIT_BEFORE_STUDY <span class="sc">~</span> <span class="st">"BEFORE_STUDY"</span>,</span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a>      VISIT_FUTURE <span class="sc">~</span> <span class="st">"FUTURE_DATE"</span>,</span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"VALID"</span></span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Logical consistency checks</span></span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">BIRTH_AFTER_VISIT =</span> BIRTH_DATE <span class="sc">&gt;</span> VISIT_DATE,</span>
+<span id="cb29-50"><a href="#cb29-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">CONSISTENCY_FLAG =</span> <span class="fu">if_else</span>(BIRTH_AFTER_VISIT, <span class="st">"BIRTH_AFTER_VISIT"</span>, <span class="st">"VALID"</span>)</span>
+<span id="cb29-51"><a href="#cb29-51" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb29-52"><a href="#cb29-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-53"><a href="#cb29-53" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Date validation results:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Date validation results:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(date_validation <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, AGE, AGE_FLAG, VISIT_FLAG, CONSISTENCY_FLAG))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 5
+  USUBJID   AGE AGE_FLAG  VISIT_FLAG   CONSISTENCY_FLAG
+  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;        &lt;chr&gt;           
+1 SUBJ-1     48 VALID     VALID        VALID           
+2 SUBJ-2     13 TOO_YOUNG BEFORE_STUDY VALID           
+3 SUBJ-3    104 TOO_OLD   VALID        VALID           
+4 SUBJ-4     38 VALID     BEFORE_STUDY VALID           
+5 SUBJ-5     31 VALID     VALID        VALID           
+6 SUBJ-6     31 VALID     VALID        VALID           
+7 SUBJ-7    125 TOO_OLD   VALID        VALID           
+8 SUBJ-8     35 VALID     VALID        VALID           </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary of validation issues</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>validation_summary <span class="ot">&lt;-</span> date_validation <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_subjects =</span> <span class="fu">n</span>(),</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_issues =</span> <span class="fu">sum</span>(AGE_FLAG <span class="sc">!=</span> <span class="st">"VALID"</span>),</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">visit_issues =</span> <span class="fu">sum</span>(VISIT_FLAG <span class="sc">!=</span> <span class="st">"VALID"</span>),</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">consistency_issues =</span> <span class="fu">sum</span>(CONSISTENCY_FLAG <span class="sc">!=</span> <span class="st">"VALID"</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Validation summary:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nValidation summary:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(validation_summary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  total_subjects age_issues visit_issues consistency_issues
+           &lt;int&gt;      &lt;int&gt;        &lt;int&gt;              &lt;int&gt;
+1              8          3            2                  0</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="text-processing-with-stringr" class="level2">
+<h2 class="anchored" data-anchor-id="text-processing-with-stringr">Text Processing with stringr</h2>
+<section id="basic-string-operations" class="level3">
+<h3 class="anchored" data-anchor-id="basic-string-operations">1. Basic String Operations</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Basic String Operations ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Basic String Operations ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample clinical text data with common issues</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>clinical_text <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="fu">c</span>(<span class="st">"ABC-123-001"</span>, <span class="st">"abc-123-002"</span>, <span class="st">"ABC-123-003"</span>, <span class="st">"ABC 123 004"</span>),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">RAW_RACE =</span> <span class="fu">c</span>(<span class="st">"  White  "</span>, <span class="st">"BLACK or AFRICAN american"</span>, <span class="st">"asian"</span>, <span class="st">"White"</span>),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">RAW_AE_TERM =</span> <span class="fu">c</span>(<span class="st">"Headache"</span>, <span class="st">"NAUSEA"</span>, <span class="st">"stomach pain"</span>, <span class="st">"Dizziness"</span>),</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">RAW_MEDICATION =</span> <span class="fu">c</span>(<span class="st">"Aspirin 81mg"</span>, <span class="st">"Tylenol (acetaminophen) 500 MG"</span>, <span class="st">"ibuprofen"</span>, <span class="st">"Advil"</span>),</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">COMMENTS =</span> <span class="fu">c</span>(<span class="st">"Patient doing well"</span>, <span class="st">"SOME MILD SYMPTOMS"</span>, <span class="st">"no issues reported"</span>, <span class="st">"Follow-up needed"</span>)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="co"># String cleaning and standardization</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>text_cleaned <span class="ot">&lt;-</span> clinical_text <span class="sc">%&gt;%</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Case conversions</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">USUBJID_UPPER =</span> <span class="fu">str_to_upper</span>(USUBJID),</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">RACE_CLEAN =</span> <span class="fu">str_to_upper</span>(<span class="fu">str_trim</span>(RAW_RACE)),</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">AE_TERM_TITLE =</span> <span class="fu">str_to_title</span>(<span class="fu">str_to_lower</span>(RAW_AE_TERM)),</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">MEDICATION_CLEAN =</span> <span class="fu">str_to_title</span>(RAW_MEDICATION),</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">COMMENTS_SENTENCE =</span> <span class="fu">str_to_sentence</span>(<span class="fu">str_to_lower</span>(COMMENTS)),</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove extra whitespace</span></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">USUBJID_TRIMMED =</span> <span class="fu">str_squish</span>(USUBJID),</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># String length for validation</span></span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">RACE_LENGTH =</span> <span class="fu">str_length</span>(RACE_CLEAN),</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">COMMENT_LENGTH =</span> <span class="fu">str_length</span>(COMMENTS),</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check for missing/empty strings</span></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">RACE_MISSING =</span> <span class="fu">str_trim</span>(RAW_RACE) <span class="sc">==</span> <span class="st">""</span> <span class="sc">|</span> <span class="fu">is.na</span>(RAW_RACE),</span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract numbers from medication strings</span></span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">MED_DOSE =</span> <span class="fu">str_extract</span>(RAW_MEDICATION, <span class="st">"</span><span class="sc">\\</span><span class="st">d+"</span>),</span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">MED_DOSE_NUMERIC =</span> <span class="fu">as.numeric</span>(MED_DOSE)</span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"String cleaning examples:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "String cleaning examples:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(text_cleaned <span class="sc">%&gt;%</span> </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, USUBJID_UPPER, RACE_CLEAN, AE_TERM_TITLE, MED_DOSE_NUMERIC))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  USUBJID     USUBJID_UPPER RACE_CLEAN            AE_TERM_TITLE MED_DOSE_NUMERIC
+  &lt;chr&gt;       &lt;chr&gt;         &lt;chr&gt;                 &lt;chr&gt;                    &lt;dbl&gt;
+1 ABC-123-001 ABC-123-001   WHITE                 Headache                    81
+2 abc-123-002 ABC-123-002   BLACK OR AFRICAN AME… Nausea                     500
+3 ABC-123-003 ABC-123-003   ASIAN                 Stomach Pain                NA
+4 ABC 123 004 ABC 123 004   WHITE                 Dizziness                   NA</code></pre>
+</div>
+</div>
+</section>
+<section id="pattern-matching-and-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="pattern-matching-and-extraction">2. Pattern Matching and Extraction</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Pattern Matching and Extraction ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Pattern Matching and Extraction ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Subject ID parsing and validation</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>subject_ids <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ABC-123-001"</span>,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"DEF-456-002"</span>, </span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"GHI-789-003"</span>,</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"INVALID-ID"</span>,</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ABC123001"</span>,</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"XYZ-999-999"</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>id_analysis <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> subject_ids</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if ID matches expected pattern</span></span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">VALID_FORMAT =</span> <span class="fu">str_detect</span>(USUBJID, <span class="st">"^[A-Z]{3}-</span><span class="sc">\\</span><span class="st">d{3}-</span><span class="sc">\\</span><span class="st">d{3}$"</span>),</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract components using regex groups</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">STUDY_CODE =</span> <span class="fu">str_extract</span>(USUBJID, <span class="st">"^[A-Z]{3}"</span>),</span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">SITE_NUMBER =</span> <span class="fu">str_extract</span>(USUBJID, <span class="st">"(?&lt;=-)(</span><span class="sc">\\</span><span class="st">d{3})(?=-)"</span>),</span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">SUBJECT_NUMBER =</span> <span class="fu">str_extract</span>(USUBJID, <span class="st">"</span><span class="sc">\\</span><span class="st">d{3}$"</span>),</span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Alternative extraction using str_match</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">ID_COMPONENTS =</span> <span class="fu">str_match</span>(USUBJID, <span class="st">"^([A-Z]{3})-(</span><span class="sc">\\</span><span class="st">d{3})-(</span><span class="sc">\\</span><span class="st">d{3})$"</span>),</span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count components</span></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DASH_COUNT =</span> <span class="fu">str_count</span>(USUBJID, <span class="st">"-"</span>),</span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">DIGIT_COUNT =</span> <span class="fu">str_count</span>(USUBJID, <span class="st">"</span><span class="sc">\\</span><span class="st">d"</span>),</span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Validation flags</span></span>
+<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">HAS_STUDY_CODE =</span> <span class="sc">!</span><span class="fu">is.na</span>(STUDY_CODE),</span>
+<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">PROPER_LENGTH =</span> <span class="fu">str_length</span>(USUBJID) <span class="sc">==</span> <span class="dv">11</span></span>
+<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Subject ID analysis:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Subject ID analysis:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(id_analysis <span class="sc">%&gt;%</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, VALID_FORMAT, STUDY_CODE, SITE_NUMBER, SUBJECT_NUMBER))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+  USUBJID     VALID_FORMAT STUDY_CODE SITE_NUMBER SUBJECT_NUMBER
+  &lt;chr&gt;       &lt;lgl&gt;        &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;         
+1 ABC-123-001 TRUE         ABC        123         001           
+2 DEF-456-002 TRUE         DEF        456         002           
+3 GHI-789-003 TRUE         GHI        789         003           
+4 INVALID-ID  FALSE        INV        &lt;NA&gt;        &lt;NA&gt;          
+5 ABC123001   FALSE        ABC        &lt;NA&gt;        001           
+6 XYZ-999-999 TRUE         XYZ        999         999           </code></pre>
+</div>
+</div>
+</section>
+<section id="medical-term-standardization" class="level3">
+<h3 class="anchored" data-anchor-id="medical-term-standardization">3. Medical Term Standardization</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Medical Term Standardization ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Medical Term Standardization ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample adverse event terms with variations</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>ae_terms <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">RAW_TERM =</span> <span class="fu">c</span>(</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"headache"</span>,</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Headache"</span>,</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"HEAD ACHE"</span>,</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"head pain"</span>,</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nausea"</span>,</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"NAUSEA"</span>,</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sick to stomach"</span>,</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"feeling sick"</span>,</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dizziness"</span>,</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dizzy"</span>,</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"light headed"</span>,</span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"fatigue"</span>,</span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tired"</span>,</span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"exhausted"</span></span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">SEVERITY =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"MILD"</span>, <span class="st">"MODERATE"</span>, <span class="st">"SEVERE"</span>), <span class="dv">14</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standardization mapping</span></span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>standardize_ae_term <span class="ot">&lt;-</span> <span class="cf">function</span>(raw_term) {</span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to lowercase for matching</span></span>
+<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>  term_lower <span class="ot">&lt;-</span> <span class="fu">str_to_lower</span>(<span class="fu">str_trim</span>(raw_term))</span>
+<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define mapping rules</span></span>
+<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>  standardized <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
+<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(term_lower, <span class="st">"head.*ache|head.*pain"</span>) <span class="sc">~</span> <span class="st">"Headache"</span>,</span>
+<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(term_lower, <span class="st">"nausea|sick.*stomach|feeling.*sick"</span>) <span class="sc">~</span> <span class="st">"Nausea"</span>, </span>
+<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(term_lower, <span class="st">"dizz|light.*head"</span>) <span class="sc">~</span> <span class="st">"Dizziness"</span>,</span>
+<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(term_lower, <span class="st">"fatigue|tired|exhaust"</span>) <span class="sc">~</span> <span class="st">"Fatigue"</span>,</span>
+<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">str_to_title</span>(raw_term)  <span class="co"># Default to title case</span></span>
+<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(standardized)</span>
+<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-39"><a href="#cb51-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply standardization</span></span>
+<span id="cb51-40"><a href="#cb51-40" aria-hidden="true" tabindex="-1"></a>ae_standardized <span class="ot">&lt;-</span> ae_terms <span class="sc">%&gt;%</span></span>
+<span id="cb51-41"><a href="#cb51-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb51-42"><a href="#cb51-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">STANDARD_TERM =</span> <span class="fu">standardize_ae_term</span>(RAW_TERM),</span>
+<span id="cb51-43"><a href="#cb51-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">TERM_LENGTH =</span> <span class="fu">str_length</span>(RAW_TERM),</span>
+<span id="cb51-44"><a href="#cb51-44" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-45"><a href="#cb51-45" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create term categories</span></span>
+<span id="cb51-46"><a href="#cb51-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">TERM_CATEGORY =</span> <span class="fu">case_when</span>(</span>
+<span id="cb51-47"><a href="#cb51-47" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(STANDARD_TERM, <span class="st">"Headache"</span>) <span class="sc">~</span> <span class="st">"Neurological"</span>,</span>
+<span id="cb51-48"><a href="#cb51-48" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(STANDARD_TERM, <span class="st">"Nausea"</span>) <span class="sc">~</span> <span class="st">"Gastrointestinal"</span>,</span>
+<span id="cb51-49"><a href="#cb51-49" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(STANDARD_TERM, <span class="st">"Dizziness"</span>) <span class="sc">~</span> <span class="st">"Neurological"</span>, </span>
+<span id="cb51-50"><a href="#cb51-50" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(STANDARD_TERM, <span class="st">"Fatigue"</span>) <span class="sc">~</span> <span class="st">"General"</span>,</span>
+<span id="cb51-51"><a href="#cb51-51" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Other"</span></span>
+<span id="cb51-52"><a href="#cb51-52" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb51-53"><a href="#cb51-53" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb51-54"><a href="#cb51-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-55"><a href="#cb51-55" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"AE term standardization:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AE term standardization:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ae_standardized)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14 × 5
+   RAW_TERM        SEVERITY STANDARD_TERM TERM_LENGTH TERM_CATEGORY   
+   &lt;chr&gt;           &lt;chr&gt;    &lt;chr&gt;               &lt;int&gt; &lt;chr&gt;           
+ 1 headache        MILD     Headache                8 Neurological    
+ 2 Headache        MODERATE Headache                8 Neurological    
+ 3 HEAD ACHE       MILD     Headache                9 Neurological    
+ 4 head pain       MILD     Headache                9 Neurological    
+ 5 nausea          SEVERE   Nausea                  6 Gastrointestinal
+ 6 NAUSEA          MILD     Nausea                  6 Gastrointestinal
+ 7 sick to stomach SEVERE   Nausea                 15 Gastrointestinal
+ 8 feeling sick    MILD     Nausea                 12 Gastrointestinal
+ 9 dizziness       SEVERE   Dizziness               9 Neurological    
+10 dizzy           MILD     Dizziness               5 Neurological    
+11 light headed    SEVERE   Dizziness              12 Neurological    
+12 fatigue         MODERATE Fatigue                 7 General         
+13 tired           MILD     Fatigue                 5 General         
+14 exhausted       SEVERE   Fatigue                 9 General         </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary of standardization results</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>standardization_summary <span class="ot">&lt;-</span> ae_standardized <span class="sc">%&gt;%</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(STANDARD_TERM, TERM_CATEGORY, <span class="at">name =</span> <span class="st">"FREQUENCY"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(FREQUENCY))</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Standardization summary:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nStandardization summary:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(standardization_summary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  STANDARD_TERM TERM_CATEGORY    FREQUENCY
+  &lt;chr&gt;         &lt;chr&gt;                &lt;int&gt;
+1 Headache      Neurological             4
+2 Nausea        Gastrointestinal         4
+3 Dizziness     Neurological             3
+4 Fatigue       General                  3</code></pre>
+</div>
+</div>
+</section>
+<section id="data-validation-with-regex" class="level3">
+<h3 class="anchored" data-anchor-id="data-validation-with-regex">4. Data Validation with Regex</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Data Validation with Regex ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Data Validation with Regex ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample clinical data needing validation</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>validation_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="fu">c</span>(<span class="st">"ABC-123-001"</span>, <span class="st">"DEF-456-002"</span>, <span class="st">"invalid"</span>, <span class="st">"GHI-789-003"</span>),</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">EMAIL =</span> <span class="fu">c</span>(<span class="st">"john.doe@email.com"</span>, <span class="st">"invalid-email"</span>, <span class="st">"jane@hospital.org"</span>, <span class="st">"test@test"</span>),</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">PHONE =</span> <span class="fu">c</span>(<span class="st">"555-123-4567"</span>, <span class="st">"5551234567"</span>, <span class="st">"555.123.4567"</span>, <span class="st">"invalid"</span>),</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">MRN =</span> <span class="fu">c</span>(<span class="st">"MRN123456"</span>, <span class="st">"123456"</span>, <span class="st">"MRN-789012"</span>, <span class="st">"INVALID123"</span>),</span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">DOSE_TEXT =</span> <span class="fu">c</span>(<span class="st">"5 mg"</span>, <span class="st">"10mg"</span>, <span class="st">"2.5 mg BID"</span>, <span class="st">"unknown"</span>)</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Validation patterns</span></span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>validation_results <span class="ot">&lt;-</span> validation_data <span class="sc">%&gt;%</span></span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Subject ID validation</span></span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">USUBJID_VALID =</span> <span class="fu">str_detect</span>(USUBJID, <span class="st">"^[A-Z]{3}-</span><span class="sc">\\</span><span class="st">d{3}-</span><span class="sc">\\</span><span class="st">d{3}$"</span>),</span>
+<span id="cb61-15"><a href="#cb61-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-16"><a href="#cb61-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Email validation (simplified)</span></span>
+<span id="cb61-17"><a href="#cb61-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">EMAIL_VALID =</span> <span class="fu">str_detect</span>(EMAIL, <span class="st">"^[</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">.-]+@[</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">.-]+</span><span class="sc">\\</span><span class="st">.[a-zA-Z]{2,}$"</span>),</span>
+<span id="cb61-18"><a href="#cb61-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-19"><a href="#cb61-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Phone number validation (US format)</span></span>
+<span id="cb61-20"><a href="#cb61-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">PHONE_VALID =</span> <span class="fu">str_detect</span>(PHONE, <span class="st">"^</span><span class="sc">\\</span><span class="st">d{3}[-.</span><span class="sc">\\</span><span class="st">s]?</span><span class="sc">\\</span><span class="st">d{3}[-.</span><span class="sc">\\</span><span class="st">s]?</span><span class="sc">\\</span><span class="st">d{4}$"</span>),</span>
+<span id="cb61-21"><a href="#cb61-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-22"><a href="#cb61-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Medical record number validation</span></span>
+<span id="cb61-23"><a href="#cb61-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">MRN_VALID =</span> <span class="fu">str_detect</span>(MRN, <span class="st">"^MRN</span><span class="sc">\\</span><span class="st">d{6}$"</span>),</span>
+<span id="cb61-24"><a href="#cb61-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-25"><a href="#cb61-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dose extraction and validation</span></span>
+<span id="cb61-26"><a href="#cb61-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_NUMBER =</span> <span class="fu">as.numeric</span>(<span class="fu">str_extract</span>(DOSE_TEXT, <span class="st">"</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">d*"</span>)),</span>
+<span id="cb61-27"><a href="#cb61-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_UNIT =</span> <span class="fu">str_extract</span>(DOSE_TEXT, <span class="st">"mg|g|mL"</span>),</span>
+<span id="cb61-28"><a href="#cb61-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_VALID =</span> <span class="sc">!</span><span class="fu">is.na</span>(DOSE_NUMBER) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(DOSE_UNIT),</span>
+<span id="cb61-29"><a href="#cb61-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-30"><a href="#cb61-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Overall validation score</span></span>
+<span id="cb61-31"><a href="#cb61-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">VALIDATION_SCORE =</span> USUBJID_VALID <span class="sc">+</span> EMAIL_VALID <span class="sc">+</span> PHONE_VALID <span class="sc">+</span> MRN_VALID <span class="sc">+</span> DOSE_VALID,</span>
+<span id="cb61-32"><a href="#cb61-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-33"><a href="#cb61-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Validation status</span></span>
+<span id="cb61-34"><a href="#cb61-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">VALIDATION_STATUS =</span> <span class="fu">case_when</span>(</span>
+<span id="cb61-35"><a href="#cb61-35" aria-hidden="true" tabindex="-1"></a>      VALIDATION_SCORE <span class="sc">==</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"PASS"</span>,</span>
+<span id="cb61-36"><a href="#cb61-36" aria-hidden="true" tabindex="-1"></a>      VALIDATION_SCORE <span class="sc">&gt;=</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"WARNING"</span>, </span>
+<span id="cb61-37"><a href="#cb61-37" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"FAIL"</span></span>
+<span id="cb61-38"><a href="#cb61-38" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb61-39"><a href="#cb61-39" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb61-40"><a href="#cb61-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-41"><a href="#cb61-41" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Data validation results:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Data validation results:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(validation_results <span class="sc">%&gt;%</span> </span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(USUBJID, USUBJID_VALID, EMAIL_VALID, PHONE_VALID, </span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>              DOSE_NUMBER, DOSE_UNIT, VALIDATION_STATUS))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 7
+  USUBJID     USUBJID_VALID EMAIL_VALID PHONE_VALID DOSE_NUMBER DOSE_UNIT
+  &lt;chr&gt;       &lt;lgl&gt;         &lt;lgl&gt;       &lt;lgl&gt;             &lt;dbl&gt; &lt;chr&gt;    
+1 ABC-123-001 TRUE          TRUE        TRUE                5   mg       
+2 DEF-456-002 TRUE          FALSE       TRUE               10   mg       
+3 invalid     FALSE         TRUE        TRUE                2.5 mg       
+4 GHI-789-003 TRUE          FALSE       FALSE              NA   &lt;NA&gt;     
+# ℹ 1 more variable: VALIDATION_STATUS &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="advanced-datetime-operations" class="level2">
+<h2 class="anchored" data-anchor-id="advanced-datetime-operations">Advanced Date/Time Operations</h2>
+<section id="time-zone-handling" class="level3">
+<h3 class="anchored" data-anchor-id="time-zone-handling">1. Time Zone Handling</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Time Zone Handling ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Time Zone Handling ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clinical trials often span multiple time zones</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>multi_site_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">SITE_ID =</span> <span class="fu">c</span>(<span class="st">"001"</span>, <span class="st">"002"</span>, <span class="st">"003"</span>, <span class="st">"004"</span>),</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">SITE_NAME =</span> <span class="fu">c</span>(<span class="st">"New York"</span>, <span class="st">"London"</span>, <span class="st">"Tokyo"</span>, <span class="st">"Sydney"</span>),</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">TIMEZONE =</span> <span class="fu">c</span>(<span class="st">"America/New_York"</span>, <span class="st">"Europe/London"</span>, <span class="st">"Asia/Tokyo"</span>, <span class="st">"Australia/Sydney"</span>),</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">LOCAL_TIME =</span> <span class="fu">c</span>(<span class="st">"2024-03-15 14:30:00"</span>, <span class="st">"2024-03-15 19:30:00"</span>, </span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"2024-03-16 03:30:00"</span>, <span class="st">"2024-03-16 05:30:00"</span>)</span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to standard UTC time</span></span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a>utc_times <span class="ot">&lt;-</span> multi_site_data <span class="sc">%&gt;%</span></span>
+<span id="cb67-12"><a href="#cb67-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb67-13"><a href="#cb67-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse local time with timezone (simplified approach)</span></span>
+<span id="cb67-14"><a href="#cb67-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">LOCAL_DATETIME =</span> <span class="fu">ymd_hms</span>(LOCAL_TIME),</span>
+<span id="cb67-15"><a href="#cb67-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb67-16"><a href="#cb67-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Format for CDISC submission (ISO 8601)</span></span>
+<span id="cb67-17"><a href="#cb67-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">UTC_ISO =</span> <span class="fu">format</span>(LOCAL_DATETIME, <span class="st">"%Y-%m-%dT%H:%M:%S"</span>),</span>
+<span id="cb67-18"><a href="#cb67-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb67-19"><a href="#cb67-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Study day based on date</span></span>
+<span id="cb67-20"><a href="#cb67-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">STUDY_START =</span> <span class="fu">ymd</span>(<span class="st">"2024-03-15"</span>),</span>
+<span id="cb67-21"><a href="#cb67-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">STUDY_DAY =</span> <span class="fu">as.numeric</span>(<span class="fu">date</span>(LOCAL_DATETIME) <span class="sc">-</span> STUDY_START) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb67-22"><a href="#cb67-22" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb67-23"><a href="#cb67-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-24"><a href="#cb67-24" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Multi-site time zone handling:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Multi-site time zone handling:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(utc_times <span class="sc">%&gt;%</span> <span class="fu">select</span>(SITE_NAME, LOCAL_TIME, UTC_ISO, STUDY_DAY))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 4
+  SITE_NAME LOCAL_TIME          UTC_ISO             STUDY_DAY
+  &lt;chr&gt;     &lt;chr&gt;               &lt;chr&gt;                   &lt;dbl&gt;
+1 New York  2024-03-15 14:30:00 2024-03-15T14:30:00         1
+2 London    2024-03-15 19:30:00 2024-03-15T19:30:00         1
+3 Tokyo     2024-03-16 03:30:00 2024-03-16T03:30:00         2
+4 Sydney    2024-03-16 05:30:00 2024-03-16T05:30:00         2</code></pre>
+</div>
+</div>
+</section>
+<section id="date-sequences-and-intervals" class="level3">
+<h3 class="anchored" data-anchor-id="date-sequences-and-intervals">2. Date Sequences and Intervals</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Date Sequences and Intervals ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Date Sequences and Intervals ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create visit schedules</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>study_schedule <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">USUBJID =</span> <span class="st">"ABC-123-001"</span>,</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">STUDY_START =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-15"</span>)</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create visit sequence</span></span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_DATES =</span> <span class="fu">list</span>(STUDY_START <span class="sc">+</span> <span class="fu">days</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">14</span>, <span class="dv">28</span>, <span class="dv">56</span>, <span class="dv">84</span>, <span class="dv">112</span>, <span class="dv">168</span>))),</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_NAMES =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Baseline"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 4"</span>, <span class="st">"Week 8"</span>, </span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"Week 12"</span>, <span class="st">"Week 16"</span>, <span class="st">"Week 24"</span>))</span>
+<span id="cb73-11"><a href="#cb73-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb73-12"><a href="#cb73-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="fu">c</span>(VISIT_DATES, VISIT_NAMES)) <span class="sc">%&gt;%</span></span>
+<span id="cb73-13"><a href="#cb73-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb73-14"><a href="#cb73-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_NUMBER =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb73-15"><a href="#cb73-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">STUDY_DAY =</span> <span class="fu">as.numeric</span>(VISIT_DATES <span class="sc">-</span> STUDY_START) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb73-16"><a href="#cb73-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-17"><a href="#cb73-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate visit windows (±3 days)</span></span>
+<span id="cb73-18"><a href="#cb73-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">WINDOW_START =</span> VISIT_DATES <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">3</span>),</span>
+<span id="cb73-19"><a href="#cb73-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">WINDOW_END =</span> VISIT_DATES <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">3</span>),</span>
+<span id="cb73-20"><a href="#cb73-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-21"><a href="#cb73-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Day of week for scheduling</span></span>
+<span id="cb73-22"><a href="#cb73-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_DOW =</span> <span class="fu">wday</span>(VISIT_DATES, <span class="at">label =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb73-23"><a href="#cb73-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb73-24"><a href="#cb73-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Month and quarter for analysis</span></span>
+<span id="cb73-25"><a href="#cb73-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_MONTH =</span> <span class="fu">month</span>(VISIT_DATES, <span class="at">label =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb73-26"><a href="#cb73-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">VISIT_QUARTER =</span> <span class="fu">quarter</span>(VISIT_DATES)</span>
+<span id="cb73-27"><a href="#cb73-27" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb73-28"><a href="#cb73-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-29"><a href="#cb73-29" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Study visit schedule:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Study visit schedule:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(study_schedule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 11
+  USUBJID     STUDY_START VISIT_DATES VISIT_NAMES VISIT_NUMBER STUDY_DAY
+  &lt;chr&gt;       &lt;date&gt;      &lt;date&gt;      &lt;chr&gt;              &lt;int&gt;     &lt;dbl&gt;
+1 ABC-123-001 2024-01-15  2024-01-15  Baseline               1         1
+2 ABC-123-001 2024-01-15  2024-01-29  Week 2                 2        15
+3 ABC-123-001 2024-01-15  2024-02-12  Week 4                 3        29
+4 ABC-123-001 2024-01-15  2024-03-11  Week 8                 4        57
+5 ABC-123-001 2024-01-15  2024-04-08  Week 12                5        85
+6 ABC-123-001 2024-01-15  2024-05-06  Week 16                6       113
+7 ABC-123-001 2024-01-15  2024-07-01  Week 24                7       169
+# ℹ 5 more variables: WINDOW_START &lt;date&gt;, WINDOW_END &lt;date&gt;, VISIT_DOW &lt;ord&gt;,
+#   VISIT_MONTH &lt;ord&gt;, VISIT_QUARTER &lt;int&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate intervals between visits</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>visit_intervals <span class="ot">&lt;-</span> study_schedule <span class="sc">%&gt;%</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Days since previous visit</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">DAYS_SINCE_PREV =</span> <span class="fu">as.numeric</span>(VISIT_DATES <span class="sc">-</span> <span class="fu">lag</span>(VISIT_DATES)),</span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Weeks since baseline</span></span>
+<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">WEEKS_SINCE_BL =</span> <span class="fu">as.numeric</span>(VISIT_DATES <span class="sc">-</span> <span class="fu">first</span>(VISIT_DATES)) <span class="sc">/</span> <span class="dv">7</span>,</span>
+<span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb77-10"><a href="#cb77-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Duration from baseline</span></span>
+<span id="cb77-11"><a href="#cb77-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">DURATION_FROM_BL =</span> <span class="fu">interval</span>(<span class="fu">first</span>(VISIT_DATES), VISIT_DATES),</span>
+<span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">DURATION_WEEKS =</span> <span class="fu">time_length</span>(DURATION_FROM_BL, <span class="st">"weeks"</span>)</span>
+<span id="cb77-13"><a href="#cb77-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb77-14"><a href="#cb77-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb77-15"><a href="#cb77-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Visit intervals:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nVisit intervals:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(visit_intervals <span class="sc">%&gt;%</span> </span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(VISIT_NAMES, VISIT_DATES, DAYS_SINCE_PREV, WEEKS_SINCE_BL))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 4
+  VISIT_NAMES VISIT_DATES DAYS_SINCE_PREV WEEKS_SINCE_BL
+  &lt;chr&gt;       &lt;date&gt;                &lt;dbl&gt;          &lt;dbl&gt;
+1 Baseline    2024-01-15               NA              0
+2 Week 2      2024-01-29               14              2
+3 Week 4      2024-02-12               14              4
+4 Week 8      2024-03-11               28              8
+5 Week 12     2024-04-08               28             12
+6 Week 16     2024-05-06               28             16
+7 Week 24     2024-07-01               56             24</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="advanced-string-operations" class="level2">
+<h2 class="anchored" data-anchor-id="advanced-string-operations">Advanced String Operations</h2>
+<section id="complex-text-parsing" class="level3">
+<h3 class="anchored" data-anchor-id="complex-text-parsing">1. Complex Text Parsing</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Complex Text Parsing ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Complex Text Parsing ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample medication text with complex formatting</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>medication_text <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">MED_TEXT =</span> <span class="fu">c</span>(</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Aspirin 81 mg once daily"</span>,</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Metformin 500mg twice daily (BID)"</span>, </span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Lisinopril 10 mg PO QD #30"</span>,</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Atorvastatin 20mg by mouth at bedtime"</span>,</span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Ibuprofen 400 mg every 6 hours as needed"</span>,</span>
+<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Insulin glargine 15 units subcutaneous at bedtime"</span></span>
+<span id="cb83-10"><a href="#cb83-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb83-11"><a href="#cb83-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb83-12"><a href="#cb83-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-13"><a href="#cb83-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract medication components</span></span>
+<span id="cb83-14"><a href="#cb83-14" aria-hidden="true" tabindex="-1"></a>med_parsed <span class="ot">&lt;-</span> medication_text <span class="sc">%&gt;%</span></span>
+<span id="cb83-15"><a href="#cb83-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb83-16"><a href="#cb83-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract medication name (first word(s) before dose)</span></span>
+<span id="cb83-17"><a href="#cb83-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">MED_NAME =</span> <span class="fu">str_extract</span>(MED_TEXT, <span class="st">"^[A-Za-z</span><span class="sc">\\</span><span class="st">s]+(?=</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\\</span><span class="st">d)"</span>),</span>
+<span id="cb83-18"><a href="#cb83-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">MED_NAME_CLEAN =</span> <span class="fu">str_trim</span>(MED_NAME),</span>
+<span id="cb83-19"><a href="#cb83-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb83-20"><a href="#cb83-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract dose and unit</span></span>
+<span id="cb83-21"><a href="#cb83-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_WITH_UNIT =</span> <span class="fu">str_extract</span>(MED_TEXT, <span class="st">"</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">d*</span><span class="sc">\\</span><span class="st">s*mg|</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">d*</span><span class="sc">\\</span><span class="st">s*units"</span>),</span>
+<span id="cb83-22"><a href="#cb83-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_NUMBER =</span> <span class="fu">as.numeric</span>(<span class="fu">str_extract</span>(DOSE_WITH_UNIT, <span class="st">"</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">d*"</span>)),</span>
+<span id="cb83-23"><a href="#cb83-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOSE_UNIT =</span> <span class="fu">str_extract</span>(DOSE_WITH_UNIT, <span class="st">"mg|units"</span>),</span>
+<span id="cb83-24"><a href="#cb83-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb83-25"><a href="#cb83-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract frequency information</span></span>
+<span id="cb83-26"><a href="#cb83-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">FREQUENCY =</span> <span class="fu">case_when</span>(</span>
+<span id="cb83-27"><a href="#cb83-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"once daily|QD"</span>) <span class="sc">~</span> <span class="st">"Once daily"</span>,</span>
+<span id="cb83-28"><a href="#cb83-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"twice daily|BID"</span>) <span class="sc">~</span> <span class="st">"Twice daily"</span>,</span>
+<span id="cb83-29"><a href="#cb83-29" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"every 6 hours"</span>) <span class="sc">~</span> <span class="st">"Every 6 hours"</span>,</span>
+<span id="cb83-30"><a href="#cb83-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"at bedtime"</span>) <span class="sc">~</span> <span class="st">"At bedtime"</span>,</span>
+<span id="cb83-31"><a href="#cb83-31" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"As directed"</span></span>
+<span id="cb83-32"><a href="#cb83-32" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb83-33"><a href="#cb83-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb83-34"><a href="#cb83-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract route of administration</span></span>
+<span id="cb83-35"><a href="#cb83-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">ROUTE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb83-36"><a href="#cb83-36" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"PO|by mouth"</span>) <span class="sc">~</span> <span class="st">"Oral"</span>,</span>
+<span id="cb83-37"><a href="#cb83-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"subcutaneous"</span>) <span class="sc">~</span> <span class="st">"Subcutaneous"</span>,</span>
+<span id="cb83-38"><a href="#cb83-38" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Oral"</span>  <span class="co"># Default assumption</span></span>
+<span id="cb83-39"><a href="#cb83-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb83-40"><a href="#cb83-40" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb83-41"><a href="#cb83-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Identify PRN (as needed) medications</span></span>
+<span id="cb83-42"><a href="#cb83-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">PRN_FLAG =</span> <span class="fu">str_detect</span>(MED_TEXT, <span class="st">"as needed|PRN"</span>),</span>
+<span id="cb83-43"><a href="#cb83-43" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb83-44"><a href="#cb83-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create standardized medication string</span></span>
+<span id="cb83-45"><a href="#cb83-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">MED_STANDARD =</span> <span class="fu">paste</span>(MED_NAME_CLEAN, DOSE_NUMBER, DOSE_UNIT, FREQUENCY, <span class="at">sep =</span> <span class="st">" "</span>)</span>
+<span id="cb83-46"><a href="#cb83-46" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb83-47"><a href="#cb83-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-48"><a href="#cb83-48" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Medication parsing:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Medication parsing:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(med_parsed <span class="sc">%&gt;%</span> </span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(MED_NAME_CLEAN, DOSE_NUMBER, DOSE_UNIT, FREQUENCY, ROUTE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+  MED_NAME_CLEAN   DOSE_NUMBER DOSE_UNIT FREQUENCY     ROUTE       
+  &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;chr&gt;       
+1 Aspirin                   81 mg        Once daily    Oral        
+2 Metformin                500 mg        Twice daily   Oral        
+3 Lisinopril                10 mg        Once daily    Oral        
+4 Atorvastatin              20 mg        At bedtime    Oral        
+5 Ibuprofen                400 mg        Every 6 hours Oral        
+6 Insulin glargine          15 units     At bedtime    Subcutaneous</code></pre>
+</div>
+</div>
+</section>
+<section id="text-quality-assessment" class="level3">
+<h3 class="anchored" data-anchor-id="text-quality-assessment">2. Text Quality Assessment</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Text Quality Assessment ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Text Quality Assessment ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample clinical comments with quality issues</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>clinical_comments <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">COMMENT_ID =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">RAW_COMMENT =</span> <span class="fu">c</span>(</span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Patient doing well"</span>,</span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"PATIENT EXPERIENCED MILD HEADACHE"</span>,</span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"no adverse events reported"</span>,</span>
+<span id="cb89-8"><a href="#cb89-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,  <span class="co"># Empty comment</span></span>
+<span id="cb89-9"><a href="#cb89-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Patient c/o nausea &amp; dizziness"</span>,</span>
+<span id="cb89-10"><a href="#cb89-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"follow-up needed ASAP"</span>,</span>
+<span id="cb89-11"><a href="#cb89-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pt. stable, no issues"</span>,</span>
+<span id="cb89-12"><a href="#cb89-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"VITAL SIGNS WNL"</span>,</span>
+<span id="cb89-13"><a href="#cb89-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Patient reports feeling much better today"</span>,</span>
+<span id="cb89-14"><a href="#cb89-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"   "</span>  <span class="co"># Whitespace only</span></span>
+<span id="cb89-15"><a href="#cb89-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb89-16"><a href="#cb89-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb89-17"><a href="#cb89-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-18"><a href="#cb89-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Quality assessment</span></span>
+<span id="cb89-19"><a href="#cb89-19" aria-hidden="true" tabindex="-1"></a>comment_quality <span class="ot">&lt;-</span> clinical_comments <span class="sc">%&gt;%</span></span>
+<span id="cb89-20"><a href="#cb89-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb89-21"><a href="#cb89-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Basic quality metrics</span></span>
+<span id="cb89-22"><a href="#cb89-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">COMMENT_LENGTH =</span> <span class="fu">str_length</span>(RAW_COMMENT),</span>
+<span id="cb89-23"><a href="#cb89-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">WORD_COUNT =</span> <span class="fu">str_count</span>(RAW_COMMENT, <span class="st">"</span><span class="sc">\\</span><span class="st">w+"</span>),</span>
+<span id="cb89-24"><a href="#cb89-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb89-25"><a href="#cb89-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Content checks</span></span>
+<span id="cb89-26"><a href="#cb89-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">IS_EMPTY =</span> <span class="fu">str_trim</span>(RAW_COMMENT) <span class="sc">==</span> <span class="st">""</span> <span class="sc">|</span> <span class="fu">is.na</span>(RAW_COMMENT),</span>
+<span id="cb89-27"><a href="#cb89-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">IS_ALL_CAPS =</span> <span class="fu">str_detect</span>(RAW_COMMENT, <span class="st">"^[A-Z</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\\</span><span class="st">W]*$"</span>) <span class="sc">&amp;</span> COMMENT_LENGTH <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb89-28"><a href="#cb89-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">IS_ALL_LOWER =</span> <span class="fu">str_detect</span>(RAW_COMMENT, <span class="st">"^[a-z</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\\</span><span class="st">W]*$"</span>) <span class="sc">&amp;</span> COMMENT_LENGTH <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb89-29"><a href="#cb89-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb89-30"><a href="#cb89-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Medical abbreviation detection</span></span>
+<span id="cb89-31"><a href="#cb89-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">HAS_ABBREVIATIONS =</span> <span class="fu">str_detect</span>(RAW_COMMENT, <span class="st">"</span><span class="sc">\\</span><span class="st">bc/o</span><span class="sc">\\</span><span class="st">b|</span><span class="sc">\\</span><span class="st">bpt</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">b|</span><span class="sc">\\</span><span class="st">bWNL</span><span class="sc">\\</span><span class="st">b|</span><span class="sc">\\</span><span class="st">bASAP</span><span class="sc">\\</span><span class="st">b"</span>),</span>
+<span id="cb89-32"><a href="#cb89-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb89-33"><a href="#cb89-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Quality score (0-5)</span></span>
+<span id="cb89-34"><a href="#cb89-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">QUALITY_SCORE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb89-35"><a href="#cb89-35" aria-hidden="true" tabindex="-1"></a>      IS_EMPTY <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb89-36"><a href="#cb89-36" aria-hidden="true" tabindex="-1"></a>      COMMENT_LENGTH <span class="sc">&lt;</span> <span class="dv">5</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb89-37"><a href="#cb89-37" aria-hidden="true" tabindex="-1"></a>      IS_ALL_CAPS <span class="sc">|</span> IS_ALL_LOWER <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb89-38"><a href="#cb89-38" aria-hidden="true" tabindex="-1"></a>      HAS_ABBREVIATIONS <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb89-39"><a href="#cb89-39" aria-hidden="true" tabindex="-1"></a>      WORD_COUNT <span class="sc">&lt;</span> <span class="dv">3</span> <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb89-40"><a href="#cb89-40" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">5</span></span>
+<span id="cb89-41"><a href="#cb89-41" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb89-42"><a href="#cb89-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb89-43"><a href="#cb89-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Quality category</span></span>
+<span id="cb89-44"><a href="#cb89-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">QUALITY_CATEGORY =</span> <span class="fu">case_when</span>(</span>
+<span id="cb89-45"><a href="#cb89-45" aria-hidden="true" tabindex="-1"></a>      QUALITY_SCORE <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"Missing"</span>,</span>
+<span id="cb89-46"><a href="#cb89-46" aria-hidden="true" tabindex="-1"></a>      QUALITY_SCORE <span class="sc">&lt;=</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Poor"</span>,</span>
+<span id="cb89-47"><a href="#cb89-47" aria-hidden="true" tabindex="-1"></a>      QUALITY_SCORE <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"Fair"</span>,</span>
+<span id="cb89-48"><a href="#cb89-48" aria-hidden="true" tabindex="-1"></a>      QUALITY_SCORE <span class="sc">&gt;=</span> <span class="dv">4</span> <span class="sc">~</span> <span class="st">"Good"</span></span>
+<span id="cb89-49"><a href="#cb89-49" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb89-50"><a href="#cb89-50" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb89-51"><a href="#cb89-51" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Cleaned version</span></span>
+<span id="cb89-52"><a href="#cb89-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">COMMENT_CLEAN =</span> <span class="fu">str_to_sentence</span>(<span class="fu">str_squish</span>(RAW_COMMENT))</span>
+<span id="cb89-53"><a href="#cb89-53" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb89-54"><a href="#cb89-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-55"><a href="#cb89-55" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Comment quality assessment:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Comment quality assessment:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(comment_quality <span class="sc">%&gt;%</span> </span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(RAW_COMMENT, COMMENT_LENGTH, WORD_COUNT, QUALITY_CATEGORY))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 4
+   RAW_COMMENT                        COMMENT_LENGTH WORD_COUNT QUALITY_CATEGORY
+   &lt;chr&gt;                                       &lt;int&gt;      &lt;int&gt; &lt;chr&gt;           
+ 1 "Patient doing well"                           18          3 Good            
+ 2 "PATIENT EXPERIENCED MILD HEADACH…             33          4 Poor            
+ 3 "no adverse events reported"                   26          4 Poor            
+ 4 ""                                              0          0 Missing         
+ 5 "Patient c/o nausea &amp; dizziness"               30          5 Fair            
+ 6 "follow-up needed ASAP"                        21          4 Fair            
+ 7 "Pt. stable, no issues"                        21          4 Good            
+ 8 "VITAL SIGNS WNL"                              15          3 Poor            
+ 9 "Patient reports feeling much bet…             41          6 Good            
+10 "   "                                           3          0 Missing         </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Quality summary</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>quality_summary <span class="ot">&lt;-</span> comment_quality <span class="sc">%&gt;%</span></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(QUALITY_CATEGORY, <span class="at">name =</span> <span class="st">"COUNT"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PERCENTAGE =</span> <span class="fu">round</span>(COUNT <span class="sc">/</span> <span class="fu">sum</span>(COUNT) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>))</span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Quality distribution:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nQuality distribution:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(quality_summary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  QUALITY_CATEGORY COUNT PERCENTAGE
+  &lt;chr&gt;            &lt;int&gt;      &lt;dbl&gt;
+1 Fair                 2         20
+2 Good                 3         30
+3 Missing              2         20
+4 Poor                 3         30</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="integration-examples" class="level2">
+<h2 class="anchored" data-anchor-id="integration-examples">Integration Examples</h2>
+<section id="complete-data-processing-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="complete-data-processing-pipeline">1. Complete Data Processing Pipeline</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Complete Data Processing Pipeline ===</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+=== Complete Data Processing Pipeline ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate raw clinical data with common issues</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>raw_clinical_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">subject_id =</span> <span class="fu">c</span>(<span class="st">"abc-123-001"</span>, <span class="st">"ABC-123-002"</span>, <span class="st">"abc 123 003"</span>, <span class="st">"ABC-123-004"</span>),</span>
+<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">birth_date =</span> <span class="fu">c</span>(<span class="st">"1985-06-15"</span>, <span class="st">"15-JUN-1970"</span>, <span class="st">"1990/03/20"</span>, <span class="st">"1988-12-01"</span>),</span>
+<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">consent_date =</span> <span class="fu">c</span>(<span class="st">"2024-01-10 09:30"</span>, <span class="st">"2024-01-12 14:15"</span>, <span class="st">"2024-01-08 11:00"</span>, <span class="st">"2024-01-15 10:45"</span>),</span>
+<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">adverse_event =</span> <span class="fu">c</span>(<span class="st">"  headache  "</span>, <span class="st">"NAUSEA"</span>, <span class="st">"stomach pain"</span>, <span class="st">""</span>),</span>
+<span id="cb99-7"><a href="#cb99-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">medication =</span> <span class="fu">c</span>(<span class="st">"Aspirin 81mg daily"</span>, <span class="st">"Tylenol 500 MG PRN"</span>, <span class="st">"Ibuprofen"</span>, <span class="st">"Metformin 500mg BID"</span>),</span>
+<span id="cb99-8"><a href="#cb99-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">comments =</span> <span class="fu">c</span>(<span class="st">"patient doing well"</span>, <span class="st">"MILD SYMPTOMS ONLY"</span>, <span class="st">"no issues"</span>, <span class="st">"follow-up needed"</span>)</span>
+<span id="cb99-9"><a href="#cb99-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb99-10"><a href="#cb99-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb99-11"><a href="#cb99-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Comprehensive cleaning pipeline</span></span>
+<span id="cb99-12"><a href="#cb99-12" aria-hidden="true" tabindex="-1"></a>process_clinical_data <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb99-13"><a href="#cb99-13" aria-hidden="true" tabindex="-1"></a>  processed <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb99-14"><a href="#cb99-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb99-15"><a href="#cb99-15" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Standardize subject IDs</span></span>
+<span id="cb99-16"><a href="#cb99-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">USUBJID =</span> <span class="fu">str_to_upper</span>(<span class="fu">str_replace_all</span>(subject_id, <span class="st">"</span><span class="sc">\\</span><span class="st">s+"</span>, <span class="st">"-"</span>)),</span>
+<span id="cb99-17"><a href="#cb99-17" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-18"><a href="#cb99-18" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Parse and standardize dates</span></span>
+<span id="cb99-19"><a href="#cb99-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">BIRTH_DATE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb99-20"><a href="#cb99-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_detect</span>(birth_date, <span class="st">"^</span><span class="sc">\\</span><span class="st">d{4}-</span><span class="sc">\\</span><span class="st">d{2}-</span><span class="sc">\\</span><span class="st">d{2}$"</span>) <span class="sc">~</span> <span class="fu">ymd</span>(birth_date),</span>
+<span id="cb99-21"><a href="#cb99-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_detect</span>(birth_date, <span class="st">"^</span><span class="sc">\\</span><span class="st">d{2}-[A-Z]{3}-</span><span class="sc">\\</span><span class="st">d{4}$"</span>) <span class="sc">~</span> <span class="fu">dmy</span>(birth_date),</span>
+<span id="cb99-22"><a href="#cb99-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_detect</span>(birth_date, <span class="st">"^</span><span class="sc">\\</span><span class="st">d{4}/</span><span class="sc">\\</span><span class="st">d{2}/</span><span class="sc">\\</span><span class="st">d{2}$"</span>) <span class="sc">~</span> <span class="fu">ymd</span>(birth_date),</span>
+<span id="cb99-23"><a href="#cb99-23" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.Date</span>(<span class="cn">NA</span>)</span>
+<span id="cb99-24"><a href="#cb99-24" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb99-25"><a href="#cb99-25" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-26"><a href="#cb99-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">CONSENT_DATETIME =</span> <span class="fu">ymd_hm</span>(consent_date),</span>
+<span id="cb99-27"><a href="#cb99-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">CONSENT_DATE =</span> <span class="fu">date</span>(CONSENT_DATETIME),</span>
+<span id="cb99-28"><a href="#cb99-28" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-29"><a href="#cb99-29" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Calculate age at consent</span></span>
+<span id="cb99-30"><a href="#cb99-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">AGE_AT_CONSENT =</span> <span class="fu">floor</span>(<span class="fu">time_length</span>(<span class="fu">interval</span>(BIRTH_DATE, CONSENT_DATE), <span class="st">"years"</span>)),</span>
+<span id="cb99-31"><a href="#cb99-31" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-32"><a href="#cb99-32" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Standardize adverse events</span></span>
+<span id="cb99-33"><a href="#cb99-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">AE_TERM_CLEAN =</span> <span class="fu">case_when</span>(</span>
+<span id="cb99-34"><a href="#cb99-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_trim</span>(adverse_event) <span class="sc">==</span> <span class="st">""</span> <span class="sc">~</span> <span class="cn">NA_character_</span>,</span>
+<span id="cb99-35"><a href="#cb99-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_detect</span>(<span class="fu">str_to_lower</span>(adverse_event), <span class="st">"head"</span>) <span class="sc">~</span> <span class="st">"Headache"</span>,</span>
+<span id="cb99-36"><a href="#cb99-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_detect</span>(<span class="fu">str_to_lower</span>(adverse_event), <span class="st">"nausea|stomach"</span>) <span class="sc">~</span> <span class="st">"Nausea"</span>, </span>
+<span id="cb99-37"><a href="#cb99-37" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">str_to_title</span>(<span class="fu">str_trim</span>(adverse_event))</span>
+<span id="cb99-38"><a href="#cb99-38" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb99-39"><a href="#cb99-39" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-40"><a href="#cb99-40" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Parse medications</span></span>
+<span id="cb99-41"><a href="#cb99-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">MED_NAME =</span> <span class="fu">str_extract</span>(medication, <span class="st">"^[A-Za-z</span><span class="sc">\\</span><span class="st">s]+"</span>),</span>
+<span id="cb99-42"><a href="#cb99-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">MED_DOSE =</span> <span class="fu">as.numeric</span>(<span class="fu">str_extract</span>(medication, <span class="st">"</span><span class="sc">\\</span><span class="st">d+"</span>)),</span>
+<span id="cb99-43"><a href="#cb99-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">MED_UNIT =</span> <span class="fu">str_extract</span>(medication, <span class="st">"mg|g"</span>),</span>
+<span id="cb99-44"><a href="#cb99-44" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-45"><a href="#cb99-45" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Clean comments</span></span>
+<span id="cb99-46"><a href="#cb99-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">COMMENTS_CLEAN =</span> <span class="fu">str_to_sentence</span>(<span class="fu">str_squish</span>(comments)),</span>
+<span id="cb99-47"><a href="#cb99-47" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-48"><a href="#cb99-48" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Data quality flags</span></span>
+<span id="cb99-49"><a href="#cb99-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">BIRTH_DATE_VALID =</span> <span class="sc">!</span><span class="fu">is.na</span>(BIRTH_DATE),</span>
+<span id="cb99-50"><a href="#cb99-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">AGE_REASONABLE =</span> <span class="fu">between</span>(AGE_AT_CONSENT, <span class="dv">18</span>, <span class="dv">90</span>),</span>
+<span id="cb99-51"><a href="#cb99-51" aria-hidden="true" tabindex="-1"></a>      <span class="at">HAS_AE =</span> <span class="sc">!</span><span class="fu">is.na</span>(AE_TERM_CLEAN),</span>
+<span id="cb99-52"><a href="#cb99-52" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb99-53"><a href="#cb99-53" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Study day calculation</span></span>
+<span id="cb99-54"><a href="#cb99-54" aria-hidden="true" tabindex="-1"></a>      <span class="at">STUDY_START =</span> <span class="fu">as.Date</span>(<span class="st">"2024-01-15"</span>),</span>
+<span id="cb99-55"><a href="#cb99-55" aria-hidden="true" tabindex="-1"></a>      <span class="at">CONSENT_STUDY_DAY =</span> <span class="fu">as.numeric</span>(CONSENT_DATE <span class="sc">-</span> STUDY_START)</span>
+<span id="cb99-56"><a href="#cb99-56" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb99-57"><a href="#cb99-57" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb99-58"><a href="#cb99-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Select final variables</span></span>
+<span id="cb99-59"><a href="#cb99-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(USUBJID, BIRTH_DATE, CONSENT_DATE, AGE_AT_CONSENT, AE_TERM_CLEAN,</span>
+<span id="cb99-60"><a href="#cb99-60" aria-hidden="true" tabindex="-1"></a>           MED_NAME, MED_DOSE, MED_UNIT, COMMENTS_CLEAN, </span>
+<span id="cb99-61"><a href="#cb99-61" aria-hidden="true" tabindex="-1"></a>           BIRTH_DATE_VALID, AGE_REASONABLE, HAS_AE, CONSENT_STUDY_DAY)</span>
+<span id="cb99-62"><a href="#cb99-62" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb99-63"><a href="#cb99-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(processed)</span>
+<span id="cb99-64"><a href="#cb99-64" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb99-65"><a href="#cb99-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb99-66"><a href="#cb99-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Process the data</span></span>
+<span id="cb99-67"><a href="#cb99-67" aria-hidden="true" tabindex="-1"></a>processed_data <span class="ot">&lt;-</span> <span class="fu">process_clinical_data</span>(raw_clinical_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There were 3 warnings in `mutate()`.
+The first warning was:
+ℹ In argument: `BIRTH_DATE = case_when(...)`.
+Caused by warning:
+!  1 failed to parse.
+ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Processed clinical data:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Processed clinical data:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(processed_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 13
+  USUBJID BIRTH_DATE CONSENT_DATE AGE_AT_CONSENT AE_TERM_CLEAN MED_NAME MED_DOSE
+  &lt;chr&gt;   &lt;date&gt;     &lt;date&gt;                &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;       &lt;dbl&gt;
+1 ABC-12… 1985-06-15 2024-01-10               38 Headache      "Aspiri…       81
+2 ABC-12… 1970-06-15 2024-01-12               53 Nausea        "Tyleno…      500
+3 ABC-12… 1990-03-20 2024-01-08               33 Nausea        "Ibupro…       NA
+4 ABC-12… 1988-12-01 2024-01-15               35 &lt;NA&gt;          "Metfor…      500
+# ℹ 6 more variables: MED_UNIT &lt;chr&gt;, COMMENTS_CLEAN &lt;chr&gt;,
+#   BIRTH_DATE_VALID &lt;lgl&gt;, AGE_REASONABLE &lt;lgl&gt;, HAS_AE &lt;lgl&gt;,
+#   CONSENT_STUDY_DAY &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Data quality summary</span></span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>quality_check <span class="ot">&lt;-</span> processed_data <span class="sc">%&gt;%</span></span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_subjects =</span> <span class="fu">n</span>(),</span>
+<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">valid_birth_dates =</span> <span class="fu">sum</span>(BIRTH_DATE_VALID),</span>
+<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">reasonable_ages =</span> <span class="fu">sum</span>(AGE_REASONABLE),</span>
+<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">subjects_with_ae =</span> <span class="fu">sum</span>(HAS_AE),</span>
+<span id="cb105-8"><a href="#cb105-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">data_quality_score =</span> <span class="fu">round</span>(<span class="fu">mean</span>(BIRTH_DATE_VALID <span class="sc">+</span> AGE_REASONABLE) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>)</span>
+<span id="cb105-9"><a href="#cb105-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb105-10"><a href="#cb105-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb105-11"><a href="#cb105-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Data quality summary:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\nData quality summary:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(quality_check)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 5
+  total_subjects valid_birth_dates reasonable_ages subjects_with_ae
+           &lt;int&gt;             &lt;int&gt;           &lt;int&gt;            &lt;int&gt;
+1              4                 4               4                3
+# ℹ 1 more variable: data_quality_score &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="best-practices-summary" class="level2">
+<h2 class="anchored" data-anchor-id="best-practices-summary">Best Practices Summary</h2>
+<section id="datetime-best-practices" class="level3">
+<h3 class="anchored" data-anchor-id="datetime-best-practices">Date/Time Best Practices</h3>
+<ol type="1">
+<li><strong>Standardization</strong>
+<ul>
+<li>Always use ISO 8601 format for storage (<code>YYYY-MM-DD</code>)</li>
+<li>Handle time zones explicitly in multi-site studies</li>
+<li>Use lubridate functions for reliable parsing</li>
+</ul></li>
+<li><strong>Validation</strong>
+<ul>
+<li>Check date ranges for clinical plausibility</li>
+<li>Validate chronological order of events</li>
+<li>Handle leap years and edge cases properly</li>
+</ul></li>
+<li><strong>Calculations</strong>
+<ul>
+<li>Use precise interval calculations for age</li>
+<li>Follow study protocol for study day conventions</li>
+<li>Document assumptions about missing dates</li>
+</ul></li>
+</ol>
+</section>
+<section id="text-processing-best-practices" class="level3">
+<h3 class="anchored" data-anchor-id="text-processing-best-practices">Text Processing Best Practices</h3>
+<ol type="1">
+<li><strong>Cleaning</strong>
+<ul>
+<li>Remove extra whitespace systematically</li>
+<li>Standardize case appropriately for context</li>
+<li>Handle missing/empty strings explicitly</li>
+</ul></li>
+<li><strong>Validation</strong>
+<ul>
+<li>Use regex patterns for format validation</li>
+<li>Implement controlled terminology mapping</li>
+<li>Check for common data entry errors</li>
+</ul></li>
+<li><strong>Documentation</strong>
+<ul>
+<li>Document regex patterns clearly</li>
+<li>Maintain mappings for term standardization</li>
+<li>Track data transformation steps</li>
+</ul></li>
+</ol>
+<hr>
+<p><em>This guide provides practical examples of date/time and text processing techniques essential for clinical programming in R.</em></p>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

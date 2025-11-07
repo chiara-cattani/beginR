@@ -1,0 +1,760 @@
+---
+title: "Custom Functions Library"
+subtitle: "Reusable R Functions and SAS Macro Translations"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+    code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# 🔧 Custom Functions Library
+
+**Reusable R Functions and SAS Macro Translations**
+
+This library provides custom R functions that replicate common SAS macro functionality for clinical programming, along with utility functions for data processing and analysis.
+
+## Overview
+
+This collection includes:
+
+- **SAS Macro Equivalents**: R functions that replicate SAS macro behavior
+- **Data Validation Functions**: Quality control and data checking utilities  
+- **Date/Time Functions**: Enhanced date manipulation for clinical data
+- **String Processing Functions**: Text cleaning and standardization
+- **Statistical Functions**: Common calculations for clinical analyses
+
+## Required Libraries
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(lubridate)
+library(purrr)
+
+cat("=== Custom Functions Library ===\n")
+cat("Reusable R functions for clinical programming\n\n")
+```
+
+## SAS Macro Equivalents
+
+### 1. Frequency Procedure (PROC FREQ equivalent)
+
+```{r}
+#| label: proc-freq
+
+#' Calculate frequencies and percentages (like SAS PROC FREQ)
+#' @param data Dataset to analyze
+#' @param var Variable name to analyze
+#' @param by_var Optional grouping variable
+#' @param missing Include missing values (default: FALSE)
+#' @return Frequency table with counts and percentages
+
+proc_freq <- function(data, var, by_var = NULL, missing = FALSE) {
+  
+  if (!missing) {
+    data <- data %>%
+      filter(!is.na(!!sym(var)) & !!sym(var) != "")
+  }
+  
+  if (!is.null(by_var)) {
+    # Cross-tabulation
+    result <- data %>%
+      group_by(!!sym(by_var), !!sym(var)) %>%
+      summarise(
+        FREQUENCY = n(),
+        .groups = "drop"
+      ) %>%
+      group_by(!!sym(by_var)) %>%
+      mutate(
+        PERCENT = round(FREQUENCY / sum(FREQUENCY) * 100, 2),
+        CUM_FREQ = cumsum(FREQUENCY),
+        CUM_PERCENT = round(cumsum(PERCENT), 2)
+      ) %>%
+      ungroup()
+  } else {
+    # Simple frequency
+    result <- data %>%
+      group_by(!!sym(var)) %>%
+      summarise(
+        FREQUENCY = n(),
+        .groups = "drop"
+      ) %>%
+      mutate(
+        PERCENT = round(FREQUENCY / sum(FREQUENCY) * 100, 2),
+        CUM_FREQ = cumsum(FREQUENCY),
+        CUM_PERCENT = round(cumsum(PERCENT), 2)
+      )
+  }
+  
+  return(result)
+}
+
+# Example usage
+sample_data <- tibble(
+  SEX = sample(c("M", "F"), 50, replace = TRUE),
+  ARM = sample(c("Placebo", "Treatment"), 50, replace = TRUE),
+  AGE_GROUP = sample(c("18-44", "45-64", "65+"), 50, replace = TRUE)
+)
+
+print("PROC FREQ example - Sex distribution:")
+print(proc_freq(sample_data, "SEX"))
+
+print("\nCross-tabulation - Sex by Treatment:")
+print(proc_freq(sample_data, "SEX", "ARM"))
+```
+
+### 2. Means Procedure (PROC MEANS equivalent)
+
+```{r}
+#| label: proc-means
+
+#' Calculate descriptive statistics (like SAS PROC MEANS)
+#' @param data Dataset to analyze
+#' @param var Numeric variable to analyze
+#' @param by_var Optional grouping variable
+#' @param stats Statistics to calculate
+#' @return Summary statistics table
+
+proc_means <- function(data, var, by_var = NULL, 
+                      stats = c("n", "mean", "std", "min", "median", "max")) {
+  
+  # Filter out missing values
+  data_clean <- data %>%
+    filter(!is.na(!!sym(var)))
+  
+  if (!is.null(by_var)) {
+    result <- data_clean %>%
+      group_by(!!sym(by_var)) %>%
+      summarise(
+        N = if ("n" %in% stats) n() else NULL,
+        MEAN = if ("mean" %in% stats) round(mean(!!sym(var)), 2) else NULL,
+        STD = if ("std" %in% stats) round(sd(!!sym(var)), 2) else NULL,
+        MIN = if ("min" %in% stats) min(!!sym(var)) else NULL,
+        MEDIAN = if ("median" %in% stats) median(!!sym(var)) else NULL,
+        MAX = if ("max" %in% stats) max(!!sym(var)) else NULL,
+        .groups = "drop"
+      ) %>%
+      select_if(~!all(is.null(.)))
+  } else {
+    result <- data_clean %>%
+      summarise(
+        N = if ("n" %in% stats) n() else NULL,
+        MEAN = if ("mean" %in% stats) round(mean(!!sym(var)), 2) else NULL,
+        STD = if ("std" %in% stats) round(sd(!!sym(var)), 2) else NULL,
+        MIN = if ("min" %in% stats) min(!!sym(var)) else NULL,
+        MEDIAN = if ("median" %in% stats) median(!!sym(var)) else NULL,
+        MAX = if ("max" %in% stats) max(!!sym(var)) else NULL
+      ) %>%
+      select_if(~!all(is.null(.)))
+  }
+  
+  return(result)
+}
+
+# Example usage
+sample_data$AGE <- sample(18:75, 50, replace = TRUE)
+
+print("PROC MEANS example - Age statistics:")
+print(proc_means(sample_data, "AGE"))
+
+print("\nAge statistics by treatment group:")
+print(proc_means(sample_data, "AGE", "ARM"))
+```
+
+### 3. Data Step Functions
+
+```{r}
+#| label: data-step-functions
+
+#' SAS LAG function equivalent
+#' @param x Vector to lag
+#' @param n Number of periods to lag (default: 1)
+#' @return Lagged vector
+
+lag_sas <- function(x, n = 1) {
+  c(rep(NA, n), head(x, -n))
+}
+
+#' SAS DIF function equivalent  
+#' @param x Vector to difference
+#' @param n Number of periods for difference (default: 1)
+#' @return Differenced vector
+
+dif_sas <- function(x, n = 1) {
+  x - lag_sas(x, n)
+}
+
+#' SAS FIRST./LAST. variable equivalent
+#' @param data Dataset
+#' @param by_var Grouping variable
+#' @return Dataset with FIRST and LAST indicators
+
+first_last <- function(data, by_var) {
+  data %>%
+    group_by(!!sym(by_var)) %>%
+    mutate(
+      FIRST = row_number() == 1,
+      LAST = row_number() == n()
+    ) %>%
+    ungroup()
+}
+
+# Example usage
+test_data <- tibble(
+  USUBJID = rep(c("001", "002", "003"), each = 3),
+  VISIT = rep(1:3, 3),
+  VALUE = c(10, 12, 15, 8, 11, 9, 20, 18, 22)
+)
+
+test_result <- test_data %>%
+  mutate(
+    LAG_VALUE = lag_sas(VALUE),
+    CHANGE = dif_sas(VALUE)
+  ) %>%
+  first_last("USUBJID")
+
+print("SAS function equivalents:")
+print(test_result)
+```
+
+## Data Validation Functions
+
+### 1. Missing Data Analysis
+
+```{r}
+#| label: missing-analysis
+
+#' Comprehensive missing data analysis
+#' @param data Dataset to analyze
+#' @param vars Variables to check (default: all)
+#' @return Missing data summary
+
+analyze_missing <- function(data, vars = NULL) {
+  
+  if (is.null(vars)) {
+    vars <- names(data)
+  }
+  
+  missing_summary <- data %>%
+    select(all_of(vars)) %>%
+    summarise_all(~sum(is.na(.) | . == "")) %>%
+    pivot_longer(everything(), names_to = "VARIABLE", values_to = "MISSING_COUNT") %>%
+    mutate(
+      TOTAL_N = nrow(data),
+      MISSING_PCT = round(MISSING_COUNT / TOTAL_N * 100, 2),
+      COMPLETE_COUNT = TOTAL_N - MISSING_COUNT,
+      COMPLETE_PCT = round(COMPLETE_COUNT / TOTAL_N * 100, 2)
+    ) %>%
+    arrange(desc(MISSING_PCT))
+  
+  return(missing_summary)
+}
+
+# Example usage
+sample_data_missing <- sample_data %>%
+  mutate(
+    AGE = if_else(row_number() %in% sample(1:50, 5), NA_real_, AGE),
+    SEX = if_else(row_number() %in% sample(1:50, 2), NA_character_, SEX)
+  )
+
+print("Missing data analysis:")
+print(analyze_missing(sample_data_missing))
+```
+
+### 2. Data Range Validation
+
+```{r}
+#| label: range-validation
+
+#' Validate numeric ranges and flag outliers
+#' @param data Dataset
+#' @param var Variable to validate
+#' @param min_val Minimum expected value
+#' @param max_val Maximum expected value
+#' @param method Outlier detection method
+#' @return Validation results
+
+validate_range <- function(data, var, min_val = NULL, max_val = NULL, method = "iqr") {
+  
+  values <- data[[var]][!is.na(data[[var]])]
+  
+  results <- list(
+    variable = var,
+    n_obs = length(values),
+    n_missing = sum(is.na(data[[var]])),
+    min_observed = min(values, na.rm = TRUE),
+    max_observed = max(values, na.rm = TRUE),
+    mean_value = round(mean(values, na.rm = TRUE), 2),
+    median_value = median(values, na.rm = TRUE)
+  )
+  
+  # Range validation
+  if (!is.null(min_val)) {
+    below_min <- data %>%
+      filter(!is.na(!!sym(var)) & !!sym(var) < min_val)
+    results$below_minimum <- nrow(below_min)
+    results$below_min_subjects <- below_min
+  }
+  
+  if (!is.null(max_val)) {
+    above_max <- data %>%
+      filter(!is.na(!!sym(var)) & !!sym(var) > max_val)
+    results$above_maximum <- nrow(above_max)
+    results$above_max_subjects <- above_max
+  }
+  
+  # Outlier detection
+  if (method == "iqr") {
+    Q1 <- quantile(values, 0.25)
+    Q3 <- quantile(values, 0.75)
+    IQR <- Q3 - Q1
+    lower_bound <- Q1 - 1.5 * IQR
+    upper_bound <- Q3 + 1.5 * IQR
+    
+    outliers <- data %>%
+      filter(!is.na(!!sym(var)) & 
+             (!!sym(var) < lower_bound | !!sym(var) > upper_bound))
+    
+    results$outliers_count <- nrow(outliers)
+    results$outliers <- outliers
+    results$outlier_bounds <- c(lower_bound, upper_bound)
+  }
+  
+  return(results)
+}
+
+# Example usage
+age_validation <- validate_range(sample_data_missing, "AGE", min_val = 18, max_val = 80)
+
+print("Age validation results:")
+cat("Variable:", age_validation$variable, "\n")
+cat("Observations:", age_validation$n_obs, "\n")
+cat("Missing:", age_validation$n_missing, "\n")
+cat("Range:", age_validation$min_observed, "-", age_validation$max_observed, "\n")
+cat("Outliers:", age_validation$outliers_count, "\n")
+```
+
+## Date/Time Functions
+
+### 1. Advanced Date Calculations
+
+```{r}
+#| label: date-functions
+
+#' Calculate age in years (like SAS YRDIF function)
+#' @param birth_date Birth date
+#' @param ref_date Reference date (default: today)
+#' @param basis Age calculation basis
+#' @return Age in years
+
+calculate_age <- function(birth_date, ref_date = Sys.Date(), basis = "actual") {
+  
+  if (basis == "actual") {
+    age <- as.numeric(difftime(ref_date, birth_date, units = "days")) / 365.25
+  } else if (basis == "30/360") {
+    # Simplified 30/360 calculation
+    age <- as.numeric(difftime(ref_date, birth_date, units = "days")) / 360
+  } else {
+    age <- as.numeric(difftime(ref_date, birth_date, units = "days")) / 365
+  }
+  
+  return(floor(age))
+}
+
+#' Study day calculation (like SAS study day)
+#' @param event_date Event date
+#' @param ref_date Reference date (study start)
+#' @return Study day
+
+study_day <- function(event_date, ref_date) {
+  diff_days <- as.numeric(event_date - ref_date)
+  
+  # Study day convention: Day 1 is first day, negative for pre-study days
+  study_days <- if_else(diff_days >= 0, diff_days + 1, diff_days)
+  
+  return(study_days)
+}
+
+#' Format dates for CDISC (ISO 8601)
+#' @param date_var Date variable
+#' @param include_time Include time component
+#' @return Formatted date string
+
+format_cdisc_date <- function(date_var, include_time = FALSE) {
+  
+  if (include_time) {
+    # Full ISO 8601 datetime format
+    formatted <- format(as.POSIXct(date_var), "%Y-%m-%dT%H:%M:%S")
+  } else {
+    # Date only
+    formatted <- format(as.Date(date_var), "%Y-%m-%d")
+  }
+  
+  return(formatted)
+}
+
+# Example usage
+date_examples <- tibble(
+  USUBJID = paste0("S00", 1:5),
+  BIRTH_DATE = as.Date(c("1990-05-15", "1975-12-03", "1988-08-20", "1982-01-10", "1995-09-25")),
+  STUDY_START = as.Date("2024-01-15"),
+  VISIT_DATE = as.Date(c("2024-01-15", "2024-01-22", "2024-01-10", "2024-01-18", "2024-01-20"))
+) %>%
+  mutate(
+    AGE = calculate_age(BIRTH_DATE, STUDY_START),
+    STUDY_DAY = study_day(VISIT_DATE, STUDY_START),
+    VISIT_DTC = format_cdisc_date(VISIT_DATE)
+  )
+
+print("Date function examples:")
+print(date_examples)
+```
+
+## String Processing Functions
+
+### 1. Text Cleaning and Standardization
+
+```{r}
+#| label: string-functions
+
+#' Clean and standardize text fields
+#' @param text_var Text variable to clean
+#' @param case_style Case conversion ("upper", "lower", "title", "sentence")
+#' @param remove_extra_spaces Remove extra whitespace
+#' @return Cleaned text
+
+clean_text <- function(text_var, case_style = "upper", remove_extra_spaces = TRUE) {
+  
+  # Remove leading/trailing whitespace
+  cleaned <- str_trim(text_var)
+  
+  # Remove extra spaces
+  if (remove_extra_spaces) {
+    cleaned <- str_squish(cleaned)
+  }
+  
+  # Apply case conversion
+  cleaned <- switch(case_style,
+                   "upper" = str_to_upper(cleaned),
+                   "lower" = str_to_lower(cleaned),
+                   "title" = str_to_title(cleaned),
+                   "sentence" = str_to_sentence(cleaned),
+                   cleaned)
+  
+  return(cleaned)
+}
+
+#' Parse subject ID components
+#' @param usubjid Subject ID to parse
+#' @param pattern Regex pattern for parsing
+#' @return Parsed components
+
+parse_subject_id <- function(usubjid, pattern = "([A-Z0-9]+)-([0-9]+)-([0-9]+)") {
+  
+  parsed <- str_match(usubjid, pattern)
+  
+  result <- tibble(
+    USUBJID = usubjid,
+    STUDY = parsed[, 2],
+    SITE = parsed[, 3],
+    SUBJECT = parsed[, 4]
+  )
+  
+  return(result)
+}
+
+#' Standardize medical terms (simplified MedDRA-like mapping)
+#' @param raw_term Raw medical term
+#' @return Standardized term
+
+standardize_medical_term <- function(raw_term) {
+  
+  # Simple term standardization mapping
+  term_map <- c(
+    "headache" = "Headache",
+    "head ache" = "Headache", 
+    "nausea" = "Nausea",
+    "sick to stomach" = "Nausea",
+    "dizzy" = "Dizziness",
+    "dizziness" = "Dizziness",
+    "tired" = "Fatigue",
+    "fatigue" = "Fatigue",
+    "sleepy" = "Somnolence"
+  )
+  
+  # Clean and lookup
+  clean_term <- str_to_lower(str_trim(raw_term))
+  standardized <- term_map[clean_term]
+  
+  # Return original if no mapping found
+  result <- if_else(is.na(standardized), str_to_title(raw_term), standardized)
+  
+  return(result)
+}
+
+# Example usage
+text_examples <- tibble(
+  RAW_RACE = c("  white  ", "BLACK OR african american", "asian", "White"),
+  RAW_AE = c("headache", "sick to stomach", "dizzy", "tired"),
+  USUBJID = c("ABC-123-001", "ABC-123-002", "DEF-456-003", "ABC-123-004")
+)
+
+text_cleaned <- text_examples %>%
+  mutate(
+    CLEAN_RACE = clean_text(RAW_RACE, "upper"),
+    STANDARD_AE = standardize_medical_term(RAW_AE)
+  ) %>%
+  bind_cols(parse_subject_id(text_examples$USUBJID))
+
+print("String processing examples:")
+print(text_cleaned)
+```
+
+## Statistical Functions
+
+### 1. Clinical Trial Statistics
+
+```{r}
+#| label: clinical-stats
+
+#' Calculate confidence intervals for proportions
+#' @param x Number of successes
+#' @param n Total number of observations
+#' @param conf_level Confidence level (default: 0.95)
+#' @param method Method for CI calculation
+#' @return Confidence interval
+
+prop_ci <- function(x, n, conf_level = 0.95, method = "wilson") {
+  
+  p <- x / n
+  alpha <- 1 - conf_level
+  z <- qnorm(1 - alpha/2)
+  
+  if (method == "wilson") {
+    # Wilson score interval
+    denominator <- 1 + z^2/n
+    center <- (p + z^2/(2*n)) / denominator
+    half_width <- z * sqrt((p*(1-p) + z^2/(4*n)) / n) / denominator
+    
+    lower <- center - half_width
+    upper <- center + half_width
+    
+  } else if (method == "exact") {
+    # Exact binomial CI
+    if (x == 0) {
+      lower <- 0
+    } else {
+      lower <- qbeta(alpha/2, x, n - x + 1)
+    }
+    
+    if (x == n) {
+      upper <- 1
+    } else {
+      upper <- qbeta(1 - alpha/2, x + 1, n - x)
+    }
+    
+  } else {
+    # Normal approximation (Wald)
+    se <- sqrt(p * (1 - p) / n)
+    lower <- p - z * se
+    upper <- p + z * se
+  }
+  
+  return(tibble(
+    n = n,
+    x = x,
+    proportion = round(p, 4),
+    lower_ci = round(pmax(0, lower), 4),
+    upper_ci = round(pmin(1, upper), 4),
+    method = method
+  ))
+}
+
+#' Calculate treatment effect measures
+#' @param data Dataset with treatment and response
+#' @param treatment_var Treatment variable
+#' @param response_var Response variable (binary)
+#' @param treatment_level Active treatment level
+#' @param control_level Control treatment level
+#' @return Treatment effect measures
+
+treatment_effect <- function(data, treatment_var, response_var, 
+                           treatment_level, control_level) {
+  
+  # Calculate response rates
+  summary_stats <- data %>%
+    filter(!!sym(treatment_var) %in% c(treatment_level, control_level)) %>%
+    group_by(!!sym(treatment_var)) %>%
+    summarise(
+      n = n(),
+      responders = sum(!!sym(response_var) == 1, na.rm = TRUE),
+      response_rate = round(responders / n, 4),
+      .groups = "drop"
+    )
+  
+  trt_stats <- summary_stats %>% filter(!!sym(treatment_var) == treatment_level)
+  ctrl_stats <- summary_stats %>% filter(!!sym(treatment_var) == control_level)
+  
+  # Calculate effect measures
+  risk_difference <- trt_stats$response_rate - ctrl_stats$response_rate
+  relative_risk <- trt_stats$response_rate / ctrl_stats$response_rate
+  
+  if (ctrl_stats$response_rate < 1) {
+    odds_ratio <- (trt_stats$response_rate / (1 - trt_stats$response_rate)) / 
+                  (ctrl_stats$response_rate / (1 - ctrl_stats$response_rate))
+  } else {
+    odds_ratio <- NA
+  }
+  
+  return(tibble(
+    treatment = treatment_level,
+    control = control_level,
+    trt_n = trt_stats$n,
+    trt_responders = trt_stats$responders,
+    trt_rate = trt_stats$response_rate,
+    ctrl_n = ctrl_stats$n,
+    ctrl_responders = ctrl_stats$responders,
+    ctrl_rate = ctrl_stats$response_rate,
+    risk_difference = round(risk_difference, 4),
+    relative_risk = round(relative_risk, 4),
+    odds_ratio = round(odds_ratio, 4)
+  ))
+}
+
+# Example usage
+response_data <- tibble(
+  USUBJID = paste0("S", sprintf("%03d", 1:100)),
+  ARM = sample(c("Treatment", "Placebo"), 100, replace = TRUE),
+  RESPONSE = rbinom(100, 1, prob = ifelse(ARM == "Treatment", 0.6, 0.4))
+)
+
+# Calculate confidence intervals for response rates
+response_summary <- response_data %>%
+  group_by(ARM) %>%
+  summarise(
+    n = n(),
+    responders = sum(RESPONSE),
+    .groups = "drop"
+  )
+
+ci_results <- map2_dfr(response_summary$responders, response_summary$n, 
+                       ~prop_ci(.x, .y, method = "wilson")) %>%
+  bind_cols(response_summary %>% select(ARM))
+
+print("Response rate confidence intervals:")
+print(ci_results)
+
+# Calculate treatment effect
+effect_results <- treatment_effect(response_data, "ARM", "RESPONSE", 
+                                 "Treatment", "Placebo")
+
+print("\nTreatment effect measures:")
+print(effect_results)
+```
+
+## Function Usage Examples
+
+### 1. Complete Data Processing Pipeline
+
+```{r}
+#| label: pipeline-example
+
+# Example of using multiple custom functions together
+process_clinical_data <- function(raw_data) {
+  
+  cat("Processing clinical dataset...\n")
+  
+  # Step 1: Clean and standardize
+  processed <- raw_data %>%
+    mutate(
+      # Clean text fields
+      SEX = clean_text(SEX, "upper"),
+      RACE = clean_text(RACE, "upper"),
+      
+      # Calculate derived variables
+      AGE = calculate_age(BIRTH_DATE, STUDY_START),
+      STUDY_DAY = study_day(VISIT_DATE, STUDY_START),
+      
+      # Add first/last indicators
+      .by_subject = TRUE
+    ) %>%
+    first_last("USUBJID")
+  
+  # Step 2: Data validation
+  cat("Validation results:\n")
+  missing_report <- analyze_missing(processed)
+  age_check <- validate_range(processed, "AGE", min_val = 18, max_val = 80)
+  
+  cat("Missing data summary available\n")
+  cat("Age validation complete\n")
+  
+  # Step 3: Generate summary statistics
+  demographics <- proc_means(processed, "AGE", "SEX")
+  
+  return(list(
+    data = processed,
+    missing_report = missing_report,
+    age_validation = age_check,
+    demographics = demographics
+  ))
+}
+
+# Example dataset
+example_raw <- tibble(
+  USUBJID = paste0("ABC-123-", sprintf("%03d", 1:20)),
+  BIRTH_DATE = sample(seq(as.Date("1950-01-01"), as.Date("1995-12-31"), by = "day"), 20),
+  SEX = sample(c("m", "F", "MALE", "female"), 20, replace = TRUE),
+  RACE = sample(c("white", "BLACK", "Asian"), 20, replace = TRUE),
+  STUDY_START = as.Date("2024-01-15"),
+  VISIT_DATE = as.Date("2024-01-15") + sample(0:90, 20, replace = TRUE)
+)
+
+# Process the data
+results <- process_clinical_data(example_raw)
+
+print("Processed demographics summary:")
+print(results$demographics)
+```
+
+## Function Documentation
+
+### Best Practices
+
+1. **Function Design**
+   - Single responsibility principle
+   - Clear parameter names and defaults
+   - Comprehensive error handling
+   - Consistent return formats
+
+2. **Documentation**
+   - Use roxygen2-style comments
+   - Include parameter descriptions
+   - Provide usage examples
+   - Document assumptions and limitations
+
+3. **Testing**
+   - Test with edge cases
+   - Validate against known results
+   - Check for proper error handling
+   - Compare with SAS output when applicable
+
+4. **Performance**
+   - Use vectorized operations
+   - Avoid unnecessary loops
+   - Profile for bottlenecks
+   - Consider data.table for large datasets
+
+---
+
+*This custom functions library provides a solid foundation for clinical programming in R, with emphasis on SAS compatibility and regulatory requirements.*

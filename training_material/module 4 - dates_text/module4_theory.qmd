@@ -1,0 +1,336 @@
+---
+title: "Module 4 Theory — Date & Text Handling"
+format: html
+editor: visual
+---
+
+# � Module 4 — Date & Text Handling
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Convert dates using lubridate functions (ymd, dmy, mdy) for clinical data
+-   Calculate study days (e.g., AESTDY = AESTDTC - RFSTDTC + 1)
+-   Use stringr functions for text manipulation (str_detect, str_replace, str_trim)
+-   Practice deriving AESTDY and cleaning adverse event terms
+-   Handle date/time formats and missing date scenarios in clinical contexts
+
+------------------------------------------------------------------------
+
+## � 1. Date Handling with lubridate
+
+Working with dates is crucial in clinical programming for calculating study days, visit windows, and time-to-event analyses.
+
+### Installing and Loading lubridate
+
+```r
+# Install if needed
+install.packages("lubridate")
+
+# Load the package
+library(lubridate)
+library(dplyr)
+```
+
+### Common Date Conversion Functions
+
+| Function | Use Case | Example |
+|----------|----------|---------|
+| `ymd()` | Year-Month-Day format | `ymd("2024-01-15")` |
+| `dmy()` | Day-Month-Year format | `dmy("15/01/2024")` |
+| `mdy()` | Month-Day-Year format | `mdy("01/15/2024")` |
+| `ymd_hms()` | Date with time | `ymd_hms("2024-01-15 08:30:00")` |
+
+### Basic Date Conversion Examples
+
+```r
+# Different input formats
+date1 <- ymd("2024-01-15")         # ISO format
+date2 <- dmy("15/01/2024")         # European format  
+date3 <- mdy("01/15/2024")         # US format
+date4 <- ymd("20240115")           # Compact format
+
+# All produce the same Date object
+print(date1)  # "2024-01-15"
+print(date2)  # "2024-01-15"
+print(date3)  # "2024-01-15"
+print(date4)  # "2024-01-15"
+```
+
+------------------------------------------------------------------------
+
+## � 2. Study Day Calculations
+
+Study day calculations are fundamental in clinical programming. The formula is typically:
+**Study Day = Event Date - Reference Start Date + 1**
+
+### Basic Study Day Calculation
+
+```r
+# Sample adverse events data
+ae_data <- tibble(
+  USUBJID = c("001-001", "001-001", "001-002", "001-002"),
+  AEDECOD = c("HEADACHE", "NAUSEA", "FATIGUE", "DIZZINESS"),
+  AESTDTC = c("2024-01-20", "2024-01-25", "2024-01-18", "2024-01-22"),
+  RFSTDTC = c("2024-01-15", "2024-01-15", "2024-01-16", "2024-01-16")
+)
+
+# Calculate AESTDY
+ae_data <- ae_data %>%
+  mutate(
+    AESTDT = ymd(AESTDTC),      # Convert to Date
+    RFSTDT = ymd(RFSTDTC),      # Convert to Date
+    AESTDY = as.numeric(AESTDT - RFSTDT) + 1  # Calculate study day
+  )
+
+print(ae_data)
+```
+
+### Handling Different Scenarios
+
+```r
+# More complex study day calculation with validation
+ae_data <- ae_data %>%
+  mutate(
+    AESTDY = case_when(
+      is.na(AESTDT) | is.na(RFSTDT) ~ NA_real_,  # Handle missing dates
+      AESTDT < RFSTDT ~ as.numeric(AESTDT - RFSTDT),  # Negative study days (pre-treatment)
+      TRUE ~ as.numeric(AESTDT - RFSTDT) + 1     # Positive study days (post-treatment)
+    )
+  )
+```
+
+------------------------------------------------------------------------
+
+## 📝 3. String Manipulation with stringr
+
+The stringr package provides consistent, intuitive functions for working with character strings.
+
+### Essential stringr Functions
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `str_detect()` | Check if pattern exists | `str_detect(x, "HEADACHE")` |
+| `str_replace()` | Replace first match | `str_replace(x, "old", "new")` |
+| `str_replace_all()` | Replace all matches | `str_replace_all(x, " ", "_")` |
+| `str_trim()` | Remove whitespace | `str_trim(" text ")` |
+| `str_to_upper()` | Convert to uppercase | `str_to_upper("text")` |
+| `str_to_lower()` | Convert to lowercase | `str_to_lower("TEXT")` |
+
+### Basic String Operations
+
+```r
+library(stringr)
+
+# Sample adverse event terms (often messy in real data)
+ae_terms <- c("  HEADACHE  ", "nausea", "SEVERE fatigue", "Mild Dizziness")
+
+# Clean and standardize
+cleaned_terms <- ae_terms %>%
+  str_trim() %>%                    # Remove leading/trailing spaces
+  str_to_upper() %>%                # Convert to uppercase
+  str_replace_all("\\s+", " ")      # Replace multiple spaces with single space
+
+print(cleaned_terms)
+# [1] "HEADACHE" "NAUSEA" "SEVERE FATIGUE" "MILD DIZZINESS"
+```
+
+### Clinical Text Processing Examples
+
+```r
+# Working with actual clinical data scenarios
+ae_data <- ae_data %>%
+  mutate(
+    # Clean adverse event terms
+    AEDECOD_CLEAN = AEDECOD %>%
+      str_trim() %>%
+      str_to_upper() %>%
+      str_replace_all("\\s+", " "),
+    
+    # Extract severity from combined terms  
+    SEVERITY_EXTRACTED = case_when(
+      str_detect(AEDECOD, "(?i)mild") ~ "MILD",
+      str_detect(AEDECOD, "(?i)moderate") ~ "MODERATE", 
+      str_detect(AEDECOD, "(?i)severe") ~ "SEVERE",
+      TRUE ~ "UNKNOWN"
+    ),
+    
+    # Create flags based on text patterns
+    HEADACHE_FLAG = ifelse(str_detect(AEDECOD, "(?i)headache"), "Y", "N"),
+    
+    # Clean and standardize medication names
+    CONMED_CLEAN = str_replace_all(AEDECOD, "[^A-Za-z0-9 ]", "") %>%
+      str_trim() %>%
+      str_to_upper()
+  )
+```
+
+------------------------------------------------------------------------
+
+## � 4. Combining Date and Text Operations
+
+### Complete AESTDY Derivation Example
+
+```r
+# Comprehensive example: derive AESTDY and clean AE terms
+ae_complete <- tibble(
+  USUBJID = c("001-001", "001-001", "001-002", "001-003"),
+  AEDECOD = c("  Mild HEADACHE  ", "NAUSEA (moderate)", "severe FATIGUE", "Dizziness"),
+  AESTDTC = c("2024-01-20", "2024-01-25", "2024-01-18", "2024-01-22"),
+  RFSTDTC = c("2024-01-15", "2024-01-15", "2024-01-16", "2024-01-16")
+) %>%
+  mutate(
+    # Date conversions and study day calculation
+    AESTDT = ymd(AESTDTC),
+    RFSTDT = ymd(RFSTDTC),
+    AESTDY = as.numeric(AESTDT - RFSTDT) + 1,
+    
+    # Clean adverse event terms
+    AEDECOD_CLEAN = AEDECOD %>%
+      str_trim() %>%
+      str_to_upper() %>%
+      str_replace_all("\\([^)]*\\)", "") %>%  # Remove parentheses and contents
+      str_replace_all("\\s+", " ") %>%        # Replace multiple spaces
+      str_trim(),                             # Trim again after cleaning
+    
+    # Extract base term (remove severity qualifiers) 
+    AETERM_BASE = AEDECOD_CLEAN %>%
+      str_replace_all("^(MILD|MODERATE|SEVERE)\\s+", ""),
+    
+    # Create study day categories
+    AESTDY_CAT = case_when(
+      AESTDY <= 0 ~ "Pre-treatment",
+      AESTDY <= 7 ~ "Week 1", 
+      AESTDY <= 14 ~ "Week 2",
+      TRUE ~ "After Week 2"
+    )
+  )
+
+print(ae_complete)
+```
+
+------------------------------------------------------------------------
+
+## � 5. Advanced Date Handling
+
+### Working with Time Components
+
+```r
+# Handling date-time data
+datetime_data <- tibble(
+  USUBJID = c("001-001", "001-002"),
+  AESTDTC = c("2024-01-20T08:30:00", "2024-01-21T14:15:30"),
+  RFSTDTC = c("2024-01-15T09:00:00", "2024-01-16T10:30:00")
+) %>%
+  mutate(
+    # Parse date-time
+    AESTDT = ymd_hms(AESTDTC),
+    RFSTDT = ymd_hms(RFSTDTC),
+    
+    # Extract components
+    AE_DATE = date(AESTDT),
+    AE_TIME = format(AESTDT, "%H:%M:%S"),
+    AE_HOUR = hour(AESTDT),
+    
+    # Calculate study day from dates only (ignoring time)
+    AESTDY = as.numeric(date(AESTDT) - date(RFSTDT)) + 1,
+    
+    # Time-based categories
+    TIME_PERIOD = case_when(
+      AE_HOUR < 12 ~ "Morning",
+      AE_HOUR < 18 ~ "Afternoon", 
+      TRUE ~ "Evening"
+    )
+  )
+```
+
+```
+
+------------------------------------------------------------------------
+
+## 🤖 6. GitHub Copilot for Date & Text Operations
+
+### Effective Prompts for Clinical Programming:
+
+| Comment Prompt | Expected Copilot Suggestion |
+|----|----|
+| `# Calculate study day from AE start date and reference date` | `mutate(AESTDY = as.numeric(ymd(AESTDTC) - ymd(RFSTDTC)) + 1)` |
+| `# Clean adverse event terms and convert to uppercase` | `str_trim() %>% str_to_upper()` |
+| `# Extract severity from AE term if present` | `str_extract(AEDECOD, "MILD|MODERATE|SEVERE")` |
+| `# Convert date string to proper Date format` | `ymd(date_string)` or `dmy(date_string)` |
+| `# Flag AEs occurring in first week of treatment` | `mutate(WEEK1_AE = ifelse(AESTDY <= 7, "Y", "N"))` |
+
+------------------------------------------------------------------------
+
+## ⚠️ 7. Common Pitfalls and Best Practices
+
+### Date Handling Best Practices
+
+```r
+# ✅ Good practices
+ae_data <- ae_data %>%
+  mutate(
+    # Always handle missing dates explicitly
+    AESTDY = case_when(
+      is.na(ymd(AESTDTC)) | is.na(ymd(RFSTDTC)) ~ NA_real_,
+      TRUE ~ as.numeric(ymd(AESTDTC) - ymd(RFSTDTC)) + 1
+    ),
+    
+    # Check for impossible dates
+    DATE_FLAG = case_when(
+      ymd(AESTDTC) < ymd("1900-01-01") ~ "INVALID",
+      ymd(AESTDTC) > today() ~ "FUTURE", 
+      TRUE ~ "VALID"
+    )
+  )
+
+# ❌ Avoid these issues
+# Don't assume all dates parse correctly
+# Don't forget the +1 in study day calculations for most sponsors
+# Don't ignore time zones if working with datetime data
+```
+
+### String Handling Best Practices
+
+```r
+# ✅ Good practices for text cleaning
+clean_ae_terms <- function(terms) {
+  terms %>%
+    str_trim() %>%                           # Remove whitespace
+    str_to_upper() %>%                       # Standardize case
+    str_replace_all("\\s+", " ") %>%         # Normalize spacing
+    str_replace_all("[^A-Z0-9 ]", "") %>%    # Remove special characters
+    str_trim()                               # Trim again after cleaning
+}
+```
+
+------------------------------------------------------------------------
+
+## 📝 Module Summary
+
+By completing this module, you should now be able to:
+
+✅ **Convert dates** using lubridate functions (ymd, dmy, mdy) for various input formats  
+✅ **Calculate study days** accurately with proper handling of missing dates  
+✅ **Manipulate text** using stringr functions for data cleaning and standardization  
+✅ **Derive AESTDY** and clean adverse event terms in realistic clinical scenarios  
+✅ **Handle edge cases** like missing dates, invalid dates, and messy text data  
+
+### 🚀 Next Steps:
+- Practice with the demo exercises
+- Try deriving study days with your own clinical data  
+- Prepare for Module 5: Functions & Macro Translation
+
+------------------------------------------------------------------------
+
+## 💡 Key Takeaways
+
+1. **lubridate makes date parsing intuitive** - ymd(), dmy(), mdy() handle most formats automatically
+2. **Study day = Event Date - Reference Date + 1** is the standard clinical calculation
+3. **stringr provides consistent string manipulation** with clear, readable function names
+4. **Always handle missing data explicitly** when working with dates and text
+5. **GitHub Copilot excels** at suggesting date/text transformations for clinical programming
+6. **Combine date and text operations** for comprehensive data cleaning pipelines
+
+Ready to learn about writing functions? Let's move to Module 5!

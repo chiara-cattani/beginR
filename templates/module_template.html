@@ -40,22 +40,22 @@
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
                         {% if 'theory' in module.files %}
-                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.theory) }}">
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.theory.split('/')[-1]) }}">
                             <i class="fas fa-book me-2"></i>Theory (QMD)
                         </a></li>
                         {% endif %}
                         {% if 'demo' in module.files %}
-                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.demo) }}">
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.demo.split('/')[-1]) }}">
                             <i class="fas fa-play me-2"></i>Demo (R)
                         </a></li>
                         {% endif %}
                         {% if 'exercise' in module.files %}
-                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.exercise) }}">
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.exercise.split('/')[-1]) }}">
                             <i class="fas fa-code me-2"></i>Exercise (R)
                         </a></li>
                         {% endif %}
                         {% if 'solution' in module.files %}
-                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.solution) }}">
+                        <li><a class="dropdown-item" href="{{ url_for('download_file', filename=module.files.solution.split('/')[-1]) }}">
                             <i class="fas fa-check-circle me-2"></i>Solution (QMD)
                         </a></li>
                         {% endif %}
@@ -134,15 +134,15 @@
                         <p class="card-text text-muted">Overview of key concepts with annotated examples.</p>
                         <div class="d-grid gap-2">
                             {% if 'theory_html' in module.files %}
-                            <a href="{{ url_for('view_file', filename=module.files.theory) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.theory_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% else %}
-                            <a href="{{ url_for('view_file', filename=module.files.theory) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.theory.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% endif %}
-                            <a href="{{ url_for('download_file', filename=module.files.theory) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('download_file', filename=module.files.theory.split('/')[-1]) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-download me-2"></i>Download
                             </a>
                         </div>
@@ -160,7 +160,7 @@
                         </div>
                         <h5 class="card-title">Demo</h5>
                         <p class="card-text text-muted">Live coding demonstration with step-by-step explanations.</p>
-                        <a href="{{ url_for('download_file', filename=module.files.demo) }}" class="btn btn-primary download-btn">
+                        <a href="{{ url_for('download_file', filename=module.files.demo.split('/')[-1]) }}" class="btn btn-primary download-btn">
                             <i class="fas fa-download me-2"></i>Download Demo
                         </a>
                     </div>
@@ -177,7 +177,7 @@
                         </div>
                         <h5 class="card-title">Exercise</h5>
                         <p class="card-text text-muted">Hands-on coding exercises to practice the concepts learned.</p>
-                        <a href="{{ url_for('download_file', filename=module.files.exercise) }}" class="btn btn-primary download-btn">
+                        <a href="{{ url_for('download_file', filename=module.files.exercise.split('/')[-1]) }}" class="btn btn-primary download-btn">
                             <i class="fas fa-download me-2"></i>Download Exercise
                         </a>
                     </div>
@@ -196,15 +196,15 @@
                         <p class="card-text text-muted">Complete solutions and explanations for all exercises.</p>
                         <div class="d-grid gap-2">
                             {% if 'solution_html' in module.files %}
-                            <a href="{{ url_for('view_file', filename=module.files.solution) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.solution_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% else %}
-                            <a href="{{ url_for('view_file', filename=module.files.solution) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('view_file', filename=module.files.solution.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-2"></i>View Online
                             </a>
                             {% endif %}
-                            <a href="{{ url_for('download_file', filename=module.files.solution) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('download_file', filename=module.files.solution.split('/')[-1]) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-download me-2"></i>Download
                             </a>
                         </div>

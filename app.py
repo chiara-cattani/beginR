@@ -23,13 +23,13 @@ mail = Mail(app)
 # Module data structure
 MODULES = {
     1: {
-        'title': 'R for SAS Programmers: First Contact',
-        'description': 'Introduction to R programming fundamentals, environment setup, and basic syntax for clinical programmers transitioning from SAS.',
+        'title': 'RStudio & Environment Setup',
+        'description': 'Learn to install R/RStudio, set up nutriciaconfig for environment management, navigate RStudio interface, and get started with GitHub Copilot.',
         'objectives': [
-            'Understand what R is and how it differs from SAS',
-            'Be familiar with the RStudio interface and file types',
-            'Learn how to write basic R code (variables, data frames, functions)',
-            'Know the key R packages for clinical programming',
+            'Install R and RStudio with proper configuration',
+            'Set up nutriciaconfig for environment and working directory management',
+            'Navigate RStudio panes and understand R file types',
+            'Load essential packages (dplyr, haven, tibble) for clinical programming',
             'Understand how to use GitHub Copilot to assist you while coding'
         ],
         'files': {
@@ -42,161 +42,175 @@ MODULES = {
         }
     },
     2: {
-        'title': 'Building SDTM Datasets in R',
-        'description': 'Learn to build SDTM datasets using R, focusing on data loading, variable derivation, and CDISC compliance.',
+        'title': 'Data Manipulation Basics',
+        'description': 'Master fundamental data manipulation using dplyr functions, understand tibbles and data types, and learn how R operations compare to SAS DATA step logic.',
         'objectives': [
-            'Understand how to load raw clinical data from CSV, XPT, or Excel',
-            'Learn the key tidyverse tools for SDTM derivations',
-            'Be able to derive standard SDTM variables like --DTC, --DY, --TPT, --SEQ, --SPID',
-            'Apply SDTM dataset labeling using xportr',
-            'Compare SDTM mapping in R vs SAS macro-based approaches',
-            'Use GitHub Copilot to assist with formatting, variable naming, and logic'
+            'Understand tibbles and R data types (character, numeric, logical, date)',
+            'Use dplyr functions: filter, select, mutate, arrange for data manipulation',
+            'Compare R data wrangling operations with SAS DATA step logic',
+            'Practice deriving clinical variables like elderly flag (age >= 65)',
+            'Apply best practices for readable and efficient data transformations'
         ],
         'files': {
-            'theory': 'training_material/module 2 - sdtm/module2_theory.qmd',
-            'theory_html': 'training_material/module 2 - sdtm/module2_theory.html',
-            'demo': 'training_material/module 2 - sdtm/module2_demo.R',
-            'exercise': 'training_material/module 2 - sdtm/module2_exercise.R',
-            'solution': 'training_material/module 2 - sdtm/module2_solution.qmd',
-            'solution_html': 'training_material/module 2 - sdtm/module2_solution.html'
+            'theory': 'training_material/module 2 - data_manipulation/module2_theory.qmd',
+            'theory_html': 'training_material/module 2 - data_manipulation/module2_theory.html',
+            'demo': 'training_material/module 2 - data_manipulation/module2_demo.R',
+            'exercise': 'training_material/module 2 - data_manipulation/module2_exercise.R',
+            'solution': 'training_material/module 2 - data_manipulation/module2_solution.qmd',
+            'solution_html': 'training_material/module 2 - data_manipulation/module2_solution.html'
         }
     },
     3: {
-        'title': 'ADaM Programming in R',
-        'description': 'Master ADaM dataset creation using R, focusing on pharmaverse packages, admiral toolkit, and AI assistance.',
+        'title': 'Joins and Summaries',
+        'description': 'Learn to combine datasets using join operations, create grouped summaries, and generate frequency tables for clinical data analysis.',
         'objectives': [
-            'Understand how to use pharmaverse packages for ADaM',
-            'Learn how to derive ADSL and BDS datasets (e.g., ADVS, ADAE)',
-            'Apply key functions from admiral to handle derivations and flags',
-            'Use Copilot to build mutate chains and ADaM derivation templates'
+            'Perform join operations using left_join, inner_join, and other dplyr join functions',
+            'Use group_by and summarise to create summary statistics by treatment groups',
+            'Generate frequency tables using count and n functions',
+            'Practice with clinical scenarios: summarizing adverse events by elderly vs non-elderly patients',
+            'Handle missing data and edge cases in join operations'
         ],
         'files': {
-            'theory': 'training_material/module 3 - adam/module3_theory.qmd',
-            'theory_html': 'training_material/module 3 - adam/module3_theory.html',
-            'demo': 'training_material/module 3 - adam/module3_demo.R',
-            'exercise': 'training_material/module 3 - adam/module3_exercise.R',
-            'solution': 'training_material/module 3 - adam/module3_solution.qmd',
-            'solution_html': 'training_material/module 3 - adam/module3_solution.html'
+            'theory': 'training_material/module 3 - joins_summaries/module3_theory.qmd',
+            'theory_html': 'training_material/module 3 - joins_summaries/module3_theory.html',
+            'demo': 'training_material/module 3 - joins_summaries/module3_demo.R',
+            'exercise': 'training_material/module 3 - joins_summaries/module3_exercise.R',
+            'solution': 'training_material/module 3 - joins_summaries/module3_solution.qmd',
+            'solution_html': 'training_material/module 3 - joins_summaries/module3_solution.html'
         }
     },
     4: {
-        'title': 'TLF Listings in R',
-        'description': 'Create professional listings for clinical data using R, with focus on flextable, gt, and reactable packages.',
+        'title': 'Date & Text Handling',
+        'description': 'Master date conversions, study day calculations, and string manipulation essential for clinical programming and CDISC standards.',
         'objectives': [
-            'Understand what listings are and when they are used',
-            'Learn to build subject- and event-level listings in R',
-            'Apply conditional formatting and export to Word/HTML/PDF',
-            'Use Copilot to format and enhance table output'
+            'Convert dates using lubridate functions (ymd, dmy, mdy) for clinical data',
+            'Calculate study days (e.g., AESTDY = AESTDTC - RFSTDTC + 1)',
+            'Use stringr functions for text manipulation (str_detect, str_replace, str_trim)',
+            'Practice deriving AESTDY and cleaning adverse event terms',
+            'Handle date/time formats and missing date scenarios in clinical contexts'
         ],
         'files': {
-            'theory': 'training_material/module 4 - listings/module4_theory.qmd',
-            'theory_html': 'training_material/module 4 - listings/module4_theory.html',
-            'demo': 'training_material/module 4 - listings/module4_demo.R',
-            'exercise': 'training_material/module 4 - listings/module4_exercise.R',
-            'solution': 'training_material/module 4 - listings/module4_solution.qmd',
-            'solution_html': 'training_material/module 4 - listings/module4_solution.html'
+            'theory': 'training_material/module 4 - dates_text/module4_theory.qmd',
+            'theory_html': 'training_material/module 4 - dates_text/module4_theory.html',
+            'demo': 'training_material/module 4 - dates_text/module4_demo.R',
+            'exercise': 'training_material/module 4 - dates_text/module4_exercise.R',
+            'solution': 'training_material/module 4 - dates_text/module4_solution.qmd',
+            'solution_html': 'training_material/module 4 - dates_text/module4_solution.html'
         }
     },
     5: {
-        'title': 'TLF Tables: Summary Statistics',
-        'description': 'Generate summary statistics tables for clinical trials using gtsummary, tidyverse, and AI assistance.',
+        'title': 'Functions & Macro Translation',
+        'description': 'Learn to write reusable R functions for clinical programming tasks and translate SAS macros into efficient R code.',
         'objectives': [
-            'Understand how to compute descriptive statistics by treatment arm',
-            'Learn to create summary tables with tidyverse and gtsummary',
-            'Create tables for continuous and categorical variables',
-            'Practice exporting tables to Word or HTML',
-            'Use Copilot to help build, format, and export summary tables'
+            'Write custom R functions with proper arguments and return values',
+            'Understand scope, debugging, and documentation for R functions',
+            'Translate simple SAS macros into equivalent R functions',
+            'Use purrr package for functional programming and iteration',
+            'Create reusable functions for common clinical programming tasks'
         ],
         'files': {
-            'theory': 'training_material/module 5 - tables/module5_theory.qmd',
-            'theory_html': 'training_material/module 5 - tables/module5_theory.html',
-            'demo': 'training_material/module 5 - tables/module5_demo.R',
-            'exercise': 'training_material/module 5 - tables/module5_exercise.R',
-            'solution': 'training_material/module 5 - tables/module5_solution.qmd',
-            'solution_html': 'training_material/module 5 - tables/module5_solution.html'
+            'theory': 'training_material/module 5 - functions_macros/module5_theory.qmd',
+            'theory_html': 'training_material/module 5 - functions_macros/module5_theory.html',
+            'demo': 'training_material/module 5 - functions_macros/module5_demo.R',
+            'exercise': 'training_material/module 5 - functions_macros/module5_exercise.R',
+            'solution': 'training_material/module 5 - functions_macros/module5_solution.qmd',
+            'solution_html': 'training_material/module 5 - functions_macros/module5_solution.html'
         }
     },
     6: {
-        'title': 'TLF Figures: Clinical Visualizations',
-        'description': 'Create professional clinical plots and figures using ggplot2, survminer, and patchwork with AI assistance.',
+        'title': 'SDTM Programming with sdtm.oak',
+        'description': 'Build CDISC-compliant SDTM domains using the sdtm.oak package, from metadata reading to XPT file export.',
         'objectives': [
-            'Learn to create common clinical plots using ggplot2, survminer, and patchwork',
-            'Understand how to visualize lab values, adverse events, and survival curves',
-            'Learn to group plots by treatment arm or facet by visit',
-            'Use AI (Copilot) to accelerate plot creation'
+            'Read study metadata and specifications using readxl',
+            'Load raw clinical datasets using haven and other R packages',
+            'Create SDTM domains using sdtm.oak::create_domain functions',
+            'Apply data transformations, derivations, and post-processing steps',
+            'Export SDTM datasets to XPT format using haven::write_xpt'
         ],
         'files': {
-            'theory': 'training_material/module 6 - figures/module6_theory.qmd',
-            'theory_html': 'training_material/module 6 - figures/module6_theory.html',
-            'demo': 'training_material/module 6 - figures/module6_demo.R',
-            'exercise': 'training_material/module 6 - figures/module6_exercise.R',
-            'solution': 'training_material/module 6 - figures/module6_solution.qmd',
-            'solution_html': 'training_material/module 6 - figures/module6_solution.html'
+            'theory': 'training_material/module 6 - sdtm_programming/module6_theory.qmd',
+            'theory_html': 'training_material/module 6 - sdtm_programming/module6_theory.html',
+            'demo': 'training_material/module 6 - sdtm_programming/module6_demo.R',
+            'exercise': 'training_material/module 6 - sdtm_programming/module6_exercise.R',
+            'solution': 'training_material/module 6 - sdtm_programming/module6_solution.qmd',
+            'solution_html': 'training_material/module 6 - sdtm_programming/module6_solution.html'
         }
     },
     7: {
-        'title': 'Final Project: From SDTM to TLFs',
-        'description': 'Complete a comprehensive clinical analysis project, from raw data to TLFs, using GitHub Copilot as your AI assistant.',
+        'title': 'Post-Processing, QC & Reporting',
+        'description': 'Master final data formatting, quality control procedures, report generation, and GitHub Copilot best practices for clinical programming. Future: SAS validation integration.',
         'objectives': [
-            'Apply everything learned in previous modules to complete a mock clinical analysis project',
-            'Build SDTM datasets from raw data using dplyr, lubridate, and stringr',
-            'Derive ADaM datasets using admiral and pharmaverse packages',
-            'Generate TLFs (listings, tables, figures) for clinical reporting',
-            'Use GitHub Copilot to assist with debugging, formatting, and optimization'
+            'Format date/time variables to ISO8601 standards and reorder columns per specifications',
+            'Implement double-programming QC by comparing R outputs against SAS results',
+            'Generate professional tables and reports using gt (future: SAS validation procedures)',
+            'Apply GitHub Copilot best practices for clinical programming workflows',
+            'Understand learning outcomes and plan next steps in R clinical programming journey'
         ],
         'files': {
-            'theory': 'training_material/module 7 - project/module7_theory.qmd',
-            'theory_html': 'training_material/module 7 - project/module7_theory.html',
-            'demo': 'training_material/module 7 - project/module7_demo.R',
-            'exercise': 'training_material/module 7 - project/module7_exercise.R',
-            'solution': 'training_material/module 7 - project/module7_solution.qmd',
-            'solution_html': 'training_material/module 7 - project/module7_solution.html'
+            'theory': 'training_material/module 7 - qc_reporting/module7_theory.qmd',
+            'theory_html': 'training_material/module 7 - qc_reporting/module7_theory.html',
+            'demo': 'training_material/module 7 - qc_reporting/module7_demo.R',
+            'exercise': 'training_material/module 7 - qc_reporting/module7_exercise.R',
+            'solution': 'training_material/module 7 - qc_reporting/module7_solution.qmd',
+            'solution_html': 'training_material/module 7 - qc_reporting/module7_solution.html'
         }
     }
 }
 
 BONUS_RESOURCES = {
     'sas_cheatsheet': {
-        'title': 'SAS to R Cheatsheet',
-        'description': 'Quick reference guide for SAS users transitioning to R',
-        'file': '_sas_to_r_cheatsheet.pdf',
-        'icon': '📋'
+        'title': 'R vs SAS Cheatsheet',
+        'description': 'Quick reference comparing SAS and R syntax for data programming',
+        'file': 'bonus_resources/rendered/01_R_vs_SAS_CheatSheet.html',
+        'icon': '�'
     },
-    'copilot_prompts': {
-        'title': 'Copilot Prompt Library',
-        'description': 'Collection of effective prompts for GitHub Copilot',
-        'file': '_copilot_prompt_library.pdf',
-        'icon': '🤖'
-    },
-    'clinical_template': {
-        'title': 'Clinical Report Template',
-        'description': 'R Markdown template for clinical trial reports',
-        'file': '_clinical_report_template.Rmd',
-        'icon': '📄'
-    },
-    'sdtm_derive': {
-        'title': 'SDTM Derivation Examples',
-        'description': 'Example scripts for SDTM dataset creation',
-        'file': '_sdtm_derive.R',
+    'sdtm_programming': {
+        'title': 'SDTM Programming Guide',
+        'description': 'Complete examples for SDTM domain creation with sdtm.oak',
+        'file': 'bonus_resources/rendered/02_sdtm_programming_guide.html',
         'icon': '📊'
     },
-    'adam_build': {
-        'title': 'ADaM Build Examples',
-        'description': 'Example scripts for ADaM dataset creation',
-        'file': '_adam_build.R',
-        'icon': '📈'
+    'qc_validation': {
+        'title': 'QC Validation Toolkit',
+        'description': 'Quality control procedures and data validation scripts',
+        'file': 'bonus_resources/rendered/03_qc_validation_toolkit.html',
+        'icon': '✓'
     },
-    'tlf_generator': {
-        'title': 'TLF Generator',
-        'description': 'Automated TLF generation scripts',
-        'file': '_tlf_generator.R',
-        'icon': '📋'
+    'data_manipulation': {
+        'title': 'Data Manipulation Examples',
+        'description': 'dplyr operations and data manipulation techniques',
+        'file': 'bonus_resources/rendered/04_data_manipulation_examples.html',
+        'icon': '📊'
     },
-    'qc_with_ai': {
-        'title': 'QC with AI',
-        'description': 'Quality control procedures using AI assistance',
-        'file': '_qc_with_ai.R',
-        'icon': '🔍'
+    'custom_functions': {
+        'title': 'Custom Functions Library',
+        'description': 'Reusable R functions and SAS macro translations',
+        'file': 'bonus_resources/rendered/05_custom_functions_library.html',
+        'icon': '🔧'
+    },
+    'date_text_functions': {
+        'title': 'Date & Text Functions',
+        'description': 'lubridate and stringr practical examples',
+        'file': 'bonus_resources/rendered/06_date_text_functions.html',
+        'icon': '📅'
+    },
+    'copilot_prompts': {
+        'title': 'GitHub Copilot Best Practices',
+        'description': 'Effective prompting strategies for R programming with AI',
+        'file': 'bonus_resources/copilot_prompt_library.pdf',
+        'icon': '🤖'
+    },
+    'report_template': {
+        'title': 'Report Template',
+        'description': 'R Markdown template for data analysis reports',
+        'file': 'bonus_resources/rendered/report_template.Rmd',
+        'icon': '📄'
+    },
+    'sas_to_r_cheatsheet': {
+        'title': 'SAS to R Migration Guide',
+        'description': 'Comprehensive guide for transitioning from SAS to R',
+        'file': 'bonus_resources/sas_to_r_cheatsheet.pdf',
+        'icon': '🔄'
     }
 }
 
@@ -225,7 +239,66 @@ def contact():
 @app.route('/download/<path:filename>')
 def download_file(filename):
     try:
-        return send_file(filename, as_attachment=True)
+        # Search for file in training_material subdirectories first
+        for root, dirs, files in os.walk('training_material'):
+            if filename in files:
+                file_path = os.path.join(root, filename)
+                return send_file(file_path, as_attachment=True)
+        
+        # For HTML files, always try to find source files (QMD/RMD) instead of returning HTML
+        if filename.endswith('.html'):
+            base_name = os.path.splitext(filename)[0]
+            import re
+            
+            # Try to find PDF version first (for actual PDF resources)
+            pdf_name = f"{base_name}.pdf"
+            pdf_path = os.path.join('bonus_resources', pdf_name)
+            if os.path.exists(pdf_path):
+                return send_file(pdf_path, as_attachment=True)
+            
+            # Try numbered PDF version (remove number prefix)
+            if re.match(r'^\d+_', base_name):
+                base_without_number = re.sub(r'^\d+_', '', base_name)
+                pdf_name_no_number = f"{base_without_number}.pdf"
+                pdf_path_no_number = os.path.join('bonus_resources', pdf_name_no_number)
+                if os.path.exists(pdf_path_no_number):
+                    return send_file(pdf_path_no_number, as_attachment=True)
+                
+                # If no PDF, try to find the QMD source file first
+                qmd_name = f"{base_without_number}.qmd"
+                qmd_path = os.path.join('bonus_resources', 'source', qmd_name)
+                if os.path.exists(qmd_path):
+                    return send_file(qmd_path, as_attachment=True)
+                
+                # If no QMD, try to find the RMD source file
+                rmd_name = f"{base_without_number}.Rmd"
+                rmd_path = os.path.join('bonus_resources', 'rendered', rmd_name)
+                if os.path.exists(rmd_path):
+                    return send_file(rmd_path, as_attachment=True)
+            
+            # Try QMD source file with original name first
+            qmd_name = f"{base_name}.qmd"
+            qmd_path = os.path.join('bonus_resources', 'source', qmd_name)
+            if os.path.exists(qmd_path):
+                return send_file(qmd_path, as_attachment=True)
+            
+            # Try RMD source file with original name
+            rmd_name = f"{base_name}.Rmd"
+            rmd_path = os.path.join('bonus_resources', 'rendered', rmd_name)
+            if os.path.exists(rmd_path):
+                return send_file(rmd_path, as_attachment=True)
+        else:
+            # For non-HTML files (like PDFs), check bonus_resources directory
+            bonus_path = os.path.join('bonus_resources', filename)
+            if os.path.exists(bonus_path):
+                return send_file(bonus_path, as_attachment=True)
+            
+            # Also check rendered subfolder
+            rendered_path = os.path.join('bonus_resources', 'rendered', filename)
+            if os.path.exists(rendered_path):
+                return send_file(rendered_path, as_attachment=True)
+        
+        return f"Download not available for: {filename}. This resource is only available for online viewing.", 404
     except FileNotFoundError:
         return "File not found", 404
 
@@ -250,42 +323,211 @@ def download_module_zip(module_id):
         download_name=f"module{module_id}_{module['title'].replace(' ', '_').lower()}.zip"
     )
 
+@app.route('/static_files/<path:filename>')
+def serve_static_files(filename):
+    """Serve supporting files for rendered HTML documents"""
+    try:
+        # Clean up path separators for Windows
+        clean_filename = filename.replace('/', os.sep)
+        if os.path.exists(clean_filename):
+            # Determine the correct MIME type based on file extension
+            if filename.endswith('.css'):
+                return send_file(clean_filename, mimetype='text/css')
+            elif filename.endswith('.js'):
+                return send_file(clean_filename, mimetype='application/javascript')
+            elif filename.endswith('.woff') or filename.endswith('.woff2'):
+                return send_file(clean_filename, mimetype='font/woff')
+            else:
+                return send_file(clean_filename)
+        return "File not found", 404
+    except Exception as e:
+        return f"Error: {str(e)}", 404
+
 @app.route('/toggle_theme', methods=['POST'])
 def toggle_theme():
     data = request.get_json()
     theme = data.get('theme', 'light')
     return jsonify({'status': 'success', 'theme': theme})
 
+def fix_html_static_paths(content, html_filename, html_path):
+    """Fix relative paths for supporting files in HTML content"""
+    import re
+    
+    file_base = os.path.splitext(os.path.basename(html_filename))[0]
+    
+    # Handle numbered bonus resource files (e.g., 01_R_vs_SAS_CheatSheet.html)
+    # Check if the filename starts with digits followed by underscore
+    if re.match(r'^\d+_', file_base):
+        # Remove the number prefix to find the actual files directory
+        base_without_number = re.sub(r'^\d+_', '', file_base)
+        files_dir_candidates = [f"{file_base}_files", f"{base_without_number}_files"]
+    else:
+        files_dir_candidates = [f"{file_base}_files"]
+    
+    # Try each possible files directory
+    for files_dir in files_dir_candidates:
+        if files_dir in content:
+            # Get the directory where the HTML file is located
+            html_dir = os.path.dirname(html_path).replace('\\', '/')
+            # Replace src attributes
+            content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+            # Replace href attributes  
+            content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+            break  # Stop after first match
+    
+    # Fix PDF links - convert relative PDF paths to view routes
+    content = re.sub(r'href="([^"]+\.pdf)"', r'href="/view/\1"', content)
+    
+    return content
+
 @app.route('/view/<path:filename>')
 def view_file(filename):
-    """View HTML content of Quarto files"""
+    """View content of various file types with proper rendering"""
     try:
-        # Check if it's a Quarto file
-        if filename.endswith('.qmd'):
-            # Try to find the corresponding HTML file
+        # Search for file in training_material subdirectories first
+        file_path = None
+        base_dir = None
+        
+        for root, dirs, files in os.walk('training_material'):
+            if filename in files:
+                file_path = os.path.join(root, filename)
+                base_dir = os.path.dirname(file_path)
+                break
+        
+        # If not found, check bonus_resources directory (including rendered and source subfolders)
+        if not file_path:
+            # First check rendered subfolder
+            rendered_path = os.path.join('bonus_resources', 'rendered', filename)
+            if os.path.exists(rendered_path):
+                file_path = rendered_path
+                base_dir = 'bonus_resources/rendered'
+            else:
+                # Then check source subfolder
+                source_path = os.path.join('bonus_resources', 'source', filename)
+                if os.path.exists(source_path):
+                    file_path = source_path
+                    base_dir = 'bonus_resources/source'
+                else:
+                    # Finally check main bonus_resources directory
+                    bonus_path = os.path.join('bonus_resources', filename)
+                    if os.path.exists(bonus_path):
+                        file_path = bonus_path
+                        base_dir = 'bonus_resources'
+        
+        if not file_path:
+            return f"File not found: {filename}", 404
+        
+        if filename.endswith('.pdf'):
+            # For PDF files, serve them directly to open in browser
+            return send_file(file_path, mimetype='application/pdf')
+            
+        elif filename.endswith('.qmd'):
+            # For QMD files, try to find rendered HTML first, otherwise show raw content
             html_filename = filename.replace('.qmd', '.html')
-            if os.path.exists(html_filename):
-                # Read and modify the HTML content to fix file paths
-                with open(html_filename, 'r', encoding='utf-8') as f:
+            html_path = None
+            
+            # Search for HTML file recursively in training_material
+            for root, dirs, files in os.walk('training_material'):
+                if html_filename in files:
+                    html_path = os.path.join(root, html_filename)
+                    break
+            
+            # If not found, check bonus_resources directories
+            if not html_path:
+                # First check rendered subfolder
+                bonus_rendered_path = os.path.join('bonus_resources', 'rendered', html_filename)
+                if os.path.exists(bonus_rendered_path):
+                    html_path = bonus_rendered_path
+                else:
+                    # For files from source directory, try looking for numbered HTML files in rendered
+                    if base_dir == 'bonus_resources/source':
+                        # Look for files like 01_R_vs_SAS_CheatSheet.html in rendered directory
+                        for rendered_file in os.listdir('bonus_resources/rendered'):
+                            if rendered_file.endswith('.html') and html_filename.replace('.html', '') in rendered_file:
+                                html_path = os.path.join('bonus_resources', 'rendered', rendered_file)
+                                break
+                    
+                    # If still not found, check main bonus_resources directory
+                    if not html_path:
+                        bonus_html_path = os.path.join('bonus_resources', html_filename)
+                        if os.path.exists(bonus_html_path):
+                            html_path = bonus_html_path
+            
+            if html_path:
+                # Read and serve the rendered HTML
+                with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # Get the directory name for the supporting files
-                dir_name = os.path.basename(os.path.dirname(html_filename))
-                file_base = os.path.splitext(os.path.basename(html_filename))[0]
-                files_dir = f"{file_base}_files"
-                
-                # Replace relative paths with Flask routes
-                content = content.replace(f'{files_dir}/', f'/view_files/{dir_name}/{files_dir}/')
+                # Fix relative paths for supporting files
+                content = fix_html_static_paths(content, html_filename, html_path)
                 
                 return content, 200, {'Content-Type': 'text/html'}
             else:
-                # Fallback to the QMD viewer if HTML doesn't exist
-                return render_template('qmd_viewer.html', filename=filename, 
-                                     message=f"HTML version not available for {filename}. Showing QMD content instead.")
+                # Show QMD source with syntax highlighting
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    qmd_content = f.read()
+                return render_template('file_viewer.html', 
+                                     filename=filename, 
+                                     content=qmd_content, 
+                                     file_type='markdown',
+                                     message="Showing QMD source code (rendered HTML not available)")
+                                     
+        elif filename.endswith('.Rmd'):
+            # For RMD files, try to find rendered HTML first, otherwise show raw content
+            html_filename = filename.replace('.Rmd', '.html')
+            html_path = os.path.join(base_dir, html_filename)
+            if os.path.exists(html_path):
+                with open(html_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # Fix relative paths for supporting files
+                content = fix_html_static_paths(content, html_filename, html_path)
+                
+                return content, 200, {'Content-Type': 'text/html'}
+            else:
+                # Show RMD source with syntax highlighting
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    rmd_content = f.read()
+                return render_template('file_viewer.html', 
+                                     filename=filename, 
+                                     content=rmd_content, 
+                                     file_type='markdown',
+                                     message="Showing RMD source code (rendered HTML not available)")
+                                     
+        elif filename.endswith('.R'):
+            # For R files, show with syntax highlighting
+            with open(file_path, 'r', encoding='utf-8') as f:
+                r_content = f.read()
+            return render_template('file_viewer.html', 
+                                 filename=filename, 
+                                 content=r_content, 
+                                 file_type='r',
+                                 message="R Script")
+                                 
+        elif filename.endswith(('.html', '.htm')):
+            # For HTML files, serve with proper static file paths
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Fix relative paths for supporting files
+            content = fix_html_static_paths(content, filename, file_path)
+            
+            return content, 200, {'Content-Type': 'text/html'}
+            
         else:
-            return "File type not supported for viewing", 400
+            # For other text files, show as plain text
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return render_template('file_viewer.html', 
+                                 filename=filename, 
+                                 content=content, 
+                                 file_type='text',
+                                 message=f"Viewing: {os.path.basename(filename)}")
+            
     except FileNotFoundError:
-        return "File not found", 404
+        return f"File not found: {filename}", 404
+    except Exception as e:
+        return f"Error viewing file: {str(e)}", 500
 
 @app.route('/view_qmd/<path:filename>')
 def view_qmd_content(filename):

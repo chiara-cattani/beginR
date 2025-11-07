@@ -1,0 +1,270 @@
+---
+title: "Module 3 Theory — Joins and Summaries"
+format: html
+editor: visual
+---
+
+# 🔗 Module 3 — Joins and Summaries
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Perform join operations using `left_join`, `inner_join`, and other dplyr join functions
+-   Use `group_by` and `summarise` to create summary statistics by treatment groups
+-   Generate frequency tables using `count` and `n` functions  
+-   Practice with clinical scenarios: summarizing adverse events by elderly vs non-elderly patients
+-   Handle missing data and edge cases in join operations
+
+------------------------------------------------------------------------
+
+## 🔗 1. Understanding Joins in Clinical Programming
+
+Joins are essential in clinical programming for combining data from different domains (DM + AE, DM + VS, etc.).
+
+### Common Clinical Join Scenarios:
+- **Demographics + Adverse Events**: Add subject characteristics to AE data
+- **Demographics + Lab Values**: Add baseline characteristics to lab results  
+- **ADSL + BDS domains**: Add subject-level analysis variables to event data
+- **Exposure + Efficacy**: Combine treatment information with outcomes
+
+### Types of Joins:
+
+| Join Type | Description | When to Use |
+|-----------|-------------|-------------|
+| `left_join()` | Keep all rows from left dataset | Most common - preserve main dataset |
+| `inner_join()` | Keep only matching rows | When you need complete data only |
+| `right_join()` | Keep all rows from right dataset | Less common in clinical programming |
+| `full_join()` | Keep all rows from both datasets | When you need complete picture |
+
+------------------------------------------------------------------------
+
+## 🔧 2. Basic Join Operations
+
+### Setting Up Sample Data
+
+```r
+library(dplyr)
+library(tibble)
+
+# Demographics data
+dm <- tibble(
+  USUBJID = c("001-001", "001-002", "001-003", "001-004", "001-005"),
+  AGE = c(45, 67, 52, 71, 34),
+  SEX = c("M", "F", "M", "F", "M"),
+  ARMCD = c("TRT", "PBO", "TRT", "TRT", "PBO")
+)
+
+# Adverse Events data  
+ae <- tibble(
+  USUBJID = c("001-001", "001-001", "001-002", "001-004", "001-006"),
+  AEDECOD = c("HEADACHE", "NAUSEA", "FATIGUE", "DIZZINESS", "HEADACHE"),
+  AESEV = c("MILD", "MODERATE", "MILD", "SEVERE", "MILD")
+)
+```
+
+### `left_join()` - Most Common in Clinical Programming
+
+```r
+# Add demographics to adverse events (preserve all AE records)
+ae_with_demo <- ae %>%
+  left_join(dm, by = "USUBJID")
+
+# Result: AE data with subject characteristics added
+# Note: Subject 001-006 will have NA for demo variables (not in DM)
+```
+
+### `inner_join()` - Complete Cases Only
+
+```r  
+# Keep only AEs for subjects with complete demographics
+ae_complete <- ae %>%
+  inner_join(dm, by = "USUBJID")
+
+# Result: Excludes AE for subject 001-006 (not in DM)
+```
+
+------------------------------------------------------------------------
+
+## � 3. Group By and Summarise Operations
+
+### Basic Summarisation
+
+```r
+# Count adverse events by treatment group
+ae_summary <- ae_with_demo %>%
+  group_by(ARMCD) %>%
+  summarise(
+    n_subjects = n_distinct(USUBJID),
+    n_events = n(),
+    .groups = "drop"
+  )
+
+# Count events by severity
+severity_summary <- ae_with_demo %>%
+  group_by(AESEV) %>%
+  summarise(
+    count = n(),
+    percent = round(100 * n() / nrow(ae_with_demo), 1),
+    .groups = "drop"
+  )
+```
+
+### Age-Based Analysis (Elderly vs Non-Elderly)
+
+```r
+# First, create elderly flag in demographics
+dm <- dm %>%
+  mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N"))
+
+# Join and summarise AEs by elderly status
+ae_by_elderly <- ae %>%
+  left_join(dm, by = "USUBJID") %>%
+  group_by(ELDERLY, AESEV) %>%
+  summarise(
+    n_events = n(),
+    n_subjects = n_distinct(USUBJID),
+    .groups = "drop"
+  )
+```
+
+### Multiple Grouping Variables
+
+```r
+# Summarise by treatment and elderly status
+complex_summary <- ae %>%
+  left_join(dm, by = "USUBJID") %>%
+  mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N")) %>%
+  group_by(ARMCD, ELDERLY, AESEV) %>%
+  summarise(
+    n_events = n(),
+    n_subjects = n_distinct(USUBJID),
+    mean_age = round(mean(AGE, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) %>%
+  arrange(ARMCD, ELDERLY, AESEV)
+```
+
+------------------------------------------------------------------------
+
+## 🔢 4. Frequency Tables with count()
+
+The `count()` function is a shortcut for `group_by()` + `summarise(n = n())`:
+
+```r
+# Simple frequency table
+ae_counts <- ae_with_demo %>%
+  count(AEDECOD, sort = TRUE)
+
+# Cross-tabulation  
+ae_cross_tab <- ae_with_demo %>%
+  count(ARMCD, AESEV) %>%
+  tidyr::pivot_wider(names_from = AESEV, values_from = n, values_fill = 0)
+
+# Count with proportions
+ae_with_prop <- ae_with_demo %>%
+  count(AEDECOD) %>%
+  mutate(
+    percent = round(100 * n / sum(n), 1),
+    label = paste0(n, " (", percent, "%)")
+  )
+```
+
+------------------------------------------------------------------------
+
+## 🚨 5. Clinical Example: Adverse Events Analysis
+
+Let's work through a complete adverse events analysis:
+
+```r
+# Complete AE analysis pipeline
+ae_analysis <- ae %>%
+  left_join(dm, by = "USUBJID") %>%
+  mutate(
+    ELDERLY = ifelse(AGE >= 65, "Y", "N"),
+    SEVERE_AE = ifelse(AESEV == "SEVERE", "Y", "N")
+  ) %>%
+  group_by(ARMCD, ELDERLY) %>%
+  summarise(
+    n_subjects = n_distinct(USUBJID),
+    n_total_aes = n(),
+    n_severe_aes = sum(SEVERE_AE == "Y", na.rm = TRUE),
+    severe_rate = round(100 * n_severe_aes / n_total_aes, 1),
+    aes_per_subject = round(n_total_aes / n_subjects, 1),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(severe_rate))
+
+print(ae_analysis)
+```
+
+------------------------------------------------------------------------
+
+## ⚠️ 6. Handling Missing Data in Joins
+
+```r
+# Check for subjects in AE but not in DM
+ae_subjects <- unique(ae$USUBJID)
+dm_subjects <- unique(dm$USUBJID)
+
+missing_in_dm <- setdiff(ae_subjects, dm_subjects)
+missing_in_ae <- setdiff(dm_subjects, ae_subjects)
+
+cat("Subjects in AE but not DM:", missing_in_dm, "\n")
+cat("Subjects in DM but not AE:", missing_in_ae, "\n")
+
+# Handle missing demographic data explicitly
+ae_safe <- ae %>%
+  left_join(dm, by = "USUBJID") %>%
+  mutate(
+    ELDERLY = case_when(
+      is.na(AGE) ~ "Unknown",
+      AGE >= 65 ~ "Y", 
+      TRUE ~ "N"
+    ),
+    ARMCD = if_else(is.na(ARMCD), "Unknown", ARMCD)
+  )
+```
+
+------------------------------------------------------------------------
+
+## 🤖 7. GitHub Copilot for Joins and Summaries
+
+### Effective Prompts:
+
+| Comment Prompt | Expected Copilot Suggestion |
+|----|----|
+| `# Join demographics to adverse events` | `left_join(dm, by = "USUBJID")` |
+| `# Count AEs by treatment and severity` | `group_by(ARMCD, AESEV) %>% summarise(n = n())` |
+| `# Calculate AE rates by elderly status` | `group_by(ELDERLY) %>% summarise(rate = n()/n_distinct(USUBJID))` |
+| `# Create cross-tabulation of treatment by outcome` | `count(ARMCD, OUTCOME) %>% pivot_wider(...)` |
+
+------------------------------------------------------------------------
+
+## 📝 Module Summary
+
+By completing this module, you should now be able to:
+
+✅ **Perform joins** using left_join, inner_join, and other dplyr join functions  
+✅ **Create summaries** using group_by and summarise for clinical analysis  
+✅ **Generate frequency tables** with count() and n() functions  
+✅ **Analyze adverse events** by elderly vs non-elderly populations  
+✅ **Handle missing data** appropriately in join operations  
+
+### 🚀 Next Steps:
+- Practice with the demo exercises
+- Try adverse event analysis on your own data  
+- Prepare for Module 4: Date & Text Handling
+
+------------------------------------------------------------------------
+
+## 💡 Key Takeaways
+
+1. **left_join() is most common** in clinical programming - preserves your main dataset
+2. **group_by() + summarise()** creates powerful analysis summaries
+3. **count() is a shortcut** for simple frequency tables
+4. **Handle missing data explicitly** when joining datasets
+5. **n_distinct()** counts unique subjects, **n()** counts records
+6. **Elderly flag analysis** is a common clinical programming pattern
+
+Ready to learn about dates and text handling? Let's move to Module 4!

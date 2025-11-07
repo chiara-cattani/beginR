@@ -1,0 +1,479 @@
+---
+title: "Module 7 Theory — Post-Processing, QC & Reporting"
+format: html
+editor: visual
+---
+
+# 📊 Module 7 — Post-Processing, QC & Reporting
+
+## 🎯 Learning Objectives
+
+By the end of this module, you will:
+
+-   Master data formatting and presentation for clinical reports
+-   Implement quality control (QC) practices and validation procedures  
+-   Create professional clinical reports using `gt` (and learn future SAS validation methods)
+-   Learn best practices for reproducible clinical programming
+-   Export publication-ready tables and figures
+-   Use GitHub Copilot in RStudio for efficient report generation and QC automation
+
+------------------------------------------------------------------------
+
+## 📋 1. Post-Processing Clinical Data
+
+### Data Formatting Principles
+
+Post-processing involves preparing analysis datasets for final reporting and includes:
+
+- **Variable Formatting**: Proper display formats for dates, numbers, and categorical variables
+- **Label Assignment**: Descriptive labels for variables and datasets  
+- **Value Formatting**: Consistent presentation of results (e.g., "12.3 (4.5)" for mean (SD))
+- **Missing Data Handling**: Appropriate display of missing values
+- **Ordering and Sorting**: Logical arrangement of observations and variables
+
+### Common Formatting Functions
+
+```r
+library(dplyr)
+library(stringr)
+library(lubridate)
+
+# Format numeric variables
+format_number <- function(x, digits = 1) {
+  case_when(
+    is.na(x) ~ "Missing",
+    TRUE ~ format(round(x, digits), nsmall = digits)
+  )
+}
+
+# Format percentages  
+format_percent <- function(x, digits = 1) {
+  case_when(
+    is.na(x) ~ "Missing",
+    TRUE ~ paste0(format(round(x, digits), nsmall = digits), "%")
+  )
+}
+
+# Format mean (SD)
+format_mean_sd <- function(mean_val, sd_val, digits = 1) {
+  case_when(
+    is.na(mean_val) | is.na(sd_val) ~ "Missing",
+    TRUE ~ paste0(
+      format(round(mean_val, digits), nsmall = digits), 
+      " (", 
+      format(round(sd_val, digits), nsmall = digits), 
+      ")"
+    )
+  )
+}
+
+# Format dates consistently
+format_clinical_date <- function(date_var) {
+  case_when(
+    is.na(date_var) ~ "",
+    TRUE ~ format(date_var, "%d%b%Y")  # e.g., "15JAN2024"
+  )
+}
+```
+
+------------------------------------------------------------------------
+
+## 🔍 2. Quality Control (QC) Practices
+
+### QC Programming Principles
+
+Quality control in clinical programming ensures data integrity and regulatory compliance:
+
+1. **Independent QC**: Second programmer reviews and validates all programming
+2. **Reproducible Code**: Clear, well-documented code that produces consistent results
+3. **Data Validation**: Multiple checks to ensure data quality and consistency
+4. **Output Verification**: Systematic comparison of results across programmers
+5. **Documentation**: Comprehensive documentation of methods and assumptions
+
+### Essential QC Functions
+
+```r
+# Check for missing required variables
+check_required_vars <- function(data, required_vars, dataset_name = "Dataset") {
+  missing_vars <- setdiff(required_vars, names(data))
+  
+  if (length(missing_vars) > 0) {
+    warning(paste0(dataset_name, " missing required variables: ", 
+                   paste(missing_vars, collapse = ", ")))
+    return(FALSE)
+  }
+  
+  cat(paste0(dataset_name, " has all required variables\n"))
+  return(TRUE)
+}
+
+# Validate data ranges
+validate_data_ranges <- function(data, variable, min_val = NULL, max_val = NULL) {
+  var_data <- data[[variable]]
+  
+  issues <- data.frame(
+    issue_type = character(),
+    count = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  # Check for values outside expected range
+  if (!is.null(min_val)) {
+    below_min <- sum(var_data < min_val, na.rm = TRUE)
+    if (below_min > 0) {
+      issues <- rbind(issues, data.frame(
+        issue_type = paste0("Values below ", min_val),
+        count = below_min
+      ))
+    }
+  }
+  
+  if (!is.null(max_val)) {
+    above_max := sum(var_data > max_val, na.rm = TRUE)
+    if (above_max > 0) {
+      issues <- rbind(issues, data.frame(
+        issue_type = paste0("Values above ", max_val),
+        count = above_max
+      ))
+    }
+  }
+  
+  return(issues)
+}
+
+# Compare datasets for QC
+compare_datasets <- function(original_data, qc_data, key_vars, tolerance = 1e-6) {
+  
+  # Check dimensions
+  if (nrow(original_data) != nrow(qc_data)) {
+    warning("Row counts differ: Original=", nrow(original_data), 
+            ", QC=", nrow(qc_data))
+  }
+  
+  # Check key variables
+  merged_data <- full_join(
+    original_data %>% mutate(.source = "original"),
+    qc_data %>% mutate(.source = "qc"),
+    by = key_vars,
+    suffix = c("_orig", "_qc")
+  )
+  
+  # Identify discrepancies
+  discrepancies <- merged_data %>%
+    filter(is.na(.source_orig) | is.na(.source_qc))
+  
+  if (nrow(discrepancies) > 0) {
+    warning("Found ", nrow(discrepancies), " records that don't match")
+    return(discrepancies)
+  }
+  
+  cat("Datasets match successfully\n")
+  return(NULL)
+}
+------------------------------------------------------------------------
+
+## 📈 3. Clinical Reporting with gt (and Future SAS Validation)
+
+### The `gt` Package for Grammar of Tables
+
+The `gt` package provides a structured approach to table creation with excellent formatting capabilities:
+
+```r
+library(gt)
+library(dplyr)
+
+# Example: Demographics summary table
+create_demographics_table <- function(data) {
+  data %>%
+    group_by(ARM) %>%
+    summarise(
+      n = n(),
+      age_mean = mean(AGE, na.rm = TRUE),
+      age_sd = sd(AGE, na.rm = TRUE),
+      male_n = sum(SEX == "M", na.rm = TRUE),
+      male_pct = male_n / n * 100,
+      .groups = "drop"
+    ) %>%
+    mutate(
+      age_formatted = format_mean_sd(age_mean, age_sd, 1),
+      male_formatted = paste0(male_n, " (", format(round(male_pct, 1), nsmall = 1), "%)")
+    ) %>%
+    select(ARM, n, age_formatted, male_formatted) %>%
+    gt() %>%
+    cols_label(
+      ARM = "Treatment Arm",
+      n = "N",
+      age_formatted = "Age, years",
+      male_formatted = "Male, n (%)"
+    ) %>%
+    tab_header(
+      title = "Subject Demographics",
+      subtitle = "Safety Population"
+    ) %>%
+    tab_footnote(
+      footnote = "Age presented as mean (SD)",
+      locations = cells_column_labels(columns = age_formatted)
+    ) %>%
+    tab_style(
+      style = cell_text(weight = "bold"),
+      locations = cells_column_labels()
+    ) %>%
+    tab_options(
+      table.font.size = 12,
+      heading.title.font.size = 14,
+      heading.subtitle.font.size = 12
+    )
+}
+```
+
+### The `flextable` Package for Flexible Tables (Future: SAS Validation)
+
+::: {.callout-note}
+**Future Enhancement**: This section will be replaced with SAS validation procedures showing how to validate R-created datasets using SAS, demonstrating R-SAS interoperability and quality control workflows.
+:::
+
+`flextable` offers extensive customization options and excellent Word/PowerPoint integration (current content for reference):
+
+```r
+library(flextable)
+
+# Example: Adverse events listing
+create_ae_listing <- function(data) {
+  data %>%
+    select(USUBJID, AETERM, AESEV, AESTDTC, AEENDTC, AEOUT) %>%
+    arrange(USUBJID, AESTDTC) %>%
+    flextable() %>%
+    set_header_labels(
+      USUBJID = "Subject ID",
+      AETERM = "Adverse Event Term", 
+      AESEV = "Severity",
+      AESTDTC = "Start Date",
+      AEENDTC = "End Date",
+      AEOUT = "Outcome"
+    ) %>%
+    add_header_row(
+      values = c("", "Adverse Event Details", "", "", ""),
+      colwidths = c(1, 4, 1, 1, 1)
+    ) %>%
+    theme_booktabs() %>%
+    fontsize(size = 10, part = "all") %>%
+    bold(part = "header") %>%
+    align(align = "center", part = "header") %>%
+    align(j = c("AESTDTC", "AEENDTC"), align = "center", part = "body") %>%
+    width(j = "AETERM", width = 2.5) %>%
+    width(j = c("AESTDTC", "AEENDTC"), width = 1.2)
+}
+```
+
+------------------------------------------------------------------------
+
+## 📊 4. Advanced Table Formatting
+
+### Conditional Formatting
+
+```r
+# Highlight severe adverse events
+format_ae_severity <- function(ft_table) {
+  ft_table %>%
+    bg(
+      i = ~ AESEV == "SEVERE",
+      bg = "#ffcccc"  # Light red background
+    ) %>%
+    color(
+      i = ~ AESEV == "SEVERE", 
+      j = "AESEV",
+      color = "#cc0000"  # Dark red text
+    ) %>%
+    bold(
+      i = ~ AESEV == "SEVERE",
+      j = "AESEV"
+    )
+}
+
+# Format numeric values with appropriate precision
+format_lab_values <- function(data) {
+  data %>%
+    mutate(
+      result_formatted = case_when(
+        is.na(LBSTRESN) ~ "Missing",
+        LBTESTCD == "HGB" ~ format(round(LBSTRESN, 1), nsmall = 1),
+        LBTESTCD == "WBC" ~ format(round(LBSTRESN, 2), nsmall = 2),
+        TRUE ~ as.character(LBSTRESN)
+      ),
+      flag_formatted = case_when(
+        LBNRIND == "HIGH" ~ paste0(result_formatted, " ↑"),
+        LBNRIND == "LOW" ~ paste0(result_formatted, " ↓"),
+        TRUE ~ result_formatted  
+      )
+    )
+}
+```
+
+### Cross-Reference Tables
+
+```r
+# Create cross-tabulation with percentages
+create_crosstab <- function(data, row_var, col_var) {
+  data %>%
+    count({{row_var}}, {{col_var}}) %>%
+    group_by({{col_var}}) %>%
+    mutate(
+      pct = round(n / sum(n) * 100, 1),
+      formatted = paste0(n, " (", format(pct, nsmall = 1), "%)")
+    ) %>%
+    select(-n, -pct) %>%
+    pivot_wider(names_from = {{col_var}}, values_from = formatted, values_fill = "0 (0.0%)") %>%
+    gt() %>%
+    tab_header(title = "Cross-tabulation with Percentages") %>%
+    tab_footnote(footnote = "Data presented as n (%)")
+}
+```
+
+------------------------------------------------------------------------
+
+## 📤 5. Export and Output Management
+
+### Export Functions for Different Formats
+
+```r
+# Export gt table to multiple formats
+export_gt_table <- function(gt_table, filename_base, formats = c("html", "rtf", "png")) {
+  
+  if ("html" %in% formats) {
+    gt_table %>%
+      gtsave(filename = paste0(filename_base, ".html"))
+  }
+  
+  if ("rtf" %in% formats) {
+    gt_table %>%
+      gtsave(filename = paste0(filename_base, ".rtf"))
+  }
+  
+  if ("png" %in% formats) {
+    gt_table %>%
+      gtsave(filename = paste0(filename_base, ".png"))
+  }
+  
+  cat("Table exported in", length(formats), "format(s)\n")
+}
+
+# Export flextable to Word and PowerPoint
+export_flextable <- function(ft_table, filename_base) {
+  
+  # Export to Word
+  ft_table %>%
+    save_as_docx(path = paste0(filename_base, ".docx"))
+  
+  # Export to PowerPoint
+  ft_table %>%
+    save_as_pptx(path = paste0(filename_base, ".pptx"))
+  
+  cat("Flextable exported to Word and PowerPoint\n")
+}
+```
+
+### Batch Processing and Automation
+
+```r
+# Process multiple datasets with consistent formatting
+batch_process_tables <- function(dataset_list, table_specs) {
+  
+  results <- list()
+  
+  for (dataset_name in names(dataset_list)) {
+    
+    cat("Processing", dataset_name, "...\n")
+    
+    data <- dataset_list[[dataset_name]]
+    spec <- table_specs[[dataset_name]]
+    
+    if (spec$type == "summary") {
+      table <- create_demographics_table(data)
+    } else if (spec$type == "listing") {
+      table <- create_ae_listing(data)
+    }
+    
+    # Export with consistent naming
+    export_path <- file.path("output", paste0(dataset_name, "_", spec$type))
+    export_gt_table(table, export_path, spec$formats)
+    
+    results[[dataset_name]] <- table
+  }
+  
+  return(results)
+}
+```
+
+------------------------------------------------------------------------
+
+## 🤖 6. GitHub Copilot in RStudio Best Practices
+
+### Effective Prompts for Clinical Reporting
+
+| Comment Prompt | Copilot Suggestion Focus |
+|----|----|
+| `# Create demographics table by treatment arm with gt` | Table structure with grouping |
+| `# Format adverse events listing with severity highlighting` | Conditional formatting |
+| `# Export table to Word with custom styling` | Export functions |
+| `# Add footnotes explaining statistical methods` | Documentation elements |
+| `# Create QC function to validate table outputs` | Validation logic |
+
+### QC and Validation with Copilot
+
+```r
+# Good: Specific QC requirements
+# Create QC function to compare demographic counts between original and QC programmer results
+
+# Good: Validation logic description  
+# Validate that all adverse events have valid start dates and severity categories
+
+# Good: Cross-check specifications
+# Compare table output against statistical analysis plan specifications for demographics table
+```
+
+### Report Generation Automation
+
+```r
+# Good: Comprehensive workflow description
+# Create automated report generation function that produces demographics, AE summary, and safety listings
+
+# Good: Error handling requirements
+# Add error handling for missing data and invalid table specifications in batch processing
+
+# Good: Template-based approach
+# Generate standardized clinical report template with consistent formatting across all tables
+```
+
+------------------------------------------------------------------------
+
+## ✅ 7. Best Practices Summary
+
+### Code Organization
+- **Modular Functions**: Create reusable functions for common formatting tasks
+- **Consistent Naming**: Use clear, consistent naming conventions
+- **Documentation**: Comment code thoroughly, especially complex formatting logic
+- **Version Control**: Track changes in table specifications and formatting
+
+### Quality Assurance
+- **Independent QC**: Have another programmer validate all outputs
+- **Automated Checks**: Use validation functions to catch common errors
+- **Output Comparison**: Systematically compare results across programmers
+- **Documentation**: Maintain clear records of QC findings and resolutions
+
+### Regulatory Compliance
+- **Standard Formats**: Follow company and regulatory standards for table presentation
+- **Traceability**: Maintain clear links between data, code, and outputs
+- **Validation**: Document validation of all statistical methods and results
+- **Archive Management**: Properly archive code and outputs for regulatory submissions
+
+------------------------------------------------------------------------
+
+## 🎯 Next Steps
+
+In the demo and exercise, you'll practice:
+- Creating production-quality clinical tables and listings
+- Implementing comprehensive QC procedures
+- Using advanced formatting techniques with gt and flextable
+- Automating report generation workflows
+- Leveraging GitHub Copilot in RStudio for efficient clinical reporting
+- Following regulatory best practices for clinical programming

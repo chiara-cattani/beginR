@@ -1,146 +1,199 @@
 ---
-title: "Module 1 Theory — R for SAS Programmers: First Contact"
+title: "Module 1 Theory — RStudio & Environment Setup"
 format: html
 editor: visual
 ---
 
-# 🧠 Module 1 Theory --- R for SAS Programmers: First Contact
+# 🧠 Module 1 Theory --- RStudio & Environment Setup
 
 ## 🎯 Learning Objectives
 
-By the end of this section, you will:
+By the end of this module, you will:
 
--   Understand what R is and how it differs from SAS\
--   Be familiar with the RStudio interface and file types\
--   Learn how to write basic R code (variables, data frames, functions)\
--   Know the key R packages for clinical programming\
--   Understand how to use GitHub Copilot to assist you while coding
-
-------------------------------------------------------------------------
-
-## 🧪 1. What is R?
-
-R is an open-source language designed for data analysis, statistics, and graphics.
-
-Like SAS, it is widely used in clinical research, but:
-
--   It is object-oriented and script-based\
--   It offers greater flexibility and interactivity\
--   It integrates easily with HTML, PDF, Word, and Shiny dashboards
-
-**SAS vs R Analogy:**
-
-| Feature       | SAS                         | R                            |
-|---------------|-----------------------------|------------------------------|
-| Interface     | Enterprise Guide / Base SAS | RStudio                      |
-| Language Type | Procedural                  | Functional / Object-Oriented |
-| Data          | Datasets                    | Data frames / tibbles        |
-| Output        | PROC PRINT, ODS             | Console, Plots, Markdown     |
-| Extensions    | Macros                      | Packages                     |
-| Licensing     | Commercial                  | Free / Open-source           |
+-   Install R and RStudio with proper configuration for clinical programming
+-   Set up nutriciaconfig for environment and working directory management  
+-   Navigate RStudio interface panes and understand R file types
+-   Load essential packages (dplyr, haven, tibble) for clinical programming
+-   Configure and use GitHub Copilot basics for R programming assistance
 
 ------------------------------------------------------------------------
 
-## 🧱 2. RStudio Overview
+## 📥 1. Installing R and RStudio
 
-RStudio is like Enterprise Guide but for R.
+### Step 1: Install R
+1. Visit [CRAN](https://cran.r-project.org/) and download R for your operating system
+2. Install R using default settings
+3. Verify installation by opening R console
+
+### Step 2: Install RStudio
+1. Visit [RStudio](https://posit.co/download/rstudio-desktop/) and download RStudio Desktop
+2. Install RStudio (requires R to be installed first)
+3. Launch RStudio to verify both R and RStudio work together
+
+### Step 3: Initial Configuration
+- Set CRAN mirror: `Tools → Global Options → Packages`
+- Configure appearance: `Tools → Global Options → Appearance`
+- Set working directory preferences
+
+------------------------------------------------------------------------
+
+## ⚙️ 2. Setting Up nutriciaconfig
+
+The `nutriciaconfig` package helps manage your R environment and working directories for clinical programming projects.
+
+### Installation:
+```r
+# Install nutriciaconfig (replace with actual installation method)
+install.packages("nutriciaconfig")  # if on CRAN
+# or remotes::install_github("org/nutriciaconfig")  # if on GitHub
+```
+
+### Basic Setup:
+```r
+library(nutriciaconfig)
+
+# Initialize configuration for a new project
+nutriciaconfig::setup_project("my_clinical_study")
+
+# Set up environment paths
+nutriciaconfig::configure_paths()
+```
+
+------------------------------------------------------------------------
+
+## 🧱 3. RStudio Interface Overview
+
+RStudio has four main panes that make R programming efficient:
 
 ### 🖥️ Main Panels:
 
--   **Script Editor**: Write R scripts (`.R`) or notebooks (`.Rmd`)\
--   **Console**: Execute code\
--   **Environment**: See variables in memory\
--   **Files/Plots/Packages/Help**: Navigate your files and visualize plots
+-   **Script Editor (Top-Left)**: Write R scripts (`.R`) or R Markdown (`.Rmd`) files
+-   **Console (Bottom-Left)**: Execute R code and see results immediately
+-   **Environment (Top-Right)**: View variables, data objects, and functions in memory
+-   **Files/Plots/Packages/Help (Bottom-Right)**: Navigate files, view plots, manage packages, and access help
 
-### 📁 File Types:
+### 📁 Important File Types:
 
--   `.R`: regular script (like a SAS `.sas` file)\
--   `.Rmd`: RMarkdown document (mix of code + documentation)\
--   `.Rproj`: RStudio project file to organize files and paths
+-   `.R`: R script files (equivalent to SAS `.sas` program files)
+-   `.Rmd`: R Markdown documents (combine code, results, and documentation)
+-   `.Rproj`: RStudio project files (organize related files and set working directory)
 
-------------------------------------------------------------------------
-
-## 🧬 3. Writing R Code --- Core Concepts
-
-### ➕ Variables
-
-```{r}
-x <- 10          # Assign 10 to x
-name <- "Chiara" # Assign string to variable
-```
-
-### 🧱 Data Frames (similar to datasets)
-
-```{r}
-df <- data.frame(Name = c("John", "Anna"), Age = c(30, 25))
-```
-
-### 🔧 Functions
-
-```{r}
-mean(c(1, 2, 3))       # Calculates average
-sum(c(1, 2, 3))        # Adds values
-```
-
-### 💡 Pipe Operator (`%>%`)
-
-Like chaining multiple steps together (e.g., `DATA -> SET -> WHERE`)
-
-```{r}
-library(dplyr)
-
-df %>%
-  filter(Age > 26) %>%
-  select(Name)
-```
+### 🔧 Basic RStudio Workflow:
+1. Create or open an R script in the Script Editor
+2. Write your code 
+3. Execute lines using `Ctrl+Enter` (Windows) or `Cmd+Enter` (Mac)
+4. View results in Console and Environment pane
 
 ------------------------------------------------------------------------
 
-## 📦 4. Key R Packages for Clinical Programming
+## 📦 4. Essential Packages for Clinical Programming
 
-| Package     | Purpose                            |
-|-------------|------------------------------------|
-| `haven`     | Import/export SAS XPT files        |
-| `dplyr`     | Data manipulation (like DATA step) |
-| `stringr`   | String handling                    |
-| `lubridate` | Date/time manipulation             |
-| `admiral`   | Create ADaM datasets               |
-| `xportr`    | Label/export SDTM/ADaM to XPT      |
-| `ggplot2`   | Plots and visualizations           |
-| `flextable` | Export tables to Word/PDF          |
+Before diving into clinical programming, let's install and load the essential packages:
+
+```r
+# Install essential packages (run once)
+install.packages(c("dplyr", "haven", "tibble", "lubridate", "stringr"))
+
+# Load packages (run at start of each session)
+library(dplyr)    # Data manipulation
+library(haven)    # Read/write SAS, SPSS, Stata files  
+library(tibble)   # Enhanced data frames
+library(lubridate) # Date/time handling
+library(stringr)  # String manipulation
+```
+
+### Key Package Functions:
+
+| Package     | Purpose                                    | Key Functions                |
+|-------------|--------------------------------------------|-----------------------------|
+| `dplyr`     | Data manipulation (like SAS DATA step)    | `filter()`, `select()`, `mutate()` |
+| `haven`     | Import/export SAS XPT and SAS7BDAT files  | `read_xpt()`, `write_xpt()` |
+| `tibble`    | Enhanced data frames                       | `tibble()`, `as_tibble()`   |
+| `lubridate` | Date/time manipulation                     | `ymd()`, `dmy()`, `today()` |
+| `stringr`   | String handling                           | `str_detect()`, `str_replace()` |
 
 ------------------------------------------------------------------------
 
-## 🤖 5. Introduction to GitHub Copilot (Free Plan)
+## 🤖 5. GitHub Copilot in RStudio
 
-### What is Copilot?
+### What is GitHub Copilot?
 
-GitHub Copilot is an AI pair programmer that suggests code in real time based on what you type.
+GitHub Copilot is an AI pair programmer that provides intelligent code suggestions as you type, helping you write R code faster and more efficiently.
 
-### How to Use:
+### Setup for RStudio:
 
--   Install the Copilot extension in RStudio (via VS Code or browser plugin)\
--   Write a comment or a partial function:
+1. **GitHub Account**: Sign up for GitHub Copilot (free for students/eligible users)
+2. **RStudio Configuration**: Enable GitHub Copilot in RStudio through:
+   - `Tools → Global Options → Copilot`
+   - Sign in with your GitHub account
+3. **Enable Completions**: Ensure "Show completions from GitHub Copilot" is checked
 
-```{r}
+### How to Use Copilot Effectively:
+
+**Method 1: Comment-Driven Development**
+```r
 # Read a SAS XPT file and convert to tibble
+# Copilot will suggest: dm <- read_xpt("dm.xpt") %>% as_tibble()
+
+# Calculate age from birthdate and reference date  
+# Copilot will suggest: age <- floor(as.numeric(refdate - birthdate) / 365.25)
 ```
 
--   Press **Tab** to accept Copilot's suggestion.
+**Method 2: Function Name Auto-completion**
+```r
+# Start typing a function name and Copilot suggests parameters
+dm %>% 
+  filter(  # Copilot suggests: AGE >= 18, ARMCD == "TRT01A", etc.
+```
 
-### Examples:
+**Method 3: Pattern Recognition**
+```r
+# After writing similar code, Copilot learns patterns
+dm <- dm %>% mutate(AGEGR1 = case_when(
+  AGE < 65 ~ "< 65",
+  AGE >= 65 ~ ">= 65"  # Copilot suggests this based on pattern
+))
+```
 
-| Prompt | Copilot Suggestion |
+### Common Copilot Prompts for Clinical Programming:
+
+| Comment Prompt | Likely Copilot Suggestion |
 |----|----|
-| `# Create a variable for age group` | `mutate(age_group = ifelse(Age < 50, "Y", "O"))` |
-| `# Summarize AEs by severity` | `group_by(SEV) %>% summarise(n = n())` |
-| `# Convert ISO date to date object` | `mutate(date = as.Date(date, format = "%Y-%m-%d"))` |
+| `# Create elderly flag for age >= 65` | `mutate(ELDERLY = ifelse(AGE >= 65, "Y", "N"))` |
+| `# Read SAS transport file` | `dm <- read_xpt("dm.xpt")` |
+| `# Calculate study day` | `mutate(AESTDY = as.numeric(AESTDTC - RFSTDTC) + 1)` |
+| `# Convert character date to Date` | `mutate(date = ymd(date_char))` |
 
-> You can always edit or reject suggestions. Copilot is here to help, not to replace your reasoning.
+> **Important**: Always review and validate Copilot suggestions. Copilot accelerates coding but doesn't replace your clinical programming expertise and knowledge of CDISC standards.
 
 ------------------------------------------------------------------------
 
-## 📝 Summary
+## 📝 Module Summary
+
+By completing this module, you should now be able to:
+
+✅ Install and configure R, RStudio, and nutriciaconfig  
+✅ Navigate the RStudio interface efficiently  
+✅ Load essential packages for clinical programming  
+✅ Use GitHub Copilot to assist with R code development  
+✅ Understand the basic R syntax and workflow  
+
+### 🚀 Next Steps:
+- Practice navigating RStudio with the demo exercises
+- Try using GitHub Copilot with simple R commands  
+- Prepare for Module 2: Data Wrangling Basics
+
+------------------------------------------------------------------------
+
+## � Key Takeaways
+
+1. **R + RStudio** provides a powerful environment for clinical programming
+2. **nutriciaconfig** helps manage your project setup and working directories  
+3. **Essential packages** (dplyr, haven, tibble) are your foundation tools
+4. **GitHub Copilot** can significantly speed up your coding when used thoughtfully
+5. **Practice and experimentation** are key to becoming proficient in R
+
+Ready to move on to data wrangling? Let's go to Module 2!
 
 | Concept           | SAS Equivalent      | R Tool                    |
 |-------------------|---------------------|---------------------------|

@@ -1,0 +1,861 @@
+---
+title: "Date & Text Functions"
+subtitle: "lubridate and stringr Practical Examples"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+    code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# 📅 Date & Text Functions
+
+**lubridate and stringr Practical Examples**
+
+This guide demonstrates practical applications of date/time manipulation with `lubridate` and text processing with `stringr` for clinical programming scenarios.
+
+## Overview
+
+Clinical programming frequently involves:
+
+- **Date Operations**: Study day calculations, age derivations, date validations
+- **Text Processing**: Term standardization, ID parsing, data cleaning
+- **Format Conversions**: ISO 8601 compliance, controlled terminology
+- **Pattern Matching**: Validation rules, data extraction
+
+## Required Libraries
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(lubridate)
+library(stringr)
+library(stringr)
+library(readr)
+
+cat("=== Date & Text Functions Guide ===\n")
+cat("lubridate and stringr for clinical programming\n\n")
+```
+
+## Date/Time Operations with lubridate
+
+### 1. Basic Date Creation and Parsing
+
+```{r}
+#| label: date-basics
+
+cat("=== Date Creation and Parsing ===\n")
+
+# Multiple ways to create dates
+dates_example <- tibble(
+  # From strings with different formats
+  date_ymd = ymd("2024-03-15"),
+  date_mdy = mdy("03/15/2024"), 
+  date_dmy = dmy("15/03/2024"),
+  
+  # From components
+  date_make = make_date(2024, 3, 15),
+  
+  # Current date/time
+  today_date = today(),
+  now_datetime = now(),
+  
+  # From ISO 8601 strings (common in clinical data)
+  iso_datetime = ymd_hms("2024-03-15 14:30:25"),
+  iso_date_only = ymd("2024-03-15")
+)
+
+print("Date creation examples:")
+glimpse(dates_example)
+
+# Parsing clinical date formats commonly seen in EDC systems
+clinical_dates <- c(
+  "2024-01-15",           # ISO standard
+  "15-JAN-2024",          # SAS-like format
+  "01/15/24",             # US format short year
+  "2024-01-15T10:30:00",  # ISO with time
+  "15JAN2024:10:30:00"    # SAS datetime format
+)
+
+parsed_dates <- tibble(
+  original = clinical_dates,
+  parsed = c(
+    ymd(clinical_dates[1]),
+    dmy(clinical_dates[2], locale = "en_US.UTF-8"),
+    mdy(clinical_dates[3]),
+    ymd_hms(clinical_dates[4]),
+    dmy_hms(clinical_dates[5], locale = "en_US.UTF-8")
+  )
+)
+
+print("\nClinical date parsing:")
+print(parsed_dates)
+```
+
+### 2. Study Day Calculations
+
+```{r}
+#| label: study-days
+
+cat("\n=== Study Day Calculations ===\n")
+
+# Create sample clinical data with study reference dates
+study_data <- tibble(
+  USUBJID = paste0("STUDY-001-", sprintf("%03d", 1:8)),
+  
+  # Reference dates
+  RFSTDTC = as.Date("2024-01-15"),  # Study start date
+  RFENDTC = as.Date("2024-07-15"),  # Study end date
+  
+  # Event dates
+  CONSENT_DATE = RFSTDTC - days(sample(1:14, 8, replace = TRUE)),
+  RANDOMIZATION_DATE = RFSTDTC + days(sample(0:7, 8, replace = TRUE)),
+  FIRST_DOSE_DATE = RANDOMIZATION_DATE + days(sample(0:2, 8, replace = TRUE)),
+  LAST_VISIT_DATE = RFSTDTC + days(sample(80:180, 8, replace = TRUE)),
+  AE_START_DATE = FIRST_DOSE_DATE + days(sample(5:60, 8, replace = TRUE))
+)
+
+# Calculate study days using different conventions
+study_days_calculated <- study_data %>%
+  mutate(
+    # Standard study day calculation (Day 1 = first day of study)
+    CONSENT_STDY = as.numeric(CONSENT_DATE - RFSTDTC),
+    RANDOM_STDY = as.numeric(RANDOMIZATION_DATE - RFSTDTC) + 1,
+    FIRST_DOSE_STDY = as.numeric(FIRST_DOSE_DATE - RFSTDTC) + 1,
+    AE_STDY = as.numeric(AE_START_DATE - RFSTDTC) + 1,
+    
+    # Relative day calculations
+    DAYS_FROM_FIRST_DOSE = as.numeric(AE_START_DATE - FIRST_DOSE_DATE),
+    DAYS_TO_STUDY_END = as.numeric(RFENDTC - LAST_VISIT_DATE),
+    
+    # Treatment duration
+    TREATMENT_DURATION = as.numeric(LAST_VISIT_DATE - FIRST_DOSE_DATE),
+    
+    # Format for CDISC (ISO 8601)
+    RFSTDTC_ISO = format(RFSTDTC, "%Y-%m-%d"),
+    AE_START_ISO = format(AE_START_DATE, "%Y-%m-%d")
+  )
+
+print("Study day calculations:")
+print(study_days_calculated %>% 
+       select(USUBJID, RFSTDTC, FIRST_DOSE_DATE, AE_START_DATE, 
+              FIRST_DOSE_STDY, AE_STDY, DAYS_FROM_FIRST_DOSE))
+```
+
+### 3. Age Calculations and Date Arithmetic
+
+```{r}
+#| label: age-calculations
+
+cat("\n=== Age Calculations ===\n")
+
+# Demographics with birth dates
+demographics <- tibble(
+  USUBJID = paste0("STUDY-001-", sprintf("%03d", 1:10)),
+  BIRTH_DATE = sample(seq(as.Date("1950-01-01"), as.Date("1995-12-31"), by = "day"), 10),
+  ICF_DATE = as.Date("2024-01-10") + days(sample(0:20, 10, replace = TRUE)),
+  RFSTDTC = as.Date("2024-01-15")
+)
+
+# Multiple age calculation methods
+age_calculations <- demographics %>%
+  mutate(
+    # Age at informed consent
+    AGE_AT_ICF = floor(as.numeric(difftime(ICF_DATE, BIRTH_DATE, units = "days")) / 365.25),
+    
+    # Age at study start (standard)
+    AGE = floor(as.numeric(difftime(RFSTDTC, BIRTH_DATE, units = "days")) / 365.25),
+    
+    # Using lubridate interval for precise calculation
+    AGE_PRECISE = floor(time_length(interval(BIRTH_DATE, RFSTDTC), "years")),
+    
+    # Age in months (for pediatric studies)
+    AGE_MONTHS = floor(time_length(interval(BIRTH_DATE, RFSTDTC), "months")),
+    
+    # Age groups for analysis
+    AGEGROUP = case_when(
+      AGE < 30 ~ "18-29",
+      AGE < 50 ~ "30-49",
+      AGE < 65 ~ "50-64", 
+      TRUE ~ "65+"
+    ),
+    
+    # Birth year for cohort analysis
+    BIRTH_YEAR = year(BIRTH_DATE),
+    
+    # Days since birth (for very precise calculations)
+    DAYS_SINCE_BIRTH = as.numeric(difftime(RFSTDTC, BIRTH_DATE, units = "days"))
+  )
+
+print("Age calculations:")
+print(age_calculations %>% 
+       select(USUBJID, BIRTH_DATE, RFSTDTC, AGE, AGE_PRECISE, AGEGROUP))
+```
+
+### 4. Date Validation and Quality Control
+
+```{r}
+#| label: date-validation
+
+cat("\n=== Date Validation ===\n")
+
+# Sample data with potential date issues
+problematic_dates <- tibble(
+  USUBJID = paste0("SUBJ-", 1:8),
+  BIRTH_DATE = c(
+    as.Date("1975-06-15"),
+    as.Date("2010-03-20"),  # Too young
+    as.Date("1920-01-01"),  # Too old
+    as.Date("1985-12-31"),
+    as.Date("1992-02-29"),  # Leap year - valid
+    as.Date("1992-08-15"),
+    as.Date("1899-01-01"),  # Very old
+    as.Date("1988-04-10")
+  ),
+  STUDY_START = as.Date("2024-01-15"),
+  VISIT_DATE = c(
+    as.Date("2024-01-20"),
+    as.Date("2024-01-10"),  # Before study start
+    as.Date("2024-03-15"), 
+    as.Date("2023-12-01"),  # Before study start
+    as.Date("2024-02-28"),
+    as.Date("2024-04-15"),
+    as.Date("2025-01-01"),  # Future date
+    as.Date("2024-01-18")
+  )
+)
+
+# Validation checks
+date_validation <- problematic_dates %>%
+  mutate(
+    # Age validation
+    AGE = floor(as.numeric(difftime(STUDY_START, BIRTH_DATE, units = "days")) / 365.25),
+    AGE_VALID = between(AGE, 18, 85),
+    AGE_FLAG = case_when(
+      AGE < 18 ~ "TOO_YOUNG",
+      AGE > 85 ~ "TOO_OLD",
+      TRUE ~ "VALID"
+    ),
+    
+    # Visit date validation
+    VISIT_BEFORE_STUDY = VISIT_DATE < STUDY_START,
+    VISIT_FUTURE = VISIT_DATE > today(),
+    VISIT_FLAG = case_when(
+      VISIT_BEFORE_STUDY ~ "BEFORE_STUDY",
+      VISIT_FUTURE ~ "FUTURE_DATE",
+      TRUE ~ "VALID"
+    ),
+    
+    # Logical consistency checks
+    BIRTH_AFTER_VISIT = BIRTH_DATE > VISIT_DATE,
+    CONSISTENCY_FLAG = if_else(BIRTH_AFTER_VISIT, "BIRTH_AFTER_VISIT", "VALID")
+  )
+
+print("Date validation results:")
+print(date_validation %>% 
+       select(USUBJID, AGE, AGE_FLAG, VISIT_FLAG, CONSISTENCY_FLAG))
+
+# Summary of validation issues
+validation_summary <- date_validation %>%
+  summarise(
+    total_subjects = n(),
+    age_issues = sum(AGE_FLAG != "VALID"),
+    visit_issues = sum(VISIT_FLAG != "VALID"),
+    consistency_issues = sum(CONSISTENCY_FLAG != "VALID")
+  )
+
+print("\nValidation summary:")
+print(validation_summary)
+```
+
+## Text Processing with stringr
+
+### 1. Basic String Operations
+
+```{r}
+#| label: string-basics
+
+cat("\n=== Basic String Operations ===\n")
+
+# Sample clinical text data with common issues
+clinical_text <- tibble(
+  USUBJID = c("ABC-123-001", "abc-123-002", "ABC-123-003", "ABC 123 004"),
+  RAW_RACE = c("  White  ", "BLACK or AFRICAN american", "asian", "White"),
+  RAW_AE_TERM = c("Headache", "NAUSEA", "stomach pain", "Dizziness"),
+  RAW_MEDICATION = c("Aspirin 81mg", "Tylenol (acetaminophen) 500 MG", "ibuprofen", "Advil"),
+  COMMENTS = c("Patient doing well", "SOME MILD SYMPTOMS", "no issues reported", "Follow-up needed")
+)
+
+# String cleaning and standardization
+text_cleaned <- clinical_text %>%
+  mutate(
+    # Case conversions
+    USUBJID_UPPER = str_to_upper(USUBJID),
+    RACE_CLEAN = str_to_upper(str_trim(RAW_RACE)),
+    AE_TERM_TITLE = str_to_title(str_to_lower(RAW_AE_TERM)),
+    MEDICATION_CLEAN = str_to_title(RAW_MEDICATION),
+    COMMENTS_SENTENCE = str_to_sentence(str_to_lower(COMMENTS)),
+    
+    # Remove extra whitespace
+    USUBJID_TRIMMED = str_squish(USUBJID),
+    
+    # String length for validation
+    RACE_LENGTH = str_length(RACE_CLEAN),
+    COMMENT_LENGTH = str_length(COMMENTS),
+    
+    # Check for missing/empty strings
+    RACE_MISSING = str_trim(RAW_RACE) == "" | is.na(RAW_RACE),
+    
+    # Extract numbers from medication strings
+    MED_DOSE = str_extract(RAW_MEDICATION, "\\d+"),
+    MED_DOSE_NUMERIC = as.numeric(MED_DOSE)
+  )
+
+print("String cleaning examples:")
+print(text_cleaned %>% 
+       select(USUBJID, USUBJID_UPPER, RACE_CLEAN, AE_TERM_TITLE, MED_DOSE_NUMERIC))
+```
+
+### 2. Pattern Matching and Extraction
+
+```{r}
+#| label: pattern-matching
+
+cat("\n=== Pattern Matching and Extraction ===\n")
+
+# Subject ID parsing and validation
+subject_ids <- c(
+  "ABC-123-001",
+  "DEF-456-002", 
+  "GHI-789-003",
+  "INVALID-ID",
+  "ABC123001",
+  "XYZ-999-999"
+)
+
+id_analysis <- tibble(
+  USUBJID = subject_ids
+) %>%
+  mutate(
+    # Check if ID matches expected pattern
+    VALID_FORMAT = str_detect(USUBJID, "^[A-Z]{3}-\\d{3}-\\d{3}$"),
+    
+    # Extract components using regex groups
+    STUDY_CODE = str_extract(USUBJID, "^[A-Z]{3}"),
+    SITE_NUMBER = str_extract(USUBJID, "(?<=-)(\\d{3})(?=-)"),
+    SUBJECT_NUMBER = str_extract(USUBJID, "\\d{3}$"),
+    
+    # Alternative extraction using str_match
+    ID_COMPONENTS = str_match(USUBJID, "^([A-Z]{3})-(\\d{3})-(\\d{3})$"),
+    
+    # Count components
+    DASH_COUNT = str_count(USUBJID, "-"),
+    DIGIT_COUNT = str_count(USUBJID, "\\d"),
+    
+    # Validation flags
+    HAS_STUDY_CODE = !is.na(STUDY_CODE),
+    PROPER_LENGTH = str_length(USUBJID) == 11
+  )
+
+print("Subject ID analysis:")
+print(id_analysis %>% 
+       select(USUBJID, VALID_FORMAT, STUDY_CODE, SITE_NUMBER, SUBJECT_NUMBER))
+```
+
+### 3. Medical Term Standardization
+
+```{r}
+#| label: medical-terms
+
+cat("\n=== Medical Term Standardization ===\n")
+
+# Sample adverse event terms with variations
+ae_terms <- tibble(
+  RAW_TERM = c(
+    "headache",
+    "Headache",
+    "HEAD ACHE",
+    "head pain",
+    "nausea",
+    "NAUSEA",
+    "sick to stomach",
+    "feeling sick",
+    "dizziness",
+    "dizzy",
+    "light headed",
+    "fatigue",
+    "tired",
+    "exhausted"
+  ),
+  SEVERITY = sample(c("MILD", "MODERATE", "SEVERE"), 14, replace = TRUE)
+)
+
+# Create standardization mapping
+standardize_ae_term <- function(raw_term) {
+  # Convert to lowercase for matching
+  term_lower <- str_to_lower(str_trim(raw_term))
+  
+  # Define mapping rules
+  standardized <- case_when(
+    str_detect(term_lower, "head.*ache|head.*pain") ~ "Headache",
+    str_detect(term_lower, "nausea|sick.*stomach|feeling.*sick") ~ "Nausea", 
+    str_detect(term_lower, "dizz|light.*head") ~ "Dizziness",
+    str_detect(term_lower, "fatigue|tired|exhaust") ~ "Fatigue",
+    TRUE ~ str_to_title(raw_term)  # Default to title case
+  )
+  
+  return(standardized)
+}
+
+# Apply standardization
+ae_standardized <- ae_terms %>%
+  mutate(
+    STANDARD_TERM = standardize_ae_term(RAW_TERM),
+    TERM_LENGTH = str_length(RAW_TERM),
+    
+    # Create term categories
+    TERM_CATEGORY = case_when(
+      str_detect(STANDARD_TERM, "Headache") ~ "Neurological",
+      str_detect(STANDARD_TERM, "Nausea") ~ "Gastrointestinal",
+      str_detect(STANDARD_TERM, "Dizziness") ~ "Neurological", 
+      str_detect(STANDARD_TERM, "Fatigue") ~ "General",
+      TRUE ~ "Other"
+    )
+  )
+
+print("AE term standardization:")
+print(ae_standardized)
+
+# Summary of standardization results
+standardization_summary <- ae_standardized %>%
+  count(STANDARD_TERM, TERM_CATEGORY, name = "FREQUENCY") %>%
+  arrange(desc(FREQUENCY))
+
+print("\nStandardization summary:")
+print(standardization_summary)
+```
+
+### 4. Data Validation with Regex
+
+```{r}
+#| label: data-validation-regex
+
+cat("\n=== Data Validation with Regex ===\n")
+
+# Sample clinical data needing validation
+validation_data <- tibble(
+  USUBJID = c("ABC-123-001", "DEF-456-002", "invalid", "GHI-789-003"),
+  EMAIL = c("john.doe@email.com", "invalid-email", "jane@hospital.org", "test@test"),
+  PHONE = c("555-123-4567", "5551234567", "555.123.4567", "invalid"),
+  MRN = c("MRN123456", "123456", "MRN-789012", "INVALID123"),
+  DOSE_TEXT = c("5 mg", "10mg", "2.5 mg BID", "unknown")
+)
+
+# Validation patterns
+validation_results <- validation_data %>%
+  mutate(
+    # Subject ID validation
+    USUBJID_VALID = str_detect(USUBJID, "^[A-Z]{3}-\\d{3}-\\d{3}$"),
+    
+    # Email validation (simplified)
+    EMAIL_VALID = str_detect(EMAIL, "^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$"),
+    
+    # Phone number validation (US format)
+    PHONE_VALID = str_detect(PHONE, "^\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}$"),
+    
+    # Medical record number validation
+    MRN_VALID = str_detect(MRN, "^MRN\\d{6}$"),
+    
+    # Dose extraction and validation
+    DOSE_NUMBER = as.numeric(str_extract(DOSE_TEXT, "\\d+\\.?\\d*")),
+    DOSE_UNIT = str_extract(DOSE_TEXT, "mg|g|mL"),
+    DOSE_VALID = !is.na(DOSE_NUMBER) & !is.na(DOSE_UNIT),
+    
+    # Overall validation score
+    VALIDATION_SCORE = USUBJID_VALID + EMAIL_VALID + PHONE_VALID + MRN_VALID + DOSE_VALID,
+    
+    # Validation status
+    VALIDATION_STATUS = case_when(
+      VALIDATION_SCORE == 5 ~ "PASS",
+      VALIDATION_SCORE >= 3 ~ "WARNING", 
+      TRUE ~ "FAIL"
+    )
+  )
+
+print("Data validation results:")
+print(validation_results %>% 
+       select(USUBJID, USUBJID_VALID, EMAIL_VALID, PHONE_VALID, 
+              DOSE_NUMBER, DOSE_UNIT, VALIDATION_STATUS))
+```
+
+## Advanced Date/Time Operations
+
+### 1. Time Zone Handling
+
+```{r}
+#| label: timezone-handling
+
+cat("\n=== Time Zone Handling ===\n")
+
+# Clinical trials often span multiple time zones
+multi_site_data <- tibble(
+  SITE_ID = c("001", "002", "003", "004"),
+  SITE_NAME = c("New York", "London", "Tokyo", "Sydney"),
+  TIMEZONE = c("America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney"),
+  LOCAL_TIME = c("2024-03-15 14:30:00", "2024-03-15 19:30:00", 
+                 "2024-03-16 03:30:00", "2024-03-16 05:30:00")
+)
+
+# Convert to standard UTC time
+utc_times <- multi_site_data %>%
+  mutate(
+    # Parse local time with timezone (simplified approach)
+    LOCAL_DATETIME = ymd_hms(LOCAL_TIME),
+    
+    # Format for CDISC submission (ISO 8601)
+    UTC_ISO = format(LOCAL_DATETIME, "%Y-%m-%dT%H:%M:%S"),
+    
+    # Study day based on date
+    STUDY_START = ymd("2024-03-15"),
+    STUDY_DAY = as.numeric(date(LOCAL_DATETIME) - STUDY_START) + 1
+  )
+
+print("Multi-site time zone handling:")
+print(utc_times %>% select(SITE_NAME, LOCAL_TIME, UTC_ISO, STUDY_DAY))
+```
+
+### 2. Date Sequences and Intervals
+
+```{r}
+#| label: date-sequences
+
+cat("\n=== Date Sequences and Intervals ===\n")
+
+# Create visit schedules
+study_schedule <- tibble(
+  USUBJID = "ABC-123-001",
+  STUDY_START = as.Date("2024-01-15")
+) %>%
+  mutate(
+    # Create visit sequence
+    VISIT_DATES = list(STUDY_START + days(c(0, 14, 28, 56, 84, 112, 168))),
+    VISIT_NAMES = list(c("Baseline", "Week 2", "Week 4", "Week 8", 
+                        "Week 12", "Week 16", "Week 24"))
+  ) %>%
+  unnest(c(VISIT_DATES, VISIT_NAMES)) %>%
+  mutate(
+    VISIT_NUMBER = row_number(),
+    STUDY_DAY = as.numeric(VISIT_DATES - STUDY_START) + 1,
+    
+    # Calculate visit windows (±3 days)
+    WINDOW_START = VISIT_DATES - days(3),
+    WINDOW_END = VISIT_DATES + days(3),
+    
+    # Day of week for scheduling
+    VISIT_DOW = wday(VISIT_DATES, label = TRUE),
+    
+    # Month and quarter for analysis
+    VISIT_MONTH = month(VISIT_DATES, label = TRUE),
+    VISIT_QUARTER = quarter(VISIT_DATES)
+  )
+
+print("Study visit schedule:")
+print(study_schedule)
+
+# Calculate intervals between visits
+visit_intervals <- study_schedule %>%
+  mutate(
+    # Days since previous visit
+    DAYS_SINCE_PREV = as.numeric(VISIT_DATES - lag(VISIT_DATES)),
+    
+    # Weeks since baseline
+    WEEKS_SINCE_BL = as.numeric(VISIT_DATES - first(VISIT_DATES)) / 7,
+    
+    # Duration from baseline
+    DURATION_FROM_BL = interval(first(VISIT_DATES), VISIT_DATES),
+    DURATION_WEEKS = time_length(DURATION_FROM_BL, "weeks")
+  )
+
+print("\nVisit intervals:")
+print(visit_intervals %>% 
+       select(VISIT_NAMES, VISIT_DATES, DAYS_SINCE_PREV, WEEKS_SINCE_BL))
+```
+
+## Advanced String Operations
+
+### 1. Complex Text Parsing
+
+```{r}
+#| label: complex-parsing
+
+cat("\n=== Complex Text Parsing ===\n")
+
+# Sample medication text with complex formatting
+medication_text <- tibble(
+  MED_TEXT = c(
+    "Aspirin 81 mg once daily",
+    "Metformin 500mg twice daily (BID)", 
+    "Lisinopril 10 mg PO QD #30",
+    "Atorvastatin 20mg by mouth at bedtime",
+    "Ibuprofen 400 mg every 6 hours as needed",
+    "Insulin glargine 15 units subcutaneous at bedtime"
+  )
+)
+
+# Extract medication components
+med_parsed <- medication_text %>%
+  mutate(
+    # Extract medication name (first word(s) before dose)
+    MED_NAME = str_extract(MED_TEXT, "^[A-Za-z\\s]+(?=\\s\\d)"),
+    MED_NAME_CLEAN = str_trim(MED_NAME),
+    
+    # Extract dose and unit
+    DOSE_WITH_UNIT = str_extract(MED_TEXT, "\\d+\\.?\\d*\\s*mg|\\d+\\.?\\d*\\s*units"),
+    DOSE_NUMBER = as.numeric(str_extract(DOSE_WITH_UNIT, "\\d+\\.?\\d*")),
+    DOSE_UNIT = str_extract(DOSE_WITH_UNIT, "mg|units"),
+    
+    # Extract frequency information
+    FREQUENCY = case_when(
+      str_detect(MED_TEXT, "once daily|QD") ~ "Once daily",
+      str_detect(MED_TEXT, "twice daily|BID") ~ "Twice daily",
+      str_detect(MED_TEXT, "every 6 hours") ~ "Every 6 hours",
+      str_detect(MED_TEXT, "at bedtime") ~ "At bedtime",
+      TRUE ~ "As directed"
+    ),
+    
+    # Extract route of administration
+    ROUTE = case_when(
+      str_detect(MED_TEXT, "PO|by mouth") ~ "Oral",
+      str_detect(MED_TEXT, "subcutaneous") ~ "Subcutaneous",
+      TRUE ~ "Oral"  # Default assumption
+    ),
+    
+    # Identify PRN (as needed) medications
+    PRN_FLAG = str_detect(MED_TEXT, "as needed|PRN"),
+    
+    # Create standardized medication string
+    MED_STANDARD = paste(MED_NAME_CLEAN, DOSE_NUMBER, DOSE_UNIT, FREQUENCY, sep = " ")
+  )
+
+print("Medication parsing:")
+print(med_parsed %>% 
+       select(MED_NAME_CLEAN, DOSE_NUMBER, DOSE_UNIT, FREQUENCY, ROUTE))
+```
+
+### 2. Text Quality Assessment
+
+```{r}
+#| label: text-quality
+
+cat("\n=== Text Quality Assessment ===\n")
+
+# Sample clinical comments with quality issues
+clinical_comments <- tibble(
+  COMMENT_ID = 1:10,
+  RAW_COMMENT = c(
+    "Patient doing well",
+    "PATIENT EXPERIENCED MILD HEADACHE",
+    "no adverse events reported",
+    "",  # Empty comment
+    "Patient c/o nausea & dizziness",
+    "follow-up needed ASAP",
+    "Pt. stable, no issues",
+    "VITAL SIGNS WNL",
+    "Patient reports feeling much better today",
+    "   "  # Whitespace only
+  )
+)
+
+# Quality assessment
+comment_quality <- clinical_comments %>%
+  mutate(
+    # Basic quality metrics
+    COMMENT_LENGTH = str_length(RAW_COMMENT),
+    WORD_COUNT = str_count(RAW_COMMENT, "\\w+"),
+    
+    # Content checks
+    IS_EMPTY = str_trim(RAW_COMMENT) == "" | is.na(RAW_COMMENT),
+    IS_ALL_CAPS = str_detect(RAW_COMMENT, "^[A-Z\\s\\W]*$") & COMMENT_LENGTH > 0,
+    IS_ALL_LOWER = str_detect(RAW_COMMENT, "^[a-z\\s\\W]*$") & COMMENT_LENGTH > 0,
+    
+    # Medical abbreviation detection
+    HAS_ABBREVIATIONS = str_detect(RAW_COMMENT, "\\bc/o\\b|\\bpt\\.?\\b|\\bWNL\\b|\\bASAP\\b"),
+    
+    # Quality score (0-5)
+    QUALITY_SCORE = case_when(
+      IS_EMPTY ~ 0,
+      COMMENT_LENGTH < 5 ~ 1,
+      IS_ALL_CAPS | IS_ALL_LOWER ~ 2,
+      HAS_ABBREVIATIONS ~ 3,
+      WORD_COUNT < 3 ~ 3,
+      TRUE ~ 5
+    ),
+    
+    # Quality category
+    QUALITY_CATEGORY = case_when(
+      QUALITY_SCORE == 0 ~ "Missing",
+      QUALITY_SCORE <= 2 ~ "Poor",
+      QUALITY_SCORE == 3 ~ "Fair",
+      QUALITY_SCORE >= 4 ~ "Good"
+    ),
+    
+    # Cleaned version
+    COMMENT_CLEAN = str_to_sentence(str_squish(RAW_COMMENT))
+  )
+
+print("Comment quality assessment:")
+print(comment_quality %>% 
+       select(RAW_COMMENT, COMMENT_LENGTH, WORD_COUNT, QUALITY_CATEGORY))
+
+# Quality summary
+quality_summary <- comment_quality %>%
+  count(QUALITY_CATEGORY, name = "COUNT") %>%
+  mutate(PERCENTAGE = round(COUNT / sum(COUNT) * 100, 1))
+
+print("\nQuality distribution:")
+print(quality_summary)
+```
+
+## Integration Examples
+
+### 1. Complete Data Processing Pipeline
+
+```{r}
+#| label: integration-pipeline
+
+cat("\n=== Complete Data Processing Pipeline ===\n")
+
+# Simulate raw clinical data with common issues
+raw_clinical_data <- tibble(
+  subject_id = c("abc-123-001", "ABC-123-002", "abc 123 003", "ABC-123-004"),
+  birth_date = c("1985-06-15", "15-JUN-1970", "1990/03/20", "1988-12-01"),
+  consent_date = c("2024-01-10 09:30", "2024-01-12 14:15", "2024-01-08 11:00", "2024-01-15 10:45"),
+  adverse_event = c("  headache  ", "NAUSEA", "stomach pain", ""),
+  medication = c("Aspirin 81mg daily", "Tylenol 500 MG PRN", "Ibuprofen", "Metformin 500mg BID"),
+  comments = c("patient doing well", "MILD SYMPTOMS ONLY", "no issues", "follow-up needed")
+)
+
+# Comprehensive cleaning pipeline
+process_clinical_data <- function(data) {
+  processed <- data %>%
+    mutate(
+      # Standardize subject IDs
+      USUBJID = str_to_upper(str_replace_all(subject_id, "\\s+", "-")),
+      
+      # Parse and standardize dates
+      BIRTH_DATE = case_when(
+        str_detect(birth_date, "^\\d{4}-\\d{2}-\\d{2}$") ~ ymd(birth_date),
+        str_detect(birth_date, "^\\d{2}-[A-Z]{3}-\\d{4}$") ~ dmy(birth_date),
+        str_detect(birth_date, "^\\d{4}/\\d{2}/\\d{2}$") ~ ymd(birth_date),
+        TRUE ~ as.Date(NA)
+      ),
+      
+      CONSENT_DATETIME = ymd_hm(consent_date),
+      CONSENT_DATE = date(CONSENT_DATETIME),
+      
+      # Calculate age at consent
+      AGE_AT_CONSENT = floor(time_length(interval(BIRTH_DATE, CONSENT_DATE), "years")),
+      
+      # Standardize adverse events
+      AE_TERM_CLEAN = case_when(
+        str_trim(adverse_event) == "" ~ NA_character_,
+        str_detect(str_to_lower(adverse_event), "head") ~ "Headache",
+        str_detect(str_to_lower(adverse_event), "nausea|stomach") ~ "Nausea", 
+        TRUE ~ str_to_title(str_trim(adverse_event))
+      ),
+      
+      # Parse medications
+      MED_NAME = str_extract(medication, "^[A-Za-z\\s]+"),
+      MED_DOSE = as.numeric(str_extract(medication, "\\d+")),
+      MED_UNIT = str_extract(medication, "mg|g"),
+      
+      # Clean comments
+      COMMENTS_CLEAN = str_to_sentence(str_squish(comments)),
+      
+      # Data quality flags
+      BIRTH_DATE_VALID = !is.na(BIRTH_DATE),
+      AGE_REASONABLE = between(AGE_AT_CONSENT, 18, 90),
+      HAS_AE = !is.na(AE_TERM_CLEAN),
+      
+      # Study day calculation
+      STUDY_START = as.Date("2024-01-15"),
+      CONSENT_STUDY_DAY = as.numeric(CONSENT_DATE - STUDY_START)
+    ) %>%
+    
+    # Select final variables
+    select(USUBJID, BIRTH_DATE, CONSENT_DATE, AGE_AT_CONSENT, AE_TERM_CLEAN,
+           MED_NAME, MED_DOSE, MED_UNIT, COMMENTS_CLEAN, 
+           BIRTH_DATE_VALID, AGE_REASONABLE, HAS_AE, CONSENT_STUDY_DAY)
+  
+  return(processed)
+}
+
+# Process the data
+processed_data <- process_clinical_data(raw_clinical_data)
+
+print("Processed clinical data:")
+print(processed_data)
+
+# Data quality summary
+quality_check <- processed_data %>%
+  summarise(
+    total_subjects = n(),
+    valid_birth_dates = sum(BIRTH_DATE_VALID),
+    reasonable_ages = sum(AGE_REASONABLE),
+    subjects_with_ae = sum(HAS_AE),
+    data_quality_score = round(mean(BIRTH_DATE_VALID + AGE_REASONABLE) * 100, 1)
+  )
+
+print("\nData quality summary:")
+print(quality_check)
+```
+
+## Best Practices Summary
+
+### Date/Time Best Practices
+
+1. **Standardization**
+   - Always use ISO 8601 format for storage (`YYYY-MM-DD`)
+   - Handle time zones explicitly in multi-site studies
+   - Use lubridate functions for reliable parsing
+
+2. **Validation**
+   - Check date ranges for clinical plausibility
+   - Validate chronological order of events
+   - Handle leap years and edge cases properly
+
+3. **Calculations**
+   - Use precise interval calculations for age
+   - Follow study protocol for study day conventions
+   - Document assumptions about missing dates
+
+### Text Processing Best Practices
+
+1. **Cleaning**
+   - Remove extra whitespace systematically
+   - Standardize case appropriately for context
+   - Handle missing/empty strings explicitly
+
+2. **Validation**
+   - Use regex patterns for format validation
+   - Implement controlled terminology mapping
+   - Check for common data entry errors
+
+3. **Documentation**
+   - Document regex patterns clearly
+   - Maintain mappings for term standardization
+   - Track data transformation steps
+
+---
+
+*This guide provides practical examples of date/time and text processing techniques essential for clinical programming in R.*
