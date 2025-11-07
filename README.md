@@ -9,25 +9,25 @@ A modular web-based training platform for transitioning from SAS to R programmin
 
 **beginR** is a comprehensive Flask-based training portal that provides structured, progressive learning modules for data professionals transitioning from SAS to R. The platform emphasizes practical skills development through hands-on exercises, GitHub Copilot integration, and real-world data manipulation scenarios including SDTM programming and quality control procedures.
 
-• **Modular**: 7 progressive learning modules from RStudio setup to advanced QC and reporting
-• **Interactive**: Progress tracking, downloadable resources, and hands-on exercises
-• **AI-Enhanced**: GitHub Copilot integration throughout the curriculum  
-• **Practical**: Real-world data manipulation, SDTM creation, and professional reporting workflows
+- **Modular**: 7 progressive learning modules from RStudio setup to advanced QC and reporting
+- **Interactive**: Progress tracking, downloadable resources, and hands-on exercises  
+- **AI-Enhanced**: GitHub Copilot integration throughout the curriculum
+- **Practical**: Real-world data manipulation, SDTM creation, and professional reporting workflows
 
 ## Project Status
 
-• **Version**: 1.0.0 (stable)
-• **Status**: ✅ Production-ready for training programs and self-study
-• **Scope**: Complete SAS-to-R transition curriculum with 7 structured modules
+- **Version**: 1.0.0 (stable)
+- **Status**: ✅ Production-ready for training programs and self-study
+- **Scope**: Complete SAS-to-R transition curriculum with 7 structured modules
 
 ## Features
 
-• **Metadata-driven learning**: Module configuration in Python dictionaries with flexible content management
-• **Progressive curriculum**: RStudio setup → data manipulation → joins → dates/text → functions → SDTM → QC/reporting
-• **Resource management**: Downloadable exercises, solutions, templates, and reference materials
-• **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators
-• **Theme support**: Light/dark mode with CSS variables and user preference persistence
-• **Responsive design**: Mobile-first Bootstrap 5 implementation with cross-device compatibility
+- **Metadata-driven learning**: Module configuration in Python dictionaries with flexible content management
+- **Progressive curriculum**: RStudio setup → data manipulation → joins → dates/text → functions → SDTM → QC/reporting
+- **Resource management**: Downloadable exercises, solutions, templates, and reference materials
+- **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators
+- **Theme support**: Light/dark mode with CSS variables and user preference persistence
+- **Responsive design**: Mobile-first Bootstrap 5 implementation with cross-device compatibility
 
 ## Installation
 
@@ -126,7 +126,7 @@ All bonus materials are organized in the `bonus_resources/` folder:
 • Font Awesome icons and Inter font for professional appearance
 • Accessible navigation with ARIA labels and keyboard support
 
-## �🔧 Configuration & Deployment
+##  Configuration & Deployment
 
 ### Environment Variables
 Create a `.env` file for custom settings:
@@ -198,19 +198,19 @@ CMD ["python", "app.py"]
 
 ## Roadmap
 
-• **Enhanced progress analytics** — detailed learning analytics and completion reports
-• **Interactive coding exercises** — in-browser R code execution and validation
-• **Video integration** — embedded tutorial videos for complex concepts
-• **Community features** — discussion forums and peer collaboration tools
-• **Assessment modules** — quizzes and practical evaluations for each module
-• **Certification pathway** — formal completion certificates and skills verification
+- **Enhanced progress analytics** — detailed learning analytics and completion reports
+- **Interactive coding exercises** — in-browser R code execution and validation
+- **Video integration** — embedded tutorial videos for complex concepts
+- **Community features** — discussion forums and peer collaboration tools
+- **Assessment modules** — quizzes and practical evaluations for each module
+- **Certification pathway** — formal completion certificates and skills verification
 
 ## References
 
-• [R for Data Science](https://r4ds.had.co.nz/) — Comprehensive R programming resource
-• [dplyr documentation](https://dplyr.tidyverse.org/) — Data manipulation reference
-• [CDISC SDTM Implementation Guide](https://www.cdisc.org/standards/foundational/sdtm) — Clinical data standards
-• [GitHub Copilot Documentation](https://docs.github.com/en/copilot) — AI programming assistance
+- [R for Data Science](https://r4ds.had.co.nz/) — Comprehensive R programming resource
+- [dplyr documentation](https://dplyr.tidyverse.org/) — Data manipulation reference
+- [CDISC SDTM Implementation Guide](https://www.cdisc.org/standards/foundational/sdtm) — Clinical data standards
+- [GitHub Copilot Documentation](https://docs.github.com/en/copilot) — AI programming assistance
 
 ## Citation
 

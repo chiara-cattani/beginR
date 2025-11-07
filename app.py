@@ -239,15 +239,18 @@ def contact():
 @app.route('/download/<path:filename>')
 def download_file(filename):
     try:
-        # Try training_material directory first, then bonus_resources
-        file_path = os.path.join('training_material', filename)
-        if not os.path.exists(file_path):
-            file_path = os.path.join('bonus_resources', filename)
+        # Search for file in training_material subdirectories first
+        for root, dirs, files in os.walk('training_material'):
+            if filename in files:
+                file_path = os.path.join(root, filename)
+                return send_file(file_path, as_attachment=True)
         
-        if not os.path.exists(file_path):
-            return "File not found", 404
-            
-        return send_file(file_path, as_attachment=True)
+        # Then check bonus_resources directory
+        bonus_path = os.path.join('bonus_resources', filename)
+        if os.path.exists(bonus_path):
+            return send_file(bonus_path, as_attachment=True)
+        
+        return f"File not found: {filename}", 404
     except FileNotFoundError:
         return "File not found", 404
 
@@ -282,12 +285,24 @@ def toggle_theme():
 def view_file(filename):
     """View content of various file types with proper rendering"""
     try:
-        # Try training_material directory first, then bonus_resources
-        file_path = os.path.join('training_material', filename)
-        if not os.path.exists(file_path):
-            file_path = os.path.join('bonus_resources', filename)
+        # Search for file in training_material subdirectories first
+        file_path = None
+        base_dir = None
         
-        if not os.path.exists(file_path):
+        for root, dirs, files in os.walk('training_material'):
+            if filename in files:
+                file_path = os.path.join(root, filename)
+                base_dir = os.path.dirname(file_path)
+                break
+        
+        # If not found, check bonus_resources directory
+        if not file_path:
+            bonus_path = os.path.join('bonus_resources', filename)
+            if os.path.exists(bonus_path):
+                file_path = bonus_path
+                base_dir = 'bonus_resources'
+        
+        if not file_path:
             return f"File not found: {filename}", 404
         
         if filename.endswith('.pdf'):
@@ -297,7 +312,7 @@ def view_file(filename):
         elif filename.endswith('.qmd'):
             # For QMD files, try to find rendered HTML first, otherwise show raw content
             html_filename = filename.replace('.qmd', '.html')
-            html_path = os.path.join('training_material', html_filename)
+            html_path = os.path.join(base_dir, html_filename)
             if os.path.exists(html_path):
                 # Read and serve the rendered HTML
                 with open(html_path, 'r', encoding='utf-8') as f:
@@ -325,7 +340,7 @@ def view_file(filename):
         elif filename.endswith('.Rmd'):
             # For RMD files, try to find rendered HTML first, otherwise show raw content
             html_filename = filename.replace('.Rmd', '.html')
-            html_path = os.path.join('training_material', html_filename)
+            html_path = os.path.join(base_dir, html_filename)
             if os.path.exists(html_path):
                 with open(html_path, 'r', encoding='utf-8') as f:
                     content = f.read()
