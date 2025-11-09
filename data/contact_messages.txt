@@ -1,0 +1,16 @@
+=== MESSAGE 2025-11-09 01:16:49 ===
+Name: Test User
+Email: test@example.com
+Subject: technical
+Message:
+This is a test message
+==================================================
+
+=== MESSAGE 2025-11-09 01:16:49 ===
+Name: '; DROP TABLE users; -- User
+Email: test@example.com
+Subject: technical
+Message:
+Test message
+==================================================
+
