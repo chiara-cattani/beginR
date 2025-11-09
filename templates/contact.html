@@ -4,14 +4,14 @@
 
 {% block content %}
 <!-- Header Section -->
-<section class="py-5 bg-light">
+<section class="py-4 bg-light">
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-5 fw-bold mb-4">
+                <h1 class="display-5 fw-bold mb-3">
                     <i class="fas fa-envelope me-3 text-primary"></i>Contact & Support
                 </h1>
-                <p class="lead text-muted mb-4">
+                <p class="lead text-muted mb-3">
                     Get help, ask questions, and connect with your fellow clinical programmers 
                     as you transition from SAS to R programming with GitHub Copilot integration.
                 </p>
@@ -20,79 +20,65 @@
     </div>
 </section>
 
-<!-- Support Channels -->
-<section class="py-5">
+<!-- Contact Form -->
+<section class="py-4 bg-light">
     <div class="container">
-        <h2 class="mb-4">
-            <i class="fas fa-headset me-2 text-primary"></i>Support Channels
-        </h2>
-        
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="feature-icon text-primary mb-3">
-                            <i class="fab fa-slack"></i>
-                        </div>
-                        <h5 class="card-title">Slack Channel</h5>
-                        <p class="card-text text-muted">
-                            Join our dedicated Slack channel for real-time discussions, 
-                            questions, and collaboration with fellow learners.
-                        </p>
-                        <div class="d-grid">
-                            <a href="#" class="btn btn-primary">
-                                <i class="fab fa-slack me-2"></i>Join #TransitionR
-                            </a>
-                        </div>
-                        <small class="text-muted mt-2 d-block">
-                            <i class="fas fa-clock me-1"></i>Active during business hours
-                        </small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="feature-icon text-primary mb-3">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <h5 class="card-title">Email Support</h5>
-                        <p class="card-text text-muted">
-                            Send detailed questions or feedback via email. 
-                            We typically respond within 24 hours.
-                        </p>
-                        <div class="d-grid">
-                            <a href="mailto:chiara.cattani.it@gmail.com" class="btn btn-primary">
-                                <i class="fas fa-envelope me-2"></i>Send Email
-                            </a>
-                        </div>
-                        <small class="text-muted mt-2 d-block">
-                            <i class="fas fa-clock me-1"></i>Response within 24h
-                        </small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="feature-icon text-primary mb-3">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <h5 class="card-title">Office Hours</h5>
-                        <p class="card-text text-muted">
-                            Schedule one-on-one sessions with instructors for 
-                            personalized guidance and support.
-                        </p>
-                        <div class="d-grid">
-                            <a href="#" class="btn btn-primary">
-                                <i class="fas fa-calendar me-2"></i>Book Session
-                            </a>
-                        </div>
-                        <small class="text-muted mt-2 d-block">
-                            <i class="fas fa-clock me-1"></i>Available Tue/Thu 2-4 PM
-                        </small>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-paper-plane me-2 text-primary"></i>Send Us a Message
+                        </h3>
+                        
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form action="{{ url_for('send_contact_message') }}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <select class="form-select" id="subject" name="subject" required>
+                                        <option value="">Choose a topic...</option>
+                                        <option value="technical">Technical Question</option>
+                                        <option value="course">Course Content</option>
+                                        <option value="registration">Registration</option>
+                                        <option value="feedback">Feedback</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -101,14 +87,13 @@
 </section>
 
 <!-- FAQ Section -->
-<section class="py-5 bg-light">
+<section class="py-5">
     <div class="container">
-        <h2 class="mb-4">
-            <i class="fas fa-question-circle me-2 text-primary"></i>Frequently Asked Questions
-        </h2>
-        
         <div class="row">
             <div class="col-lg-8 mx-auto">
+                <h2 class="mb-4" style="padding-left: 1.5rem;">
+                    <i class="fas fa-question-circle me-2 text-primary"></i>FAQ
+                </h2>
                 <div class="accordion" id="faqAccordion">
                     <div class="accordion-item border-0 shadow-sm mb-3">
                         <h2 class="accordion-header" id="faq1">
@@ -118,8 +103,8 @@
                         </h2>
                         <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                The complete course typically takes 20-30 hours to finish, depending on your prior experience. 
-                                Each module is designed to be completed in 2-5 hours, and you can work at your own pace.
+                                The complete course typically takes 15-20 hours to finish, depending on your prior experience. 
+                                Each module is designed to be completed in 2-3 hours, and you can work at your own pace.
                             </div>
                         </div>
                     </div>
@@ -146,7 +131,7 @@
                         </h2>
                         <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                While GitHub Copilot is highly recommended and covered in Module 3, it's not strictly required. 
+                                While GitHub Copilot is highly recommended, it's not strictly required. 
                                 You can complete the course without it, but it will significantly enhance your learning experience.
                             </div>
                         </div>
@@ -174,7 +159,7 @@
                         </h2>
                         <div id="collapse5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Don't worry! You can reach out through Slack, email, or schedule office hours. 
+                                Don't worry! You can reach out to us. 
                                 Our team and fellow learners are here to help you succeed.
                             </div>
                         </div>
@@ -185,137 +170,4 @@
     </div>
 </section>
 
-<!-- Training Calendar -->
-<section class="py-5">
-    <div class="container">
-        <h2 class="mb-4">
-            <i class="fas fa-calendar me-2 text-primary"></i>Upcoming Training Sessions
-        </h2>
-        
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Session</th>
-                                        <th>Instructor</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Dec 15, 2024</td>
-                                        <td>Module 1: Getting Started with R</td>
-                                        <td>Dr. Sarah Johnson</td>
-                                        <td><span class="badge bg-success">Full</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Dec 22, 2024</td>
-                                        <td>Module 2: Data Manipulation with dplyr</td>
-                                        <td>Dr. Michael Chen</td>
-                                        <td><a href="#" class="btn btn-sm btn-primary">Register</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 5, 2025</td>
-                                        <td>Module 3: Copilot AI Programming</td>
-                                        <td>Dr. Emily Rodriguez</td>
-                                        <td><a href="#" class="btn btn-sm btn-primary">Register</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 12, 2025</td>
-                                        <td>Q&A Session - All Modules</td>
-                                        <td>All Instructors</td>
-                                        <td><a href="#" class="btn btn-sm btn-primary">Register</a></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact Form -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="card-title text-center mb-4">
-                            <i class="fas fa-paper-plane me-2 text-primary"></i>Send Us a Message
-                        </h3>
-                        
-                        <form>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="firstName" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="firstName" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="lastName" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="lastName" required>
-                                </div>
-                                <div class="col-12">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" required>
-                                </div>
-                                <div class="col-12">
-                                    <label for="subject" class="form-label">Subject</label>
-                                    <select class="form-select" id="subject" required>
-                                        <option value="">Choose a topic...</option>
-                                        <option value="technical">Technical Question</option>
-                                        <option value="course">Course Content</option>
-                                        <option value="registration">Registration</option>
-                                        <option value="feedback">Feedback</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label for="message" class="form-label">Message</label>
-                                    <textarea class="form-control" id="message" rows="5" required></textarea>
-                                </div>
-                                <div class="col-12 text-center">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-paper-plane me-2"></i>Send Message
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Emergency Contact -->
-<section class="py-5 bg-warning bg-opacity-10">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h3 class="mb-3">
-                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Need Immediate Help?
-                </h3>
-                <p class="lead mb-4">
-                    For urgent technical issues or course access problems, contact our support team directly.
-                </p>
-                <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a href="tel:+1-555-0123" class="btn btn-warning">
-                        <i class="fas fa-phone me-2"></i>Call Support
-                    </a>
-                                                <a href="mailto:urgent-support@chiara.com" class="btn btn-outline-warning">
-                        <i class="fas fa-envelope me-2"></i>Urgent Email
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 {% endblock %} 
