@@ -22,3 +22,27 @@ Feedback: <script>alert("xss")</script>
 Timestamp: 2025-11-09T12:00:00.000Z
 ==============================
 
+=== RATING 2025-11-09 01:38:29 ===
+Rating: 5/5 stars
+Feedback: Great course!
+Timestamp: 2025-11-09T12:00:00.000Z
+==============================
+
+=== RATING 2025-11-09 01:38:30 ===
+Rating: 5/5 stars
+Feedback: <script>alert("xss")</script>
+Timestamp: 2025-11-09T12:00:00.000Z
+==============================
+
+=== RATING 2025-11-09 01:41:05 ===
+Rating: 5/5 stars
+Feedback: Great course!
+Timestamp: 2025-11-09T12:00:00.000Z
+==============================
+
+=== RATING 2025-11-09 01:41:05 ===
+Rating: 5/5 stars
+Feedback: <script>alert("xss")</script>
+Timestamp: 2025-11-09T12:00:00.000Z
+==============================
+
