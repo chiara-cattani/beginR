@@ -70,7 +70,7 @@ def main():
             else:
                 retry_count += 1
                 if retry_count < max_retries:
-                    print(f"🔄 Retrying in 3 seconds...")
+                    print("🔄 Retrying in 3 seconds...")
                     time.sleep(3)
                 else:
                     print("❌ Max retries reached. Please check for errors.")
@@ -84,7 +84,7 @@ def main():
             print(f"❌ Error starting server: {e}")
             retry_count += 1
             if retry_count < max_retries:
-                print(f"🔄 Retrying in 3 seconds...")
+                print("🔄 Retrying in 3 seconds...")
                 time.sleep(3)
 
 

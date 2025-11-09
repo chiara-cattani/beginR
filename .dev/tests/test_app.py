@@ -4,8 +4,6 @@ Test cases for basic Flask application functionality.
 
 import json
 
-import pytest
-
 from app import app
 
 
@@ -77,7 +75,7 @@ class TestAPIEndpoints:
         )
         assert response.status_code == 200
         data = json.loads(response.data)
-        assert data.get("success") == True
+        assert data.get("success") is True
 
 
 class TestFileDownloads:
