@@ -10,24 +10,28 @@ A modular web-based training platform for transitioning from SAS to R programmin
 **beginR** is a comprehensive Flask-based training portal that provides structured, progressive learning modules for data professionals transitioning from SAS to R. The platform emphasizes practical skills development through hands-on exercises, GitHub Copilot integration, and real-world data manipulation scenarios including SDTM programming and quality control procedures.
 
 - **Modular**: 7 progressive learning modules from RStudio setup to advanced QC and reporting
-- **Interactive**: Progress tracking, downloadable resources, and hands-on exercises  
+- **Interactive**: Progress tracking, downloadable resources, and hands-on exercises
 - **AI-Enhanced**: GitHub Copilot integration throughout the curriculum
 - **Practical**: Real-world data manipulation, SDTM creation, and professional reporting workflows
 
 ## Project Status
 
-- **Version**: 1.0.0 (stable)
+- **Version**: 1.2.0 (stable)
 - **Status**: ✅ Production-ready for training programs and self-study
 - **Scope**: Complete SAS-to-R transition curriculum with 7 structured modules
+- **Latest Updates**: Enhanced UI, improved server stability, automatic logging, CI/CD integration
 
 ## Features
 
 - **Metadata-driven learning**: Module configuration in Python dictionaries with flexible content management
 - **Progressive curriculum**: RStudio setup → data manipulation → joins → dates/text → functions → SDTM → QC/reporting
-- **Resource management**: Downloadable exercises, solutions, templates, and reference materials
-- **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators
+- **Resource management**: Downloadable exercises, solutions, templates, and reference materials with organized bonus content
+- **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators and completion animations
 - **Theme support**: Light/dark mode with CSS variables and user preference persistence
-- **Music integration**: Built-in music player with curated study playlists (House, Piano, Organic, Natural, Jazz)
+- **Certificate generation**: Automatic PDF certificate generation with completion logging to file-based storage
+- **Contact system**: Secure contact form with file-based message storage (no email dependencies)
+- **Enhanced UI**: Improved alignment, bigger interactive elements, and better visual feedback
+- **CI/CD Integration**: GitHub Actions workflows with automated testing, formatting, and trusted contributor auto-merge
 - **Responsive design**: Mobile-first Bootstrap 5 implementation with cross-device compatibility
 
 ## Installation
@@ -59,9 +63,11 @@ python app.py
 # or
 python run.py
 
-# Platform-specific shortcuts
-start_app.bat      # Windows
-./start_app.sh     # Unix/Linux
+# Robust server startup (recommended)
+python start_server.py              # Cross-platform robust startup
+start_server_robust.bat            # Windows with auto-restart
+start_app.bat                      # Windows simple startup
+./start_app.sh                     # Unix/Linux startup
 ```
 
 Access the training portal at `http://localhost:5000`
@@ -106,7 +112,7 @@ All bonus materials are organized in the `bonus_resources/` folder:
 ## Repository Layout
 
 • `app.py` — Flask application, module configuration, and routing logic
-• `templates/` — Jinja2 HTML templates with inheritance and component structure  
+• `templates/` — Jinja2 HTML templates with inheritance and component structure
 • `static/css/styles.css` — CSS variables, responsive design, and theme management
 • `static/js/main.js` — Progress tracking, theme toggle, and interactive features
 • `training_material/` — Structured learning content organized by module
@@ -152,9 +158,9 @@ All bonus materials are organized in the `bonus_resources/` folder:
 
 ## Citation
 
-> Cattani, C. (2025). beginR: Modular Web-Based Training Platform for SAS-to-R Transition. 
+> Cattani, C. (2025). beginR: Modular Web-Based Training Platform for SAS-to-R Transition.
 > Web application version 1.0.0. https://github.com/chiara-cattani/beginR
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

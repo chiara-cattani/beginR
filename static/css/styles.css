@@ -48,11 +48,11 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
 }
 
-[data-bs-theme="dark"] h1, 
-[data-bs-theme="dark"] h2, 
-[data-bs-theme="dark"] h3, 
-[data-bs-theme="dark"] h4, 
-[data-bs-theme="dark"] h5, 
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5,
 [data-bs-theme="dark"] h6 {
     color: var(--text-primary);
 }
@@ -295,11 +295,11 @@ h1, h2, h3, h4, h5, h6 {
     .hero-section h1 {
         font-size: 2rem;
     }
-    
+
     .hero-section .lead {
         font-size: 1rem;
     }
-    
+
     .resource-grid {
         grid-template-columns: 1fr;
     }
@@ -894,7 +894,7 @@ section.bg-primary .badge.bg-primary,
     .module-card .d-flex.flex-wrap.gap-1 {
         flex-wrap: wrap !important;
     }
-    
+
     .module-card .d-flex.flex-wrap.gap-1 > a.badge {
         flex: 1 1 calc(50% - 0.125rem) !important;
         margin-bottom: 0.25rem;
@@ -1223,19 +1223,19 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
 
 /* Completion Medal Animation */
 @keyframes bounceIn {
-    0% { 
-        opacity: 0; 
-        transform: scale(0.3); 
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
     }
-    50% { 
-        opacity: 1; 
-        transform: scale(1.05); 
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
     }
-    70% { 
-        transform: scale(0.9); 
+    70% {
+        transform: scale(0.9);
     }
-    100% { 
-        transform: scale(1); 
+    100% {
+        transform: scale(1);
     }
 }
 
@@ -1267,16 +1267,16 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
 
 /* Course Completion Animation */
 @keyframes courseCompleteSlideIn {
-    0% { 
-        opacity: 0; 
-        transform: translate(-50%, -50%) scale(0.5) rotateY(180deg); 
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) rotateY(180deg);
     }
-    50% { 
-        opacity: 1; 
-        transform: translate(-50%, -50%) scale(1.1) rotateY(0deg); 
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1) rotateY(0deg);
     }
-    100% { 
-        transform: translate(-50%, -50%) scale(1) rotateY(0deg); 
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
     }
 }
 
@@ -1287,10 +1287,11 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
 }
 
 .simple-star-rating i {
-    font-size: 1rem;
+    font-size: 1.75rem;
     color: #ddd;
     cursor: pointer;
     transition: color 0.2s ease;
+    margin-top: 8px;
 }
 
 .simple-star-rating i:hover,
@@ -1323,5 +1324,3 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
 .feedback-text-container .btn {
     font-size: 0.8rem;
 }
-
- 

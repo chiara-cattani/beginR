@@ -13,8 +13,15 @@ Your project is already properly configured for deployment with:
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-python app.py
+# Run the application (multiple options)
+python app.py                    # Basic startup
+python run.py                    # Alternative startup
+python start_server.py           # Robust startup with auto-restart (recommended)
+
+# Platform-specific launchers
+start_server_robust.bat          # Windows with enhanced stability
+start_app.bat                    # Windows simple startup
+./start_app.sh                   # Unix/Linux startup
 ```
 
 ### 2. Heroku Deployment
@@ -52,18 +59,22 @@ git push heroku main
 
 For production, consider setting these environment variables:
 - `SECRET_KEY` - Change from the default value
-- `MAIL_SERVER` - Your SMTP server
-- `MAIL_USERNAME` - Your email username
-- `MAIL_PASSWORD` - Your email password
+- `FLASK_ENV` - Set to 'production' for production deployment
+- `FLASK_DEBUG` - Set to '0' for production (default is '1' for development)
+
+**Note**: Email functionality has been removed for security. Contact form messages and certificate completions are logged to files instead.
 
 ## File Structure
 ```
 beginR/
 ├── app.py                 # ✅ Flask application entry point
 ├── run.py                # ✅ Alternative startup script
+├── start_server.py       # ✅ Robust server startup with auto-restart
 ├── requirements.txt       # ✅ Python dependencies
-├── start_app.bat         # ✅ Windows launcher
+├── start_server_robust.bat # ✅ Windows robust launcher
+├── start_app.bat         # ✅ Windows simple launcher
 ├── start_app.sh          # ✅ Unix/Linux launcher
+├── data/                 # ✅ File-based logging (contact messages, completers, ratings)
 ├── static/               # ✅ Static files (CSS, JS)
 │   ├── css/styles.css    # ✅ Custom styling with music player
 │   └── js/main.js        # ✅ JavaScript with music functionality
@@ -77,18 +88,22 @@ beginR/
 ## Testing Deployment
 After deployment, test these features:
 - ✅ Homepage loads correctly
-- ✅ Module pages are accessible
+- ✅ Module pages are accessible with progress tracking
 - ✅ File downloads work (QMD source files prioritized)
-- ✅ Music player dropdown functionality
+- ✅ Bonus resources page with reorganized layout
 - ✅ Theme toggle (light/dark mode)
-- ✅ Progress tracking persistence
-- ✅ Certificate generation works
-- ✅ Email functionality (if configured)
+- ✅ Progress tracking persistence and completion animations
+- ✅ Certificate generation with automatic logging
+- ✅ Contact form with file-based message storage
+- ✅ Rating system with enhanced star feedback
+- ✅ Server stability and auto-restart functionality
 
 ## Security Notes
 - Change the default `SECRET_KEY` in production
-- Configure proper email settings for certificate emails
+- Email functionality has been removed for security (messages saved to files)
+- File-based logging system is secure and doesn't require external dependencies
 - Ensure all file paths are secure
 - Consider adding rate limiting for downloads
+- CI/CD workflows include automated security checks
 
-Your project is ready for deployment! 🚀 
+Your project is ready for deployment! 🚀

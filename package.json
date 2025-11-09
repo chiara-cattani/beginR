@@ -1,0 +1,37 @@
+{
+  "name": "beginr-frontend",
+  "version": "1.0.0",
+  "description": "Frontend development tools for beginR training platform",
+  "main": "static/js/main.js",
+  "scripts": {
+    "lint:html": "htmlhint \"templates/*.html\"",
+    "lint:css": "stylelint \"static/css/*.css\"",
+    "lint:js": "jshint static/js/*.js",
+    "lint": "npm run lint:html && npm run lint:css && npm run lint:js",
+    "test": "echo \"No frontend tests yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chiara-cattani/beginR.git"
+  },
+  "keywords": [
+    "r-programming",
+    "sas-to-r",
+    "training",
+    "education",
+    "flask",
+    "frontend"
+  ],
+  "author": "Chiara Cattani",
+  "license": "MIT",
+  "devDependencies": {
+    "htmlhint": "^1.1.4",
+    "stylelint": "^15.11.0",
+    "stylelint-config-standard": "^34.0.0",
+    "jshint": "^2.13.6"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": ">=8"
+  }
+}

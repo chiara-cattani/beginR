@@ -1,28 +1,19 @@
-from flask import Flask, render_template, send_file, url_for, request, jsonify, flash, redirect
+import io
 import os
 import zipfile
-import io
 from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
-from flask_mail import Mail, Message
+
 from dotenv import load_dotenv
+from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, url_for
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "clinical-r-transition-2024")
-
-# --- Flask-Mail config (user can set via environment variables) ---
-app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.example.com")
-app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
-app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", "your@email.com")
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "yourpassword")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "your@email.com")
-mail = Mail(app)
 
 # Module data structure
 MODULES = {
@@ -233,7 +224,9 @@ def modules():
 def module_detail(module_id):
     if module_id not in MODULES:
         return "Module not found", 404
-    return render_template(f"module{module_id}.html", module=MODULES[module_id], module_id=module_id)
+    return render_template(
+        f"module{module_id}.html", module=MODULES[module_id], module_id=module_id
+    )
 
 
 @app.route("/bonus")
@@ -308,7 +301,10 @@ def download_file(filename):
             if os.path.exists(rendered_path):
                 return send_file(rendered_path, as_attachment=True)
 
-        return f"Download not available for: {filename}. This resource is only available for online viewing.", 404
+        return (
+            f"Download not available for: {filename}. This resource is only available for online viewing.",
+            404,
+        )
     except FileNotFoundError:
         return "File not found", 404
 
@@ -384,9 +380,17 @@ def fix_html_static_paths(content, html_filename, html_path):
             # Get the directory where the HTML file is located
             html_dir = os.path.dirname(html_path).replace("\\", "/")
             # Replace src attributes
-            content = re.sub(f'src="({files_dir}/[^"]*)"', f'src="/static_files/{html_dir}/\\1"', content)
+            content = re.sub(
+                f'src="({files_dir}/[^"]*)"',
+                f'src="/static_files/{html_dir}/\\1"',
+                content,
+            )
             # Replace href attributes
-            content = re.sub(f'href="({files_dir}/[^"]*)"', f'href="/static_files/{html_dir}/\\1"', content)
+            content = re.sub(
+                f'href="({files_dir}/[^"]*)"',
+                f'href="/static_files/{html_dir}/\\1"',
+                content,
+            )
             break  # Stop after first match
 
     # Fix PDF links - convert relative PDF paths to view routes
@@ -450,7 +454,9 @@ def view_file(filename):
             # If not found, check bonus_resources directories
             if not html_path:
                 # First check rendered subfolder
-                bonus_rendered_path = os.path.join("bonus_resources", "rendered", html_filename)
+                bonus_rendered_path = os.path.join(
+                    "bonus_resources", "rendered", html_filename
+                )
                 if os.path.exists(bonus_rendered_path):
                     html_path = bonus_rendered_path
                 else:
@@ -458,8 +464,13 @@ def view_file(filename):
                     if base_dir == "bonus_resources/source":
                         # Look for files like 01_R_vs_SAS_CheatSheet.html in rendered directory
                         for rendered_file in os.listdir("bonus_resources/rendered"):
-                            if rendered_file.endswith(".html") and html_filename.replace(".html", "") in rendered_file:
-                                html_path = os.path.join("bonus_resources", "rendered", rendered_file)
+                            if (
+                                rendered_file.endswith(".html")
+                                and html_filename.replace(".html", "") in rendered_file
+                            ):
+                                html_path = os.path.join(
+                                    "bonus_resources", "rendered", rendered_file
+                                )
                                 break
 
                     # If still not found, check main bonus_resources directory
@@ -517,7 +528,13 @@ def view_file(filename):
             # For R files, show with syntax highlighting
             with open(file_path, "r", encoding="utf-8") as f:
                 r_content = f.read()
-            return render_template("file_viewer.html", filename=filename, content=r_content, file_type="r", message="R Script")
+            return render_template(
+                "file_viewer.html",
+                filename=filename,
+                content=r_content,
+                file_type="r",
+                message="R Script",
+            )
 
         elif filename.endswith((".html", ".htm")):
             # For HTML files, serve with proper static file paths
@@ -603,11 +620,17 @@ def generate_certificate_pdf(name, surname, date_str, modules):
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(width / 2, height - 2.6 * inch, f"{name} {surname}")
     c.setFont("Helvetica", 14)
-    c.drawCentredString(width / 2, height - 3.1 * inch, f"has successfully completed the course:")
+    c.drawCentredString(
+        width / 2, height - 3.1 * inch, f"has successfully completed the course:"
+    )
     c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width / 2, height - 3.6 * inch, "TransitionR: Clinical Programming in R")
+    c.drawCentredString(
+        width / 2, height - 3.6 * inch, "TransitionR: Clinical Programming in R"
+    )
     c.setFont("Helvetica", 12)
-    c.drawCentredString(width / 2, height - 4.1 * inch, f"Date of Completion: {date_str}")
+    c.drawCentredString(
+        width / 2, height - 4.1 * inch, f"Date of Completion: {date_str}"
+    )
     c.setFont("Helvetica-Bold", 13)
     c.drawString(1.2 * inch, height - 4.8 * inch, "Modules Completed:")
     c.setFont("Helvetica", 12)
@@ -629,11 +652,34 @@ def download_certificate():
     if not name or not surname:
         flash("Name and surname are required.", "danger")
         return redirect(url_for("modules"))
+
     date_str = datetime.now().strftime("%B %d, %Y")
     module_titles = [MODULES[m]["title"] for m in sorted(MODULES.keys())]
     pdf_buffer = generate_certificate_pdf(name, surname, date_str, module_titles)
+
+    # Save completer information to file (automatic logging)
+    completion_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+    completer_data = f"""=== CERTIFICATE {completion_datetime} ===
+Completer: {name} {surname}
+Method: Downloaded
+Timestamp: {timestamp_iso}
+==============================
+
+"""
+
+    try:
+        with open("data/course_completers.txt", "a", encoding="utf-8") as f:
+            f.write(completer_data)
+    except Exception as file_error:
+        print(f"Warning: Could not save completer data: {file_error}")
+
     return send_file(
-        pdf_buffer, as_attachment=True, download_name=f"Certificate_{name}_{surname}.pdf", mimetype="application/pdf"
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"Certificate_{name}_{surname}.pdf",
+        mimetype="application/pdf",
     )
 
 
@@ -675,7 +721,10 @@ def send_contact_message():
             f.write(f"Message:\n{message}\n")
             f.write(f"{'='*50}\n\n")
 
-        flash("Your message has been sent successfully! We'll get back to you soon.", "success")
+        flash(
+            "Your message has been sent successfully! We'll get back to you soon.",
+            "success",
+        )
 
     except Exception as e:
         flash(f"Error sending message: {str(e)}. Please try again.", "danger")
@@ -705,7 +754,39 @@ def submit_simple_rating():
         formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if is_update and feedback:
-            # This is a text feedback update - append as a separate entry
+            # This is a text feedback update - remove duplicate rating and keep only the feedback version
+            try:
+                # Read existing content
+                with open("data/course_ratings.txt", "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                # Split content into entries
+                entries = content.split("=== RATING")
+
+                # Find and remove the most recent rating entry with the same rating value
+                updated_content = entries[0]  # Keep header
+
+                for i in range(1, len(entries)):
+                    entry = "=== RATING" + entries[i]
+                    # Check if this entry matches our rating and is recent (no feedback)
+                    if (
+                        f"Rating: {rating}/5 stars\n" in entry
+                        and "Feedback:" not in entry
+                        and len(entries) - i <= 2
+                    ):  # Only check last 2 entries
+                        # Skip this entry (don't add it back)
+                        continue
+                    else:
+                        updated_content += entry
+
+                # Write back the cleaned content
+                with open("data/course_ratings.txt", "w", encoding="utf-8") as f:
+                    f.write(updated_content)
+
+            except (FileNotFoundError, Exception):
+                pass  # If any error, just continue with append
+
+            # Append the feedback update
             with open("data/course_ratings.txt", "a", encoding="utf-8") as f:
                 f.write(f"=== FEEDBACK UPDATE {formatted_time} ===\n")
                 f.write(f"Rating: {rating}/5 stars (with additional feedback)\n")
@@ -725,7 +806,9 @@ def submit_simple_rating():
         return jsonify({"success": True, "message": "Thank you for your rating!"})
 
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error submitting rating: {str(e)}"})
+        return jsonify(
+            {"success": False, "message": f"Error submitting rating: {str(e)}"}
+        )
 
 
 # --- Admin Route to View Data ---
@@ -755,27 +838,18 @@ def view_admin_data():
     return render_template("admin_data.html", data=data)
 
 
-# --- Certificate Email Route ---
-@app.route("/send_certificate", methods=["POST"])
-def send_certificate():
-    name = request.form.get("name", "").strip()
-    surname = request.form.get("surname", "").strip()
-    email = request.form.get("email", "").strip()
-    if not name or not surname or not email:
-        flash("Name, surname, and email are required.", "danger")
-        return redirect(url_for("modules"))
-    date_str = datetime.now().strftime("%B %d, %Y")
-    module_titles = [MODULES[m]["title"] for m in sorted(MODULES.keys())]
-    pdf_buffer = generate_certificate_pdf(name, surname, date_str, module_titles)
-    msg = Message("Your ClinicalRTransition Certificate", recipients=[email])
-    msg.body = f"Dear {name} {surname},\n\nCongratulations on completing the ClinicalRTransition course! Your certificate is attached.\n\nBest regards,\nChiara"
-    msg.attach(f"Certificate_{name}_{surname}.pdf", "application/pdf", pdf_buffer.read())
+# --- Admin Route to View Course Completers ---
+@app.route("/admin/completers")
+def view_completers():
+    """Admin route to view course completers data."""
     try:
-        mail.send(msg)
-        flash("Certificate sent to your email!", "success")
+        with open("data/course_completers.txt", "r", encoding="utf-8") as f:
+            content = f.read()
+        return f"<pre>{content}</pre>", 200, {"Content-Type": "text/html"}
+    except FileNotFoundError:
+        return "No course completers data found.", 404
     except Exception as e:
-        flash(f"Error sending email: {str(e)}", "danger")
-    return redirect(url_for("modules"))
+        return f"Error reading completers data: {str(e)}", 500
 
 
 if __name__ == "__main__":
