@@ -4,7 +4,16 @@ import zipfile
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, url_for
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
@@ -616,12 +625,12 @@ def generate_certificate_pdf(name, surname, date_str, modules):
     c.setFont("Helvetica-Bold", 22)
     c.drawCentredString(width / 2, height - 1.5 * inch, "Certificate of Completion")
     c.setFont("Helvetica", 14)
-    c.drawCentredString(width / 2, height - 2.1 * inch, f"This certifies that")
+    c.drawCentredString(width / 2, height - 2.1 * inch, "This certifies that")
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(width / 2, height - 2.6 * inch, f"{name} {surname}")
     c.setFont("Helvetica", 14)
     c.drawCentredString(
-        width / 2, height - 3.1 * inch, f"has successfully completed the course:"
+        width / 2, height - 3.1 * inch, "has successfully completed the course:"
     )
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(
@@ -704,13 +713,6 @@ def send_contact_message():
 
         # Store message in file
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        message_data = {
-            "timestamp": timestamp,
-            "name": f"{first_name} {last_name}",
-            "email": email,
-            "subject": subject,
-            "message": message,
-        }
 
         # Append to messages file
         with open("data/contact_messages.txt", "a", encoding="utf-8") as f:
@@ -719,7 +721,7 @@ def send_contact_message():
             f.write(f"Email: {email}\n")
             f.write(f"Subject: {subject}\n")
             f.write(f"Message:\n{message}\n")
-            f.write(f"{'='*50}\n\n")
+            f.write(f"{'=' * 50}\n\n")
 
         flash(
             "Your message has been sent successfully! We'll get back to you soon.",
@@ -792,7 +794,7 @@ def submit_simple_rating():
                 f.write(f"Rating: {rating}/5 stars (with additional feedback)\n")
                 f.write(f"Feedback: {feedback}\n")
                 f.write(f"Timestamp: {timestamp}\n")
-                f.write(f"{'='*30}\n\n")
+                f.write(f"{'=' * 30}\n\n")
         else:
             # Regular rating submission
             with open("data/course_ratings.txt", "a", encoding="utf-8") as f:
@@ -801,7 +803,7 @@ def submit_simple_rating():
                 if feedback:
                     f.write(f"Feedback: {feedback}\n")
                 f.write(f"Timestamp: {timestamp}\n")
-                f.write(f"{'='*30}\n\n")
+                f.write(f"{'=' * 30}\n\n")
 
         return jsonify({"success": True, "message": "Thank you for your rating!"})
 
