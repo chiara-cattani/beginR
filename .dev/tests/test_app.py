@@ -4,7 +4,7 @@ Test cases for basic Flask application functionality.
 
 import json
 
-from app import app
+from app import app  # noqa: F401
 
 
 class TestBasicRoutes:

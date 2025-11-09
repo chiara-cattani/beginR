@@ -249,66 +249,109 @@ def contact():
 
 
 @app.route("/download/<path:filename>")
+def _search_training_material(filename):
+    """Search for file in training_material subdirectories."""
+    for root, dirs, files in os.walk("training_material"):
+        if filename in files:
+            file_path = os.path.join(root, filename)
+            return send_file(file_path, as_attachment=True)
+    return None
+
+
+def _find_pdf_alternative(base_name):
+    """Try to find PDF version of the file."""
+    import re
+
+    # Try to find PDF version first
+    pdf_name = f"{base_name}.pdf"
+    pdf_path = os.path.join("bonus_resources", pdf_name)
+    if os.path.exists(pdf_path):
+        return send_file(pdf_path, as_attachment=True)
+
+    # Try numbered PDF version (remove number prefix)
+    if re.match(r"^\d+_", base_name):
+        base_without_number = re.sub(r"^\d+_", "", base_name)
+        pdf_name_no_number = f"{base_without_number}.pdf"
+        pdf_path_no_number = os.path.join("bonus_resources", pdf_name_no_number)
+        if os.path.exists(pdf_path_no_number):
+            return send_file(pdf_path_no_number, as_attachment=True)
+    return None
+
+
+def _find_source_files(base_name):
+    """Try to find QMD or RMD source files."""
+    import re
+
+    # Try numbered source files first (remove number prefix)
+    if re.match(r"^\d+_", base_name):
+        base_without_number = re.sub(r"^\d+_", "", base_name)
+
+        # Try QMD source file
+        qmd_name = f"{base_without_number}.qmd"
+        qmd_path = os.path.join("bonus_resources", "source", qmd_name)
+        if os.path.exists(qmd_path):
+            return send_file(qmd_path, as_attachment=True)
+
+        # Try RMD source file
+        rmd_name = f"{base_without_number}.Rmd"
+        rmd_path = os.path.join("bonus_resources", "rendered", rmd_name)
+        if os.path.exists(rmd_path):
+            return send_file(rmd_path, as_attachment=True)
+
+    # Try original name source files
+    qmd_name = f"{base_name}.qmd"
+    qmd_path = os.path.join("bonus_resources", "source", qmd_name)
+    if os.path.exists(qmd_path):
+        return send_file(qmd_path, as_attachment=True)
+
+    rmd_name = f"{base_name}.Rmd"
+    rmd_path = os.path.join("bonus_resources", "rendered", rmd_name)
+    if os.path.exists(rmd_path):
+        return send_file(rmd_path, as_attachment=True)
+
+    return None
+
+
+def _find_bonus_resources(filename):
+    """Search for file in bonus_resources directories."""
+    # Check main bonus_resources directory
+    bonus_path = os.path.join("bonus_resources", filename)
+    if os.path.exists(bonus_path):
+        return send_file(bonus_path, as_attachment=True)
+
+    # Check rendered subfolder
+    rendered_path = os.path.join("bonus_resources", "rendered", filename)
+    if os.path.exists(rendered_path):
+        return send_file(rendered_path, as_attachment=True)
+
+    return None
+
+
 def download_file(filename):
     try:
         # Search for file in training_material subdirectories first
-        for root, dirs, files in os.walk("training_material"):
-            if filename in files:
-                file_path = os.path.join(root, filename)
-                return send_file(file_path, as_attachment=True)
+        result = _search_training_material(filename)
+        if result:
+            return result
 
-        # For HTML files, always try to find source files (QMD/RMD) instead of returning HTML
+        # For HTML files, try to find source files (QMD/RMD) instead of HTML
         if filename.endswith(".html"):
             base_name = os.path.splitext(filename)[0]
-            import re
 
-            # Try to find PDF version first (for actual PDF resources)
-            pdf_name = f"{base_name}.pdf"
-            pdf_path = os.path.join("bonus_resources", pdf_name)
-            if os.path.exists(pdf_path):
-                return send_file(pdf_path, as_attachment=True)
+            # Try PDF alternative first
+            result = _find_pdf_alternative(base_name)
+            if result:
+                return result
 
-            # Try numbered PDF version (remove number prefix)
-            if re.match(r"^\d+_", base_name):
-                base_without_number = re.sub(r"^\d+_", "", base_name)
-                pdf_name_no_number = f"{base_without_number}.pdf"
-                pdf_path_no_number = os.path.join("bonus_resources", pdf_name_no_number)
-                if os.path.exists(pdf_path_no_number):
-                    return send_file(pdf_path_no_number, as_attachment=True)
-
-                # If no PDF, try to find the QMD source file first
-                qmd_name = f"{base_without_number}.qmd"
-                qmd_path = os.path.join("bonus_resources", "source", qmd_name)
-                if os.path.exists(qmd_path):
-                    return send_file(qmd_path, as_attachment=True)
-
-                # If no QMD, try to find the RMD source file
-                rmd_name = f"{base_without_number}.Rmd"
-                rmd_path = os.path.join("bonus_resources", "rendered", rmd_name)
-                if os.path.exists(rmd_path):
-                    return send_file(rmd_path, as_attachment=True)
-
-            # Try QMD source file with original name first
-            qmd_name = f"{base_name}.qmd"
-            qmd_path = os.path.join("bonus_resources", "source", qmd_name)
-            if os.path.exists(qmd_path):
-                return send_file(qmd_path, as_attachment=True)
-
-            # Try RMD source file with original name
-            rmd_name = f"{base_name}.Rmd"
-            rmd_path = os.path.join("bonus_resources", "rendered", rmd_name)
-            if os.path.exists(rmd_path):
-                return send_file(rmd_path, as_attachment=True)
+            # Try source files
+            result = _find_source_files(base_name)
+            if result:
+                return result
         else:
-            # For non-HTML files (like PDFs), check bonus_resources directory
-            bonus_path = os.path.join("bonus_resources", filename)
-            if os.path.exists(bonus_path):
-                return send_file(bonus_path, as_attachment=True)
-
-            # Also check rendered subfolder
-            rendered_path = os.path.join("bonus_resources", "rendered", filename)
-            if os.path.exists(rendered_path):
-                return send_file(rendered_path, as_attachment=True)
+            # For non-HTML files, check bonus_resources directory
+            result = _find_bonus_resources(filename)
+            if result:
+                return result
 
         return (
             f"Download not available for: {filename}. This resource is only available for online viewing.",
@@ -408,164 +451,141 @@ def fix_html_static_paths(content, html_filename, html_path):
     return content
 
 
+def _find_file_location(filename):
+    """Find file path and base directory for a given filename"""
+    # Search for file in training_material subdirectories first
+    for root, dirs, files in os.walk("training_material"):
+        if filename in files:
+            file_path = os.path.join(root, filename)
+            base_dir = os.path.dirname(file_path)
+            return file_path, base_dir
+
+    # If not found, check bonus_resources directory (including rendered and source subfolders)
+    # First check rendered subfolder
+    rendered_path = os.path.join("bonus_resources", "rendered", filename)
+    if os.path.exists(rendered_path):
+        return rendered_path, "bonus_resources/rendered"
+
+    # Then check source subfolder
+    source_path = os.path.join("bonus_resources", "source", filename)
+    if os.path.exists(source_path):
+        return source_path, "bonus_resources/source"
+
+    # Finally check main bonus_resources directory
+    bonus_path = os.path.join("bonus_resources", filename)
+    if os.path.exists(bonus_path):
+        return bonus_path, "bonus_resources"
+
+    return None, None
+
+
+def _find_html_for_qmd(html_filename, base_dir):
+    """Find corresponding HTML file for QMD file"""
+    # Search for HTML file recursively in training_material
+    for root, dirs, files in os.walk("training_material"):
+        if html_filename in files:
+            return os.path.join(root, html_filename)
+
+    # First check rendered subfolder
+    bonus_rendered_path = os.path.join("bonus_resources", "rendered", html_filename)
+    if os.path.exists(bonus_rendered_path):
+        return bonus_rendered_path
+
+    # For files from source directory, try looking for numbered HTML files in rendered
+    if base_dir == "bonus_resources/source":
+        for rendered_file in os.listdir("bonus_resources/rendered"):
+            if (
+                rendered_file.endswith(".html")
+                and html_filename.replace(".html", "") in rendered_file
+            ):
+                return os.path.join("bonus_resources", "rendered", rendered_file)
+
+    # If still not found, check main bonus_resources directory
+    bonus_html_path = os.path.join("bonus_resources", html_filename)
+    if os.path.exists(bonus_html_path):
+        return bonus_html_path
+
+    return None
+
+
+def _serve_html_content(html_path, html_filename):
+    """Read and serve HTML content with fixed paths"""
+    with open(html_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Fix relative paths for supporting files
+    content = fix_html_static_paths(content, html_filename, html_path)
+
+    return content, 200, {"Content-Type": "text/html"}
+
+
+def _serve_source_content(file_path, filename, file_type, message):
+    """Serve source file with syntax highlighting"""
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return render_template(
+        "file_viewer.html",
+        filename=filename,
+        content=content,
+        file_type=file_type,
+        message=message,
+    )
+
+
+def _handle_file_by_type(filename, file_path, base_dir):
+    """Handle file serving based on file type"""
+    if filename.endswith(".pdf"):
+        return send_file(file_path, mimetype="application/pdf")
+
+    elif filename.endswith(".qmd"):
+        html_filename = filename.replace(".qmd", ".html")
+        html_path = _find_html_for_qmd(html_filename, base_dir)
+
+        if html_path:
+            return _serve_html_content(html_path, html_filename)
+        else:
+            return _serve_source_content(
+                file_path,
+                filename,
+                "markdown",
+                "Showing QMD source code (rendered HTML not available)",
+            )
+
+    elif filename.endswith(".Rmd"):
+        html_filename = filename.replace(".Rmd", ".html")
+        html_path = os.path.join(base_dir, html_filename)
+
+        if os.path.exists(html_path):
+            return _serve_html_content(html_path, html_filename)
+        else:
+            return _serve_source_content(
+                file_path,
+                filename,
+                "markdown",
+                "Showing RMD source code (rendered HTML not available)",
+            )
+
+    elif filename.endswith(".R"):
+        return _serve_source_content(file_path, filename, "r", "R Script")
+
+    elif filename.endswith((".html", ".htm")):
+        return _serve_html_content(file_path, filename)
+
+    else:
+        return _serve_source_content(
+            file_path, filename, "text", f"Viewing: {os.path.basename(filename)}"
+        )
+
+
 @app.route("/view/<path:filename>")
 def view_file(filename):
     """View content of various file types with proper rendering"""
     try:
-        # Search for file in training_material subdirectories first
-        file_path = None
-        base_dir = None
-
-        for root, dirs, files in os.walk("training_material"):
-            if filename in files:
-                file_path = os.path.join(root, filename)
-                base_dir = os.path.dirname(file_path)
-                break
-
-        # If not found, check bonus_resources directory (including rendered and source subfolders)
-        if not file_path:
-            # First check rendered subfolder
-            rendered_path = os.path.join("bonus_resources", "rendered", filename)
-            if os.path.exists(rendered_path):
-                file_path = rendered_path
-                base_dir = "bonus_resources/rendered"
-            else:
-                # Then check source subfolder
-                source_path = os.path.join("bonus_resources", "source", filename)
-                if os.path.exists(source_path):
-                    file_path = source_path
-                    base_dir = "bonus_resources/source"
-                else:
-                    # Finally check main bonus_resources directory
-                    bonus_path = os.path.join("bonus_resources", filename)
-                    if os.path.exists(bonus_path):
-                        file_path = bonus_path
-                        base_dir = "bonus_resources"
-
+        file_path, base_dir = _find_file_location(filename)
         if not file_path:
             return f"File not found: {filename}", 404
 
-        if filename.endswith(".pdf"):
-            # For PDF files, serve them directly to open in browser
-            return send_file(file_path, mimetype="application/pdf")
-
-        elif filename.endswith(".qmd"):
-            # For QMD files, try to find rendered HTML first, otherwise show raw content
-            html_filename = filename.replace(".qmd", ".html")
-            html_path = None
-
-            # Search for HTML file recursively in training_material
-            for root, dirs, files in os.walk("training_material"):
-                if html_filename in files:
-                    html_path = os.path.join(root, html_filename)
-                    break
-
-            # If not found, check bonus_resources directories
-            if not html_path:
-                # First check rendered subfolder
-                bonus_rendered_path = os.path.join(
-                    "bonus_resources", "rendered", html_filename
-                )
-                if os.path.exists(bonus_rendered_path):
-                    html_path = bonus_rendered_path
-                else:
-                    # For files from source directory, try looking for numbered HTML files in rendered
-                    if base_dir == "bonus_resources/source":
-                        # Look for files like 01_R_vs_SAS_CheatSheet.html in rendered directory
-                        for rendered_file in os.listdir("bonus_resources/rendered"):
-                            if (
-                                rendered_file.endswith(".html")
-                                and html_filename.replace(".html", "") in rendered_file
-                            ):
-                                html_path = os.path.join(
-                                    "bonus_resources", "rendered", rendered_file
-                                )
-                                break
-
-                    # If still not found, check main bonus_resources directory
-                    if not html_path:
-                        bonus_html_path = os.path.join("bonus_resources", html_filename)
-                        if os.path.exists(bonus_html_path):
-                            html_path = bonus_html_path
-
-            if html_path:
-                # Read and serve the rendered HTML
-                with open(html_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-
-                # Fix relative paths for supporting files
-                content = fix_html_static_paths(content, html_filename, html_path)
-
-                return content, 200, {"Content-Type": "text/html"}
-            else:
-                # Show QMD source with syntax highlighting
-                with open(file_path, "r", encoding="utf-8") as f:
-                    qmd_content = f.read()
-                return render_template(
-                    "file_viewer.html",
-                    filename=filename,
-                    content=qmd_content,
-                    file_type="markdown",
-                    message="Showing QMD source code (rendered HTML not available)",
-                )
-
-        elif filename.endswith(".Rmd"):
-            # For RMD files, try to find rendered HTML first, otherwise show raw content
-            html_filename = filename.replace(".Rmd", ".html")
-            html_path = os.path.join(base_dir, html_filename)
-            if os.path.exists(html_path):
-                with open(html_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-
-                # Fix relative paths for supporting files
-                content = fix_html_static_paths(content, html_filename, html_path)
-
-                return content, 200, {"Content-Type": "text/html"}
-            else:
-                # Show RMD source with syntax highlighting
-                with open(file_path, "r", encoding="utf-8") as f:
-                    rmd_content = f.read()
-                return render_template(
-                    "file_viewer.html",
-                    filename=filename,
-                    content=rmd_content,
-                    file_type="markdown",
-                    message="Showing RMD source code (rendered HTML not available)",
-                )
-
-        elif filename.endswith(".R"):
-            # For R files, show with syntax highlighting
-            with open(file_path, "r", encoding="utf-8") as f:
-                r_content = f.read()
-            return render_template(
-                "file_viewer.html",
-                filename=filename,
-                content=r_content,
-                file_type="r",
-                message="R Script",
-            )
-
-        elif filename.endswith((".html", ".htm")):
-            # For HTML files, serve with proper static file paths
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-
-            # Fix relative paths for supporting files
-            content = fix_html_static_paths(content, filename, file_path)
-
-            return content, 200, {"Content-Type": "text/html"}
-
-        else:
-            # For other text files, show as plain text
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return render_template(
-                "file_viewer.html",
-                filename=filename,
-                content=content,
-                file_type="text",
-                message=f"Viewing: {os.path.basename(filename)}",
-            )
+        return _handle_file_by_type(filename, file_path, base_dir)
 
     except FileNotFoundError:
         return f"File not found: {filename}", 404
@@ -586,30 +606,31 @@ def view_qmd_content(filename):
         return f"Error reading file: {str(e)}", 500
 
 
+def _get_mime_type(filepath):
+    """Get MIME type based on file extension"""
+    mime_type_map = {
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".woff": "font/woff",
+        ".woff2": "font/woff2",
+        ".ttf": "font/ttf",
+        ".eot": "application/vnd.ms-fontobject",
+        ".svg": "image/svg+xml",
+    }
+
+    for ext, mime_type in mime_type_map.items():
+        if filepath.endswith(ext):
+            return mime_type
+
+    return "text/plain"
+
+
 @app.route("/view_files/<path:filepath>")
 def serve_view_files(filepath):
     """Serve supporting files for HTML views (CSS, JS, etc.)"""
     try:
-        # Construct the full path to the file
         full_path = os.path.join("training_material", filepath)
-
-        # Determine MIME type based on file extension
-        mime_type = "text/plain"
-        if filepath.endswith(".css"):
-            mime_type = "text/css"
-        elif filepath.endswith(".js"):
-            mime_type = "application/javascript"
-        elif filepath.endswith(".woff"):
-            mime_type = "font/woff"
-        elif filepath.endswith(".woff2"):
-            mime_type = "font/woff2"
-        elif filepath.endswith(".ttf"):
-            mime_type = "font/ttf"
-        elif filepath.endswith(".eot"):
-            mime_type = "application/vnd.ms-fontobject"
-        elif filepath.endswith(".svg"):
-            mime_type = "image/svg+xml"
-
+        mime_type = _get_mime_type(filepath)
         return send_file(full_path, mimetype=mime_type)
     except FileNotFoundError:
         return "File not found", 404

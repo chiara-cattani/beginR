@@ -11,8 +11,8 @@ import time
 from pathlib import Path
 
 
-def main():
-    # Ensure we're in the right directory
+def setup_environment():
+    """Setup working directory and environment variables"""
     script_dir = Path(__file__).parent.absolute()
     os.chdir(script_dir)
 
@@ -22,13 +22,47 @@ def main():
     print("⚠️  To stop the server, press Ctrl+C")
     print("-" * 50)
 
-    # Set environment variables for better stability
     env = os.environ.copy()
     env["FLASK_APP"] = "app.py"
     env["FLASK_ENV"] = "development"
     env["FLASK_DEBUG"] = "1"
-    env["PYTHONUNBUFFERED"] = "1"  # Ensure immediate output
+    env["PYTHONUNBUFFERED"] = "1"
 
+    return env
+
+
+def monitor_process(process):
+    """Monitor the Flask server process"""
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+            if "Running on http://127.0.0.1:5000" in output:
+                print("✅ Server started successfully!")
+
+
+def handle_process_result(process, retry_count, max_retries):
+    """Handle the result of a server process attempt"""
+    return_code = process.poll()
+    print(f"⚠️  Server stopped with return code: {return_code}")
+
+    if return_code == 0:
+        print("✅ Server stopped normally.")
+        return True, retry_count
+    else:
+        retry_count += 1
+        if retry_count < max_retries:
+            print("🔄 Retrying in 3 seconds...")
+            time.sleep(3)
+        else:
+            print("❌ Max retries reached. Please check for errors.")
+        return False, retry_count
+
+
+def main():
+    env = setup_environment()
     retry_count = 0
     max_retries = 3
 
@@ -38,7 +72,6 @@ def main():
                 f"🔄 Starting Flask server (attempt {retry_count + 1}/{max_retries})..."
             )
 
-            # Start the Flask server
             process = subprocess.Popen(
                 [sys.executable, "app.py"],
                 env=env,
@@ -48,32 +81,13 @@ def main():
                 bufsize=1,
             )
 
-            # Monitor the process
-            while True:
-                output = process.stdout.readline()
-                if output == "" and process.poll() is not None:
-                    break
-                if output:
-                    print(output.strip())
+            monitor_process(process)
+            should_break, retry_count = handle_process_result(
+                process, retry_count, max_retries
+            )
 
-                    # Check if server started successfully
-                    if "Running on http://127.0.0.1:5000" in output:
-                        print("✅ Server started successfully!")
-
-            # If we get here, the process ended
-            return_code = process.poll()
-            print(f"⚠️  Server stopped with return code: {return_code}")
-
-            if return_code == 0:
-                print("✅ Server stopped normally.")
+            if should_break:
                 break
-            else:
-                retry_count += 1
-                if retry_count < max_retries:
-                    print("🔄 Retrying in 3 seconds...")
-                    time.sleep(3)
-                else:
-                    print("❌ Max retries reached. Please check for errors.")
 
         except KeyboardInterrupt:
             print("\n🛑 Server stopped by user.")
