@@ -55,8 +55,10 @@ jobs:
       run: |
         # Check for Python syntax errors and undefined names with detailed output
         echo "Checking for critical errors in core files..."
-        flake8 app.py run.py start_server.py --count --select=E9,F63,F7,F82 --show-source --statistics || echo "Flake8 critical check completed with issues"
-        # Standard linting with warnings
+        echo "=== Critical Error Check Results ==="
+        flake8 app.py run.py start_server.py --count --select=E9,F63,F7,F82 --show-source --statistics --verbose || true
+        echo "=== End Critical Error Check ==="
+        # Standard linting with warnings (non-blocking)
         echo "Running standard linting..."
         flake8 app.py run.py start_server.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
