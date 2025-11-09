@@ -34,11 +34,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        pip install -r .dev/requirements-dev.txt
         
     - name: Run tests
       run: |
-        pytest tests/ --cov=. --cov-report=xml
+        pytest .dev/tests/ --cov=. --cov-report=xml
         
     - name: Security scan
       run: |
