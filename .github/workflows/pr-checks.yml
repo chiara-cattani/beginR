@@ -79,7 +79,7 @@ jobs:
 
     - name: Lint
       run: |
-        flake8 . --count --statistics
+        flake8 . --count --statistics --exclude=.git,__pycache__,venv,env,.venv,node_modules,.dev
 
     - name: Security check
       run: |
