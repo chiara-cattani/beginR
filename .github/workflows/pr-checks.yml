@@ -45,6 +45,7 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.python == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         python-version: [3.9, 3.11]
@@ -64,10 +65,12 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
 
     - name: Install dependencies
+      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-test.txt
+        # Install with timeout and retries to handle network issues
+        pip install --timeout=300 --retries=3 -r requirements.txt
+        pip install --timeout=300 --retries=3 -r requirements-test.txt
 
     - name: Format check
       run: |
