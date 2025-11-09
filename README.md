@@ -119,20 +119,6 @@ All bonus materials are organized in the `bonus_resources/` folder:
 • `bonus_resources/` — Downloadable materials, templates, and reference files
 • `requirements.txt` — Python dependencies and version specifications
 
-## Features Overview
-
-### Progress Tracking
-• localStorage-based progress persistence across browser sessions
-• Individual learning objective completion tracking with visual indicators
-• Module-level progress bars and completion status
-• Dark/light theme preference persistence
-
-### User Interface
-• Responsive Bootstrap 5 design optimized for multiple screen sizes
-• CSS variables for consistent theming and easy customization
-• Font Awesome icons and Inter font for professional appearance
-• Accessible navigation with ARIA labels and keyboard support
-
 ## Contributing
 
 1. Fork the repository
