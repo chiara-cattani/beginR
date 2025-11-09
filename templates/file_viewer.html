@@ -7,45 +7,22 @@
 <section class="py-4 bg-light">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url_for('modules') }}">Modules</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">View {{ filename.split('/')[-1] }}</li>
-                    </ol>
-                </nav>
-                
-                <div class="d-flex align-items-center mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <h1 class="mb-0">
                         <i class="fas fa-file-code me-2 text-primary"></i>{{ filename.split('/')[-1] }}
                     </h1>
+                    <a href="{{ url_for('download_file', filename=filename) }}" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i>Download File
+                    </a>
                 </div>
-                
-                <p class="lead text-muted">
-                    {% if file_type == 'r' %}R Script Viewer
-                    {% elif file_type == 'markdown' %}Markdown Document Viewer  
-                    {% elif file_type == 'text' %}Text File Viewer
-                    {% else %}Document Viewer
-                    {% endif %}
-                </p>
-                {% if message %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>{{ message }}
-                </div>
-                {% endif %}
-            </div>
-            <div class="col-lg-4 text-end">
-                <a href="{{ url_for('download_file', filename=filename) }}" class="btn btn-primary">
-                    <i class="fas fa-download me-2"></i>Download File
-                </a>
             </div>
         </div>
     </div>
 </section>
 
 <!-- QMD Content -->
-<section class="py-4">
+<section class="py-2">
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -56,10 +33,10 @@
                                 <i class="fas fa-eye me-2 text-primary"></i>Content Preview
                             </h5>
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleSyntaxHighlighting()">
+                                <button type="button" id="syntaxBtn" class="btn btn-outline-secondary btn-sm" onclick="toggleSyntaxHighlighting()" style="opacity: 0.7;">
                                     <i class="fas fa-code me-1"></i>Syntax Highlighting
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleLineNumbers()">
+                                <button type="button" id="lineNumbersBtn" class="btn btn-outline-secondary btn-sm" onclick="toggleLineNumbers()" style="opacity: 0.7;">
                                     <i class="fas fa-list-ol me-1"></i>Line Numbers
                                 </button>
                             </div>
@@ -124,16 +101,20 @@ function loadQmdContent() {
 
 function displayContent(content) {
     const container = document.getElementById('qmd-content');
-    const fileType = '{{ file_type }}' || 'text';
+    const filename = '{{ filename }}' || '';
     
-    // Determine the language for syntax highlighting
+    // Determine the language for syntax highlighting based on file extension
     let language = 'text';
-    if (fileType === 'r') {
+    if (filename.toLowerCase().endsWith('.r')) {
         language = 'r';
-    } else if (fileType === 'markdown') {
+    } else if (filename.toLowerCase().endsWith('.qmd') || filename.toLowerCase().endsWith('.md')) {
         language = 'markdown';
-    } else if (fileType === 'html') {
+    } else if (filename.toLowerCase().endsWith('.html') || filename.toLowerCase().endsWith('.htm')) {
         language = 'html';
+    } else if (filename.toLowerCase().endsWith('.js')) {
+        language = 'javascript';
+    } else if (filename.toLowerCase().endsWith('.py')) {
+        language = 'python';
     }
     
     // Escape HTML characters
@@ -159,41 +140,67 @@ function displayContent(content) {
     
     // Apply syntax highlighting if enabled
     if (syntaxHighlightingEnabled) {
-        Prism.highlightAll();
-    }
-}
-
-function toggleSyntaxHighlighting() {
-    syntaxHighlightingEnabled = !syntaxHighlightingEnabled;
-    const button = event.target.closest('button');
-    if (syntaxHighlightingEnabled) {
-        button.classList.remove('btn-outline-secondary');
-        button.classList.add('btn-secondary');
-        Prism.highlightAll();
-    } else {
-        button.classList.remove('btn-secondary');
-        button.classList.add('btn-outline-secondary');
-        // Remove syntax highlighting
-        const codeElements = document.querySelectorAll('code');
-        codeElements.forEach(code => {
-            code.className = code.className.replace(/language-\w+/g, '');
-        });
+        // Ensure Prism is loaded before highlighting
+        setTimeout(() => {
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+        }, 100);
     }
 }
 
 function toggleLineNumbers() {
     lineNumbersEnabled = !lineNumbersEnabled;
-    const button = event.target.closest('button');
+    const button = document.getElementById('lineNumbersBtn');
     if (lineNumbersEnabled) {
-        button.classList.remove('btn-outline-secondary');
-        button.classList.add('btn-secondary');
-    } else {
+        // When selected/enabled: show as transparent
         button.classList.remove('btn-secondary');
         button.classList.add('btn-outline-secondary');
+        button.style.opacity = '0.7';
+    } else {
+        // When not selected/disabled: show as grey
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-secondary');
+        button.style.opacity = '1';
     }
     // Reload content with new line number setting
-    loadQmdContent();
+    const hasContent = {{ 'true' if content else 'false' }};
+    if (hasContent) {
+        // For R files and other directly provided content
+        const content = {{ content | tojson | safe if content else '""' }};
+        displayContent(content);
+    } else {
+        // For QMD files that need to be fetched
+        loadQmdContent();
+    }
 }
+
+function toggleSyntaxHighlighting() {
+    syntaxHighlightingEnabled = !syntaxHighlightingEnabled;
+    const button = document.getElementById('syntaxBtn');
+    if (syntaxHighlightingEnabled) {
+        // When selected/enabled: show as transparent
+        button.classList.remove('btn-secondary');
+        button.classList.add('btn-outline-secondary');
+        button.style.opacity = '0.7';
+    } else {
+        // When not selected/disabled: show as grey
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-secondary');
+        button.style.opacity = '1';
+    }
+    // Reload content with new syntax highlighting setting
+    const hasContent = {{ 'true' if content else 'false' }};
+    if (hasContent) {
+        // For R files and other directly provided content
+        const content = {{ content | tojson | safe if content else '""' }};
+        displayContent(content);
+    } else {
+        // For QMD files that need to be fetched
+        loadQmdContent();
+    }
+}
+
 </script>
 
 <style>

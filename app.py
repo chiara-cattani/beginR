@@ -7,17 +7,21 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from flask_mail import Mail, Message
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'clinical-r-transition-2024'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'clinical-r-transition-2024')
 
-# --- Flask-Mail config (user must fill in real values) ---
-app.config['MAIL_SERVER'] = 'smtp.example.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your@email.com'
-app.config['MAIL_PASSWORD'] = 'yourpassword'
-app.config['MAIL_DEFAULT_SENDER'] = 'your@email.com'
+# --- Flask-Mail config (user can set via environment variables) ---
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.example.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'your@email.com')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'yourpassword')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'your@email.com')
 mail = Mail(app)
 
 # Module data structure
@@ -138,7 +142,7 @@ MODULES = {
     },
     7: {
         'title': 'Post-Processing, QC & Reporting',
-        'description': 'Master final data formatting, quality control procedures, report generation, and GitHub Copilot best practices for clinical programming. Future: SAS validation integration.',
+        'description': 'Quality control procedures, report generation, and GitHub Copilot best practices for clinical programming. Future: SAS validation integration.',
         'objectives': [
             'Format date/time variables to ISO8601 standards and reorder columns per specifications',
             'Implement double-programming QC by comparing R outputs against SAS results',
@@ -585,7 +589,7 @@ def generate_certificate_pdf(name, surname, date_str, modules):
     c.setFont("Helvetica", 14)
     c.drawCentredString(width/2, height-3.1*inch, f"has successfully completed the course:")
     c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width/2, height-3.6*inch, "ClinicalRTransition: Vibe Coding, R & AI for Clinical Programmers")
+    c.drawCentredString(width/2, height-3.6*inch, "TransitionR: Clinical Programming in R")
     c.setFont("Helvetica", 12)
     c.drawCentredString(width/2, height-4.1*inch, f"Date of Completion: {date_str}")
     c.setFont("Helvetica-Bold", 13)
@@ -613,6 +617,124 @@ def download_certificate():
     pdf_buffer = generate_certificate_pdf(name, surname, date_str, module_titles)
     return send_file(pdf_buffer, as_attachment=True, download_name=f'Certificate_{name}_{surname}.pdf', mimetype='application/pdf')
 
+# --- Contact Form Route (File Storage) ---
+@app.route('/send_contact_message', methods=['POST'])
+def send_contact_message():
+    try:
+        # Get form data
+        first_name = request.form.get('firstName', '').strip()
+        last_name = request.form.get('lastName', '').strip()
+        email = request.form.get('email', '').strip()
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
+        
+        # Validate required fields
+        if not all([first_name, last_name, email, subject, message]):
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('contact'))
+        
+        # Create data directory if it doesn't exist
+        os.makedirs('data', exist_ok=True)
+        
+        # Store message in file
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        message_data = {
+            'timestamp': timestamp,
+            'name': f'{first_name} {last_name}',
+            'email': email,
+            'subject': subject,
+            'message': message
+        }
+        
+        # Append to messages file
+        with open('data/contact_messages.txt', 'a', encoding='utf-8') as f:
+            f.write(f"=== MESSAGE {timestamp} ===\n")
+            f.write(f"Name: {first_name} {last_name}\n")
+            f.write(f"Email: {email}\n")
+            f.write(f"Subject: {subject}\n")
+            f.write(f"Message:\n{message}\n")
+            f.write(f"{'='*50}\n\n")
+        
+        flash('Your message has been sent successfully! We\'ll get back to you soon.', 'success')
+        
+    except Exception as e:
+        flash(f'Error sending message: {str(e)}. Please try again.', 'danger')
+    
+    return redirect(url_for('contact'))
+
+# --- Simple Rating Route ---
+@app.route('/submit_simple_rating', methods=['POST'])
+def submit_simple_rating():
+    try:
+        # Get JSON data
+        data = request.get_json()
+        rating = data.get('rating')
+        feedback = data.get('feedback', '').strip()
+        timestamp = data.get('timestamp')
+        is_update = data.get('isUpdate', False)
+        
+        # Validate required fields
+        if not rating:
+            return jsonify({'success': False, 'message': 'Rating is required.'})
+        
+        # Create data directory if it doesn't exist
+        os.makedirs('data', exist_ok=True)
+        
+        # Store rating in file
+        formatted_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        if is_update and feedback:
+            # This is a text feedback update - append as a separate entry
+            with open('data/course_ratings.txt', 'a', encoding='utf-8') as f:
+                f.write(f"=== FEEDBACK UPDATE {formatted_time} ===\n")
+                f.write(f"Rating: {rating}/5 stars (with additional feedback)\n")
+                f.write(f"Feedback: {feedback}\n")
+                f.write(f"Timestamp: {timestamp}\n")
+                f.write(f"{'='*30}\n\n")
+        else:
+            # Regular rating submission
+            with open('data/course_ratings.txt', 'a', encoding='utf-8') as f:
+                f.write(f"=== RATING {formatted_time} ===\n")
+                f.write(f"Rating: {rating}/5 stars\n")
+                if feedback:
+                    f.write(f"Feedback: {feedback}\n")
+                f.write(f"Timestamp: {timestamp}\n")
+                f.write(f"{'='*30}\n\n")
+        
+        return jsonify({'success': True, 'message': 'Thank you for your rating!'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error submitting rating: {str(e)}'})
+
+# --- Admin Route to View Data ---
+@app.route('/admin/data')
+def view_admin_data():
+    """Simple admin page to view contact messages and feedback"""
+    data = {
+        'messages': [],
+        'feedback': []
+    }
+    
+    # Read contact messages
+    try:
+        if os.path.exists('data/contact_messages.txt'):
+            with open('data/contact_messages.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
+                data['messages_raw'] = content
+    except Exception as e:
+        data['messages_error'] = str(e)
+    
+    # Read ratings
+    try:
+        if os.path.exists('data/course_ratings.txt'):
+            with open('data/course_ratings.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
+                data['ratings_raw'] = content
+    except Exception as e:
+        data['ratings_error'] = str(e)
+    
+    return render_template('admin_data.html', data=data)
+
 # --- Certificate Email Route ---
 @app.route('/send_certificate', methods=['POST'])
 def send_certificate():
@@ -636,4 +758,7 @@ def send_certificate():
     return redirect(url_for('modules'))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=debug_mode, host=host, port=port) 

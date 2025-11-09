@@ -7,4 +7,5 @@ click==8.1.7
 blinker==1.6.3
 reportlab==4.0.4
 Flask-Mail==0.9.1
-gunicorn
+python-dotenv==1.0.0
+gunicorn==21.2.0

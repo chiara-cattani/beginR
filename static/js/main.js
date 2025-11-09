@@ -1,6 +1,9 @@
 // Main JavaScript for ClinicalRTransition
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Update current date in footer
+    updateCurrentDate();
+    
     // Theme Toggle Functionality
     const themeToggle = document.getElementById('themeToggle');
     const lightIcon = document.getElementById('lightIcon');
@@ -35,11 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateThemeIcon(theme) {
         if (theme === 'light') {
-            lightIcon.style.display = 'inline-block';
-            darkIcon.style.display = 'none';
-        } else {
+            // Show moon icon in light mode (clicking will switch to dark)
             lightIcon.style.display = 'none';
             darkIcon.style.display = 'inline-block';
+        } else {
+            // Show sun icon in dark mode (clicking will switch to light)
+            lightIcon.style.display = 'inline-block';
+            darkIcon.style.display = 'none';
         }
     }
     
@@ -150,10 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
             overallBar.setAttribute('aria-valuenow', percent);
         }
         
-        // Update text
+        // Update text (total should be 35 objectives across all modules)
         const progressText = document.getElementById('overallProgressText');
         if (progressText) {
-            progressText.textContent = `${completedObjectives} of ${totalObjectives} objectives completed`;
+            progressText.textContent = `${completedObjectives} of 35 objectives completed`;
         }
     }
     
@@ -162,7 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const recentDiv = document.getElementById('recentActivity');
         if (!recentDiv) return;
         
-        // Find the first module where not all objectives are completed
+        // Check if ALL modules are truly completed (using the same logic as course completion)
+        let allModulesCompleted = true;
         let nextModuleId = null;
         let nextModuleTitle = null;
         
@@ -170,21 +176,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const moduleKeys = Object.keys(localStorage).filter(key => key.startsWith(`progress_${moduleId}_`));
             const completedObjectives = moduleKeys.filter(key => localStorage.getItem(key) === 'true').length;
             
-            if (moduleKeys.length > 0 && completedObjectives < moduleKeys.length) {
-                nextModuleId = moduleId;
-                // Get module title from the page or use fallback
-                const moduleCard = document.querySelector(`[data-module-id="${moduleId}"]`);
-                if (moduleCard) {
-                    const titleElement = moduleCard.querySelector('.card-title');
-                    nextModuleTitle = titleElement ? titleElement.textContent : `Module ${moduleId}`;
-                } else {
-                    nextModuleTitle = `Module ${moduleId}`;
+            // If no progress exists for this module OR not all objectives completed
+            if (moduleKeys.length === 0 || completedObjectives < moduleKeys.length) {
+                allModulesCompleted = false;
+                
+                // Set this as the next module to work on (if we haven't found one yet)
+                if (!nextModuleId) {
+                    nextModuleId = moduleId;
+                    // Get module title from the page or use fallback
+                    const moduleCard = document.querySelector(`[data-module-id="${moduleId}"]`);
+                    if (moduleCard) {
+                        const titleElement = moduleCard.querySelector('.card-title');
+                        nextModuleTitle = titleElement ? titleElement.textContent : `Module ${moduleId}`;
+                    } else {
+                        nextModuleTitle = `Module ${moduleId}`;
+                    }
                 }
-                break;
             }
         }
         
-        if (nextModuleId) {
+        if (!allModulesCompleted && nextModuleId) {
             // Show next module to continue
             recentDiv.innerHTML = `
                 <div class="list-group-item border-0 px-0">
@@ -196,15 +207,44 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>`;
+        } else if (allModulesCompleted) {
+            // All modules truly completed
+            recentDiv.innerHTML = `
+                <div class="list-group-item border-0 px-0">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-trophy text-warning me-2"></i>
+                            <h6 class="mb-0 text-warning">Congratulations!</h6>
+                        </div>
+                        <p class="text-muted small mb-2">All modules completed. Download your certificate!</p>
+                        <div class="simple-star-rating mt-2">
+                            <i class="fas fa-star" data-rating="1"></i>
+                            <i class="fas fa-star" data-rating="2"></i>
+                            <i class="fas fa-star" data-rating="3"></i>
+                            <i class="fas fa-star" data-rating="4"></i>
+                            <i class="fas fa-star" data-rating="5"></i>
+                        </div>
+                        <div class="feedback-text-container mt-2" style="display: none;">
+                            <textarea class="form-control form-control-sm" id="feedbackText" 
+                                placeholder="Leave a feedback..." rows="2" maxlength="500"></textarea>
+                            <button class="btn btn-sm btn-primary mt-2" id="submitFeedbackBtn">
+                                <i class="fas fa-paper-plane me-1"></i>Submit Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            
+            // Initialize simple star rating
+            initializeSimpleStarRating();
         } else {
-            // All modules completed
+            // Fallback case (shouldn't happen with the new logic)
             recentDiv.innerHTML = `
                 <div class="list-group-item border-0 px-0">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-trophy text-success me-3"></i>
+                        <i class="fas fa-play-circle text-primary me-3"></i>
                         <div>
-                            <h6 class="mb-1 text-success">Congratulations!</h6>
-                            <p class="text-muted small mb-0">All modules completed. Download your certificate!</p>
+                            <h6 class="mb-1"><a href="/module/1" class="text-decoration-none">Ready to start!</a></h6>
+                            <p class="text-muted small mb-0">Begin with Module 1: Getting Started with R</p>
                         </div>
                     </div>
                 </div>`;
@@ -214,27 +254,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Certificate Eligibility ---
     function checkCertificateEligibility() {
         let allCompleted = true;
-        let totalModules = 0;
         
         for (let moduleId = 1; moduleId <= 7; moduleId++) {
             const moduleKeys = Object.keys(localStorage).filter(key => key.startsWith(`progress_${moduleId}_`));
-            if (moduleKeys.length > 0) {
-                totalModules++;
-                const completedObjectives = moduleKeys.filter(key => localStorage.getItem(key) === 'true').length;
-                if (completedObjectives < moduleKeys.length) {
-                    allCompleted = false;
-                    break;
-                }
+            const completedObjectives = moduleKeys.filter(key => localStorage.getItem(key) === 'true').length;
+            
+            // If no progress exists for this module OR not all objectives completed
+            if (moduleKeys.length === 0 || completedObjectives < moduleKeys.length) {
+                allCompleted = false;
+                break;
             }
         }
         
         const certBtn = document.getElementById('downloadCertificateBtn');
         if (certBtn) {
-            certBtn.style.display = (allCompleted && totalModules > 0) ? 'inline-block' : 'none';
+            certBtn.style.display = allCompleted ? 'inline-block' : 'none';
         }
         const certForm = document.getElementById('certificateEmailForm');
         if (certForm) {
-            certForm.style.display = (allCompleted && totalModules > 0) ? 'block' : 'none';
+            certForm.style.display = allCompleted ? 'block' : 'none';
         }
     }
     
@@ -414,4 +452,168 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize any additional components
     console.log('ClinicalRTransition app initialized successfully!');
-}); 
+});
+
+// Function to update current date in footer
+function updateCurrentDate() {
+    const currentDateElement = document.getElementById('current-date');
+    if (currentDateElement) {
+        const today = new Date();
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const formattedDate = today.toLocaleDateString('en-US', options);
+        currentDateElement.textContent = formattedDate;
+    }
+    
+    // Update seasonal icon
+    updateSeasonalIcon();
+}
+
+function updateSeasonalIcon() {
+    const seasonalIconElement = document.getElementById('seasonal-icon');
+    if (seasonalIconElement) {
+        const today = new Date();
+        const month = today.getMonth(); // 0-11
+        
+        let iconClass = '';
+        let title = '';
+        
+        // Determine season based on month
+        if (month === 11 || month === 0 || month === 1) {
+            // Winter: December, January, February
+            iconClass = 'fas fa-snowflake';
+            title = 'Winter';
+        } else if (month >= 2 && month <= 4) {
+            // Spring: March, April, May
+            iconClass = 'fas fa-seedling';
+            title = 'Spring';
+        } else if (month >= 5 && month <= 7) {
+            // Summer: June, July, August
+            iconClass = 'fas fa-sun';
+            title = 'Summer';
+        } else {
+            // Autumn: September, October, November
+            iconClass = 'fas fa-leaf';
+            title = 'Autumn';
+        }
+        
+        seasonalIconElement.className = iconClass + ' me-1';
+        seasonalIconElement.title = title;
+    }
+}
+
+// Simple Star Rating System
+function initializeSimpleStarRating() {
+    const starRating = document.querySelector('.simple-star-rating');
+    let selectedRating = 0;
+    
+    if (starRating) {
+        const stars = starRating.querySelectorAll('i');
+        const feedbackContainer = document.querySelector('.feedback-text-container');
+        const submitBtn = document.getElementById('submitFeedbackBtn');
+        
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                selectedRating = index + 1;
+                
+                // Update star appearance
+                stars.forEach((s, i) => {
+                    if (i < selectedRating) {
+                        s.classList.add('selected');
+                    } else {
+                        s.classList.remove('selected');
+                    }
+                });
+                
+                // Automatically save rating when star is clicked
+                submitSimpleRating(selectedRating, '');
+                
+                // Show feedback text container for optional comment
+                if (feedbackContainer) {
+                    feedbackContainer.style.display = 'block';
+                }
+            });
+            
+            star.addEventListener('mouseover', function() {
+                const rating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.style.color = '#ffc107';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+        
+        starRating.addEventListener('mouseleave', function() {
+            // Reset to selected state
+            stars.forEach((s, i) => {
+                if (s.classList.contains('selected')) {
+                    s.style.color = '#ffc107';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+        
+        // Handle submit feedback button (for text feedback only)
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                const feedbackText = document.getElementById('feedbackText').value.trim();
+                if (feedbackText && selectedRating > 0) {
+                    // Update the existing rating with feedback text
+                    submitSimpleRating(selectedRating, feedbackText, true);
+                }
+            });
+        }
+    }
+}
+
+function submitSimpleRating(rating, feedbackText = '', isTextUpdate = false) {
+    // Store rating data
+    const timestamp = new Date().toISOString();
+    const ratingData = {
+        rating: rating,
+        feedback: feedbackText,
+        timestamp: timestamp,
+        isUpdate: isTextUpdate
+    };
+    
+    // Submit to server
+    fetch('/submit_simple_rating', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ratingData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Rating submitted successfully');
+            
+            if (isTextUpdate) {
+                // Show success message for text feedback
+                const feedbackContainer = document.querySelector('.feedback-text-container');
+                if (feedbackContainer) {
+                    feedbackContainer.innerHTML = '<small class="text-success"><i class="fas fa-check me-1"></i>Thank you for your feedback!</small>';
+                    setTimeout(() => {
+                        feedbackContainer.style.display = 'none';
+                    }, 3000);
+                }
+            } else if (!feedbackText) {
+                // Just show a brief confirmation for star rating
+                console.log('Star rating saved automatically');
+            }
+        } else {
+            console.error('Error submitting rating:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+} 

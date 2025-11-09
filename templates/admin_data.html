@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Data - TransitionR{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-database me-2 text-primary"></i>Admin Data Dashboard
+            </h1>
+        </div>
+    </div>
+    
+    <!-- Contact Messages Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-envelope me-2"></i>Contact Messages
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if data.messages_raw %}
+                        <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">{{ data.messages_raw }}</pre>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Messages are stored in: <code>data/contact_messages.txt</code>
+                            </small>
+                        </div>
+                    {% elif data.messages_error %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error reading messages: {{ data.messages_error }}
+                        </div>
+                    {% else %}
+                        <div class="text-muted text-center py-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            No contact messages yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ratings Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Course Ratings
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if data.ratings_raw %}
+                        <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">{{ data.ratings_raw }}</pre>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Ratings are stored in: <code>data/course_ratings.txt</code>
+                            </small>
+                        </div>
+                    {% elif data.ratings_error %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error reading ratings: {{ data.ratings_error }}
+                        </div>
+                    {% else %}
+                        <div class="text-muted text-center py-4">
+                            <i class="fas fa-star fa-3x mb-3 d-block"></i>
+                            No course ratings yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Access Information
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-folder me-2 text-primary"></i>File Locations</h5>
+                            <ul class="list-unstyled">
+                                <li><code>data/contact_messages.txt</code> - Contact form submissions</li>
+                                <li><code>data/course_ratings.txt</code> - Course completion star ratings</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-link me-2 text-primary"></i>Admin Access</h5>
+                            <p class="mb-2">
+                                <strong>URL:</strong> <code>/admin/data</code>
+                            </p>
+                            <p class="text-muted small">
+                                Access this page anytime to view all submitted data. 
+                                Files are automatically created when first submission occurs.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

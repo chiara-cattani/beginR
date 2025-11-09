@@ -7,30 +7,14 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url_for('modules') }}">Modules</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ module.title }}</li>
-                    </ol>
-                </nav>
-                
-                <div class="d-flex align-items-center mb-3">
-                    <div class="module-number">{{ module_id }}</div>
-                    <h1 class="mb-0 ms-3">{{ module.title }}</h1>
-                </div>
-                
-                <p class="lead text-muted">{{ module.description }}</p>
-                
-                <div class="d-flex flex-wrap gap-2 mb-4">
-                    <span class="badge bg-primary">Module {{ module_id }}/7</span>
-                    <span class="badge bg-secondary">Self-Paced</span>
-                    <span class="badge bg-success">Interactive</span>
-                </div>
-            </div>
-            <div class="col-lg-4 text-end">
-                <div class="dropdown">
+            <div class="col-12">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="module-number">{{ module_id }}</div>
+                        <h1 class="mb-0 ms-3">{{ module.title }}</h1>
+                        <i id="completion-medal-{{ module_id }}" class="fas fa-medal text-warning ms-3" style="display: none; font-size: 1.5rem;" title="Module Completed!"></i>
+                    </div>
+                    <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <i class="fas fa-download me-2"></i>Download All
                     </button>
@@ -61,6 +45,40 @@
                         {% endif %}
 
                     </ul>
+                    </div>
+                </div>
+                
+                <p class="lead text-muted">{{ module.description }}</p>
+                
+                <div class="d-flex flex-wrap gap-2 mb-1">
+                    <span class="badge bg-primary">Module {{ module_id }}/7</span>
+                    <span class="badge bg-secondary">Self-Paced</span>
+                    <span class="badge bg-success">Interactive</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Progress Bar -->
+<section class="pb-4 bg-light" style="padding-top: 0;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-chart-line me-2 text-primary"></i>Progress
+                            </h6>
+                            <small class="text-muted">0 of {{ module.objectives|length }} objectives completed</small>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" 
+                                 data-progress-bar="{{ module_id }}" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,46 +94,41 @@
                     <i class="fas fa-bullseye me-2 text-primary"></i>Learning Objectives
                 </h2>
                 
-                <!-- Progress Bar -->
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-chart-line me-2 text-primary"></i>Progress
-                                </h6>
-                                <small class="text-muted">0 of {{ module.objectives|length }} objectives completed</small>
-                            </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" 
-                                     data-progress-bar="{{ module_id }}" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="row">
+                    {% set half_point = ((module.objectives|length + 1) // 2) %}
+                    <div class="col-md-6">
+                        {% for objective in module.objectives[:half_point] %}
+                        <div class="mb-3">
+                            <div class="progress-item" style="padding: 12px; min-height: auto;">
+                                <input type="checkbox" class="progress-checkbox" data-module-id="{{ module_id }}" data-item-id="{{ loop.index }}">
+                                <div>
+                                    <h6 class="mb-1" style="font-size: 0.9rem;">Objective {{ loop.index }}</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">{{ objective }}</p>
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                </div>
-                
-                <div class="row">
-                    {% for objective in module.objectives %}
-                    <div class="col-md-6 mb-3">
-                        <div class="progress-item" style="padding: 12px; min-height: auto;">
-                            <input type="checkbox" class="progress-checkbox" data-module-id="{{ module_id }}" data-item-id="{{ loop.index }}">
-                            <div>
-                                <h6 class="mb-1" style="font-size: 0.9rem;">{{ objective }}</h6>
-                                <small class="text-muted">Objective {{ loop.index }}</small>
+                    <div class="col-md-6">
+                        {% for objective in module.objectives[half_point:] %}
+                        <div class="mb-3">
+                            <div class="progress-item" style="padding: 12px; min-height: auto;">
+                                <input type="checkbox" class="progress-checkbox" data-module-id="{{ module_id }}" data-item-id="{{ loop.index + half_point }}">
+                                <div>
+                                    <h6 class="mb-1" style="font-size: 0.9rem;">Objective {{ loop.index + half_point }}</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">{{ objective }}</p>
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
-
-<!-- Download Resources -->
+<!-- Training Materials -->
 <section class="py-5 bg-light">
     <div class="container">
         <h2 class="mb-4">
@@ -135,11 +148,11 @@
                         <div class="d-grid gap-2">
                             {% if 'theory_html' in module.files %}
                             <a href="{{ url_for('view_file', filename=module.files.theory_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-2"></i>View Online
+                                <i class="fas fa-eye me-2"></i>View
                             </a>
                             {% else %}
                             <a href="{{ url_for('view_file', filename=module.files.theory.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-2"></i>View Online
+                                <i class="fas fa-eye me-2"></i>View
                             </a>
                             {% endif %}
                             <a href="{{ url_for('download_file', filename=module.files.theory.split('/')[-1]) }}" class="btn btn-primary btn-sm">
@@ -160,9 +173,11 @@
                         </div>
                         <h5 class="card-title">Demo</h5>
                         <p class="card-text text-muted">Live coding demonstration with step-by-step explanations.</p>
-                        <a href="{{ url_for('download_file', filename=module.files.demo.split('/')[-1]) }}" class="btn btn-primary download-btn">
-                            <i class="fas fa-download me-2"></i>Download Demo
-                        </a>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('download_file', filename=module.files.demo.split('/')[-1]) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-download me-2"></i>Download
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,9 +192,11 @@
                         </div>
                         <h5 class="card-title">Exercise</h5>
                         <p class="card-text text-muted">Hands-on coding exercises to practice the concepts learned.</p>
-                        <a href="{{ url_for('download_file', filename=module.files.exercise.split('/')[-1]) }}" class="btn btn-primary download-btn">
-                            <i class="fas fa-download me-2"></i>Download Exercise
-                        </a>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('download_file', filename=module.files.exercise.split('/')[-1]) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-download me-2"></i>Download
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,11 +214,11 @@
                         <div class="d-grid gap-2">
                             {% if 'solution_html' in module.files %}
                             <a href="{{ url_for('view_file', filename=module.files.solution_html.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-2"></i>View Online
+                                <i class="fas fa-eye me-2"></i>View
                             </a>
                             {% else %}
                             <a href="{{ url_for('view_file', filename=module.files.solution.split('/')[-1]) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-2"></i>View Online
+                                <i class="fas fa-eye me-2"></i>View
                             </a>
                             {% endif %}
                             <a href="{{ url_for('download_file', filename=module.files.solution.split('/')[-1]) }}" class="btn btn-primary btn-sm">
@@ -214,13 +231,6 @@
             {% endif %}
             
 
-        </div>
-        
-        <!-- Download All Button -->
-        <div class="text-center mt-4">
-            <a href="{{ url_for('download_module_zip', module_id=module_id) }}" class="btn btn-success btn-lg">
-                <i class="fas fa-file-archive me-2"></i>Download All Module Files
-            </a>
         </div>
     </div>
 </section>
@@ -239,16 +249,17 @@
                     <div></div>
                     {% endif %}
                     
-                    <div class="text-center">
-                        <span class="badge bg-primary">Module {{ module_id }} of 7</span>
-                    </div>
+                    <!-- Download All Button -->
+                    <a href="{{ url_for('download_module_zip', module_id=module_id) }}" class="btn btn-success">
+                        <i class="fas fa-file-archive me-2"></i>Download All Module Files
+                    </a>
                     
                     {% if module_id < 7 %}
                     <a href="{{ url_for('module_detail', module_id=module_id+1) }}" class="btn btn-primary">
                         Next Module<i class="fas fa-arrow-right ms-2"></i>
                     </a>
                     {% else %}
-                    <a href="{{ url_for('bonus') }}" class="btn btn-success">
+                    <a href="{{ url_for('bonus') }}" class="btn btn-warning">
                         Bonus Resources<i class="fas fa-star ms-2"></i>
                     </a>
                     {% endif %}
@@ -264,9 +275,119 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.progress-checkbox');
     const progressBar = document.querySelector(`[data-progress-bar="{{ module_id }}"]`);
 
+    function checkCourseCompletion() {
+        // Check if all 7 modules are completed
+        let allModulesCompleted = true;
+        for (let i = 1; i <= 7; i++) {
+            if (localStorage.getItem(`module_${i}_completed`) !== 'true') {
+                allModulesCompleted = false;
+                break;
+            }
+        }
+
+        if (allModulesCompleted && localStorage.getItem('course_completed') !== 'true') {
+            // Mark course as completed
+            localStorage.setItem('course_completed', 'true');
+            
+            // Upgrade all medals to cups
+            upgradeAllMedalsToCups();
+            
+            // Trigger spectacular course completion animation
+            triggerCourseCompletionAnimation();
+        }
+    }
+
+    function upgradeAllMedalsToCups() {
+        // Upgrade current page medal if visible
+        const currentMedal = document.getElementById('completion-medal-{{ module_id }}');
+        if (currentMedal && currentMedal.style.display !== 'none') {
+            currentMedal.className = 'fas fa-trophy text-warning ms-3';
+            currentMedal.title = 'Course Completed!';
+            
+            // Add special animation for upgrade
+            currentMedal.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                currentMedal.classList.remove('animate__animated', 'animate__pulse');
+            }, 1000);
+        }
+        
+        // Store cup upgrade status for other pages
+        localStorage.setItem('medals_upgraded_to_cups', 'true');
+    }
+
+    function triggerCourseCompletionAnimation() {
+        // Create congratulations message
+        const congratsDiv = document.createElement('div');
+        congratsDiv.innerHTML = `
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        z-index: 10000; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                        animation: courseCompleteSlideIn 0.8s ease-out;">
+                <h2 style="margin: 0 0 1rem 0; font-size: 2.5rem;">🎉 CONGRATULATIONS! 🎉</h2>
+                <p style="margin: 0; font-size: 1.2rem;">You've completed the entire R Training Course!</p>
+                <p style="margin: 0.5rem 0 0 0;">🏆 Master of R Programming 🏆</p>
+            </div>
+        `;
+        document.body.appendChild(congratsDiv);
+
+        // Fireworks effect using canvas-confetti with special settings
+        if (typeof confetti !== 'undefined') {
+            // Golden shower effect
+            const duration = 5000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                // Left side
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    colors: ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#9370DB']
+                }));
+                
+                // Right side
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#9370DB']
+                }));
+            }, 250);
+
+            // Additional star burst in center
+            setTimeout(() => {
+                confetti({
+                    particleCount: 200,
+                    spread: 160,
+                    origin: { y: 0.6 },
+                    colors: ['#FFD700', '#FFA500', '#FF6347'],
+                    shapes: ['star'],
+                    scalar: 1.2
+                });
+            }, 1000);
+        }
+
+        // Remove congratulations message after 8 seconds
+        setTimeout(() => {
+            congratsDiv.remove();
+        }, 8000);
+    }
+
     function updateModuleProgress() {
         const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
         const progressPercentage = (checkedBoxes.length / checkboxes.length) * 100;
+        const wasCompleted = localStorage.getItem(`module_{{ module_id }}_completed`) === 'true';
 
         if (progressBar) {
             progressBar.style.width = `${progressPercentage}%`;
@@ -279,6 +400,76 @@ document.addEventListener('DOMContentLoaded', function() {
             const progressText = progressCard.querySelector('small.text-muted');
             if (progressText) {
                 progressText.textContent = `${checkedBoxes.length} of ${checkboxes.length} objectives completed`;
+            }
+        }
+
+        // Check if module is completed for the first time
+        if (checkedBoxes.length === checkboxes.length && !wasCompleted) {
+            // Mark as completed
+            localStorage.setItem(`module_{{ module_id }}_completed`, 'true');
+            
+            // Show medal
+            const medal = document.getElementById('completion-medal-{{ module_id }}');
+            if (medal) {
+                medal.style.display = 'inline-block';
+                medal.classList.add('animate__animated', 'animate__bounceIn');
+            }
+
+            // Trigger confetti effect for module completion
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                
+                // Second burst after a short delay
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                }, 250);
+                
+                // Third burst
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+                }, 400);
+            }
+
+            // Check if ALL modules are now completed (course completion)
+            setTimeout(() => {
+                checkCourseCompletion();
+            }, 1000); // Wait for confetti to finish
+        }
+
+        // If not completed anymore, hide medal/cup and update course status
+        if (checkedBoxes.length < checkboxes.length) {
+            localStorage.setItem(`module_{{ module_id }}_completed`, 'false');
+            const medal = document.getElementById('completion-medal-{{ module_id }}');
+            if (medal) {
+                medal.style.display = 'none';
+            }
+            
+            // If course was completed but now a module is incomplete, downgrade status
+            if (localStorage.getItem('course_completed') === 'true') {
+                localStorage.setItem('course_completed', 'false');
+                localStorage.setItem('medals_upgraded_to_cups', 'false');
+                
+                // Remove course completion badges
+                document.querySelectorAll('.course-completed-badge').forEach(badge => {
+                    badge.remove();
+                });
+                
+                // Reset body course completion indicator
+                document.body.style.removeProperty('--course-completed');
             }
         }
     }
@@ -299,6 +490,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     updateModuleProgress();
+
+    // Check if module was already completed and show medal/cup
+    const wasCompleted = localStorage.getItem(`module_{{ module_id }}_completed`) === 'true';
+    const courseCompleted = localStorage.getItem('course_completed') === 'true';
+    
+    if (wasCompleted) {
+        const medal = document.getElementById('completion-medal-{{ module_id }}');
+        if (medal) {
+            medal.style.display = 'inline-block';
+            
+            // Show cup if course is completed, otherwise show medal
+            if (courseCompleted) {
+                medal.className = 'fas fa-trophy text-warning ms-3';
+                medal.title = 'Course Completed!';
+            } else {
+                medal.className = 'fas fa-medal text-warning ms-3';
+                medal.title = 'Module Completed!';
+            }
+        }
+    }
+
+    // Check if course is completed and add visual indication
+    if (localStorage.getItem('course_completed') === 'true') {
+        // Add a subtle golden glow to completed course
+        document.body.style.setProperty('--course-completed', 'true');
+    }
 });
 </script>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 {% endblock %} 

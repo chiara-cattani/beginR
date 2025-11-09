@@ -86,8 +86,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary:hover {
-    background-color: #1e40af;
-    border-color: #1e40af;
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -104,6 +104,16 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-md);
 }
 
+[data-bs-theme="dark"] .btn-primary {
+    background-color: #1e3a8a;
+    border-color: #1e3a8a;
+}
+
+[data-bs-theme="dark"] .btn-primary:hover {
+    background-color: #1e40af;
+    border-color: #1e40af;
+}
+
 /* Cards */
 .card {
     border: none;
@@ -114,13 +124,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 [data-bs-theme="dark"] .card {
-    background-color: #374151;
+    background-color: var(--border-color);
     color: var(--text-primary);
+    border: 1px solid #4b5563;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    border-color: #6b7280;
 }
 
 .card-header {
@@ -184,6 +201,7 @@ h1, h2, h3, h4, h5, h6 {
     height: 100%;
     cursor: pointer;
     transition: all 0.3s ease;
+    border-top: 4px solid var(--primary-color);
 }
 
 .module-card:hover {
@@ -192,16 +210,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .module-number {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
     background-color: var(--primary-color);
     color: white;
     border-radius: 50%;
-    text-align: center;
-    line-height: 2.5rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 /* Download Buttons */
@@ -362,17 +381,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge.bg-secondary {
-    background-color: #60a5fa !important; /* Light blue */
+    background-color: var(--secondary-color) !important;
     color: white !important;
 }
 
 .badge.bg-success {
-    background-color: #198754 !important; /* Bootstrap green */
+    background-color: var(--success-color) !important;
     color: white !important;
 }
 
 .badge.bg-info {
-    background-color: #0dcaf0 !important; /* Bootstrap info blue */
+    background-color: var(--accent-color) !important;
     color: white !important;
 }
 
@@ -387,48 +406,543 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Code Blocks */
-pre {
+pre:not([class*="language-"]) {
     background-color: #f8f9fa;
     border-radius: 0.5rem;
     padding: 1rem;
     border: 1px solid var(--border-color);
 }
 
-[data-bs-theme="dark"] pre {
+[data-bs-theme="dark"] pre:not([class*="language-"]) {
     background-color: #374151;
     border-color: var(--border-color);
 }
 
-code {
+code:not([class*="language-"]) {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
     font-size: 0.875em;
 }
 
-[data-bs-theme="dark"] code {
+[data-bs-theme="dark"] code:not([class*="language-"]) {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Prism.js Syntax Highlighting Overrides */
+pre[class*="language-"] {
+    background: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    overflow: auto !important;
+    font-size: 0.9em !important;
+}
+
+[data-bs-theme="dark"] pre[class*="language-"] {
+    background: #1a202c !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+}
+
+code[class*="language-"] {
+    background: none !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    color: inherit !important;
+}
+
+/* Fix font rendering for better clarity */
+[data-bs-theme="dark"] pre[class*="language-"],
+[data-bs-theme="dark"] code[class*="language-"] {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-weight: 400 !important;
+    text-shadow: none !important;
+}
+
+/* Ensure Prism tokens are visible */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: #708090 !important;
+}
+
+.token.punctuation {
+    color: #999 !important;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: #905 !important;
+}
+
+.token.boolean,
+.token.number {
+    color: #905 !important;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #690 !important;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+    color: #9a6e3a !important;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+    color: #DD4A68 !important;
+}
+
+.token.keyword {
+    color: #07a !important;
+}
+
+.token.regex,
+.token.important {
+    color: #e90 !important;
+}
+
+/* Dark mode Prism colors - Minimal highlighting to avoid symbol highlighting */
+[data-bs-theme="dark"] .token.comment,
+[data-bs-theme="dark"] .token.prolog,
+[data-bs-theme="dark"] .token.doctype,
+[data-bs-theme="dark"] .token.cdata {
+    color: #718096 !important;
+    font-style: italic !important;
+}
+
+/* Make symbols same color as base text - no highlighting whatsoever */
+[data-bs-theme="dark"] .token.punctuation,
+[data-bs-theme="dark"] .token.operator {
+    color: #f7fafc !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    font-weight: 400 !important;
+    opacity: 1 !important;
+    text-decoration: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Make other problematic tokens inherit base text color */
+[data-bs-theme="dark"] .token.property,
+[data-bs-theme="dark"] .token.tag,
+[data-bs-theme="dark"] .token.constant,
+[data-bs-theme="dark"] .token.symbol,
+[data-bs-theme="dark"] .token.deleted,
+[data-bs-theme="dark"] .token.boolean,
+[data-bs-theme="dark"] .token.number,
+[data-bs-theme="dark"] .token.selector,
+[data-bs-theme="dark"] .token.attr-name,
+[data-bs-theme="dark"] .token.char,
+[data-bs-theme="dark"] .token.builtin,
+[data-bs-theme="dark"] .token.inserted,
+[data-bs-theme="dark"] .token.entity,
+[data-bs-theme="dark"] .token.url,
+[data-bs-theme="dark"] .language-css .token.string,
+[data-bs-theme="dark"] .style .token.string,
+[data-bs-theme="dark"] .token.variable,
+[data-bs-theme="dark"] .token.atrule,
+[data-bs-theme="dark"] .token.attr-value,
+[data-bs-theme="dark"] .token.regex,
+[data-bs-theme="dark"] .token.important {
+    color: inherit !important;
+    font-weight: inherit !important;
+}
+
+/* Keep minimal highlighting for important elements only */
+[data-bs-theme="dark"] .token.string {
+    color: #98d982 !important;
+    font-weight: 400 !important;
+}
+
+[data-bs-theme="dark"] .token.function,
+[data-bs-theme="dark"] .token.class-name {
+    color: #ffd93d !important;
+    font-weight: 500 !important;
+}
+
+[data-bs-theme="dark"] .token.keyword {
+    color: #74c0fc !important;
+    font-weight: 600 !important;
+}
+
+/* Additional fix for base text color in dark mode */
+[data-bs-theme="dark"] pre[class*="language-"] {
+    color: #f7fafc !important;
+}
+
+[data-bs-theme="dark"] code[class*="language-"] {
+    color: #f7fafc !important;
+}
+
+/* Force override any Prism.js default styles for symbols */
+[data-bs-theme="dark"] pre[class*="language-"] .token.punctuation,
+[data-bs-theme="dark"] pre[class*="language-"] .token.operator,
+[data-bs-theme="dark"] code[class*="language-"] .token.punctuation,
+[data-bs-theme="dark"] code[class*="language-"] .token.operator {
+    color: #f7fafc !important;
+    background: none !important;
+    font-weight: 400 !important;
 }
 
 /* --- DARK MODE IMPROVEMENTS --- */
 [data-bs-theme="dark"] body,
-[data-bs-theme="dark"] .bg-light,
-[data-bs-theme="dark"] .footer,
 [data-bs-theme="dark"] main,
-[data-bs-theme="dark"] .container,
-[data-bs-theme="dark"] .row,
-[data-bs-theme="dark"] .col-lg-8,
-[data-bs-theme="dark"] .col-lg-4,
-[data-bs-theme="dark"] .col-md-6,
-[data-bs-theme="dark"] .col-md-4 {
+[data-bs-theme="dark"] .container:not(.hero-section .container, .bg-primary .container),
+[data-bs-theme="dark"] .row:not(.hero-section .row, .bg-primary .row),
+[data-bs-theme="dark"] .col-lg-8:not(.hero-section .col-lg-8, .bg-primary .col-lg-8),
+[data-bs-theme="dark"] .col-lg-4:not(.hero-section .col-lg-4, .bg-primary .col-lg-4),
+[data-bs-theme="dark"] .col-md-6:not(.hero-section .col-md-6, .bg-primary .col-md-6),
+[data-bs-theme="dark"] .col-md-4:not(.hero-section .col-md-4, .bg-primary .col-md-4) {
     background-color: var(--dark-bg) !important;
     color: var(--text-primary) !important;
     transition: background-color 0.3s, color 0.3s;
 }
 
+.bg-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+    color: white !important;
+}
+
+.bg-primary h1,
+.bg-primary h2,
+.bg-primary h3,
+.bg-primary h4,
+.bg-primary h5,
+.bg-primary h6,
+.bg-primary p,
+.bg-primary .lead {
+    color: white !important;
+}
+
+[data-bs-theme="dark"] .bg-light {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+}
+
 [data-bs-theme="dark"] .bg-primary {
-    background-color: var(--dark-bg) !important;
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1e3a8a 100%) !important;
     color: #f9fafb !important;
+}
+
+[data-bs-theme="dark"] .bg-primary h1,
+[data-bs-theme="dark"] .bg-primary h2,
+[data-bs-theme="dark"] .bg-primary h3,
+[data-bs-theme="dark"] .bg-primary h4,
+[data-bs-theme="dark"] .bg-primary h5,
+[data-bs-theme="dark"] .bg-primary h6,
+[data-bs-theme="dark"] .bg-primary p,
+[data-bs-theme="dark"] .bg-primary .lead {
+    color: #f9fafb !important;
+}
+
+/* Cards inside bg-primary sections should have dark text on light background */
+.bg-primary .card {
+    background-color: white !important;
+    color: #212529 !important;
+}
+
+.bg-primary .card h1,
+.bg-primary .card h2,
+.bg-primary .card h3,
+.bg-primary .card h4,
+.bg-primary .card h5,
+.bg-primary .card h6,
+.bg-primary .card p,
+.bg-primary .card .card-title,
+.bg-primary .card .card-text,
+.bg-primary .card .text-muted {
+    color: #212529 !important;
+}
+
+.bg-primary .card .text-muted {
+    color: #6c757d !important;
+}
+
+/* Dark mode cards inside bg-primary */
+[data-bs-theme="dark"] .bg-primary .card {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .card h1,
+[data-bs-theme="dark"] .bg-primary .card h2,
+[data-bs-theme="dark"] .bg-primary .card h3,
+[data-bs-theme="dark"] .bg-primary .card h4,
+[data-bs-theme="dark"] .bg-primary .card h5,
+[data-bs-theme="dark"] .bg-primary .card h6,
+[data-bs-theme="dark"] .bg-primary .card p,
+[data-bs-theme="dark"] .bg-primary .card .card-title,
+[data-bs-theme="dark"] .bg-primary .card .card-text {
+    color: var(--text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .card .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Ensure badges inside bg-primary sections maintain solid colors, not gradients */
+.bg-primary .badge.bg-primary,
+.bg-primary span.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    background-image: none !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .badge.bg-primary,
+[data-bs-theme="dark"] .bg-primary span.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    background-image: none !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Super specific rule for the 7 Modules badge to match Open Module buttons */
+.bg-primary .d-flex .badge.bg-primary,
+section.bg-primary .badge.bg-primary,
+.modules-header-section .badge.bg-primary,
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    background-image: none !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .d-flex .badge.bg-primary,
+[data-bs-theme="dark"] section.bg-primary .badge.bg-primary,
+[data-bs-theme="dark"] .modules-header-section .badge.bg-primary,
+[data-bs-theme="dark"] .badge.bg-primary {
+    background-color: #1e3a8a !important;
+    background-image: none !important;
+    background: #1e3a8a !important;
+    color: white !important;
+}
+
+/* List group items inside bg-primary sections should blend with background */
+[data-bs-theme="dark"] .bg-primary .list-group-item {
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+}
+
+/* Text styling inside list-group-items in bg-primary sections */
+[data-bs-theme="dark"] .bg-primary .list-group-item h6,
+[data-bs-theme="dark"] .bg-primary .list-group-item p {
+    color: var(--text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .list-group-item .text-success {
+    color: #22c55e !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .list-group-item .text-muted {
+    color: #d1d5db !important;
+}
+
+/* Quick Actions buttons - first two like "Begin Learning" button */
+.bg-primary .btn-outline-primary,
+.bg-primary .btn-outline-secondary,
+.bg-primary a.btn-outline-primary,
+.bg-primary a.btn-outline-secondary {
+    background-color: white !important;
+    border-color: #1e2a5a !important;
+    color: #1e2a5a !important;
+}
+
+.bg-primary .btn-outline-primary:hover,
+.bg-primary .btn-outline-secondary:hover,
+.bg-primary a.btn-outline-primary:hover,
+.bg-primary a.btn-outline-secondary:hover {
+    background-color: #f8f9fa !important;
+    border-color: #1e2a5a !important;
+    color: #1e2a5a !important;
+}
+
+/* Reset Progress button - transparent background with red text and border */
+.bg-primary .btn-outline-success {
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+.bg-primary .btn-outline-success:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    background-image: none !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+/* Dark mode - same styling */
+[data-bs-theme="dark"] .bg-primary .btn-outline-primary,
+[data-bs-theme="dark"] .bg-primary .btn-outline-secondary,
+[data-bs-theme="dark"] .bg-primary a.btn-outline-primary,
+[data-bs-theme="dark"] .bg-primary a.btn-outline-secondary {
+    background-color: white !important;
+    border-color: #1e2a5a !important;
+    color: #1e2a5a !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .btn-outline-primary:hover,
+[data-bs-theme="dark"] .bg-primary .btn-outline-secondary:hover,
+[data-bs-theme="dark"] .bg-primary a.btn-outline-primary:hover,
+[data-bs-theme="dark"] .bg-primary a.btn-outline-secondary:hover {
+    background-color: #f8f9fa !important;
+    border-color: #1e2a5a !important;
+    color: #1e2a5a !important;
+}
+
+/* Module card dropdown menu - compact for icon-only items */
+.module-card .dropdown-menu {
+    min-width: auto !important;
+    width: auto !important;
+    padding: 0.25rem 0 !important;
+}
+
+.module-card .dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    text-align: center !important;
+    width: auto !important;
+    min-width: 2.5rem !important;
+}
+
+.module-card .dropdown-item i {
+    margin: 0 !important;
+}
+
+/* Make three dots button circular like module numbers */
+.module-card .dropdown button {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+}
+
+/* Module Resource Badge Colors and Layout */
+/* Make badges expand to fill container width evenly */
+.module-card .d-flex.flex-wrap.gap-1 {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.25rem !important;
+    justify-content: stretch !important;
+}
+
+.module-card .d-flex.flex-wrap.gap-1 > a.badge {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 0.5rem 0.75rem !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+}
+
+/* Theory badge - solid blue */
+.module-card .badge.bg-primary,
+.module-card a.badge.bg-primary {
+    background: #0d6efd !important;
+    color: white !important;
+}
+
+/* Demo badge - light blue */
+.module-card .badge.bg-info,
+.module-card a.badge.bg-info {
+    background: #74c0fc !important;
+    color: white !important;
+}
+
+/* Exercise badge - grey */
+.module-card .badge.bg-secondary,
+.module-card a.badge.bg-secondary {
+    background: #6c757d !important;
+    color: white !important;
+}
+
+/* Solution badge - keep green */
+.module-card .badge.bg-success,
+.module-card a.badge.bg-success {
+    background: #198754 !important;
+    color: white !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .module-card .d-flex.flex-wrap.gap-1 {
+        flex-wrap: wrap !important;
+    }
+    
+    .module-card .d-flex.flex-wrap.gap-1 > a.badge {
+        flex: 1 1 calc(50% - 0.125rem) !important;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Hover effects for linked badges */
+.module-card a.badge:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Quick Actions button styling */
+.btn-outline-light.text-white {
+    background: transparent !important;
+    border-color: white !important;
+    color: white !important;
+}
+
+.btn-outline-light.text-white:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: white !important;
+    color: white !important;
+}
+
+.btn-light.text-danger {
+    background: white !important;
+    border-color: #e9ecef !important;
+    color: #dc3545 !important;
+}
+
+.btn-light.text-danger:hover {
+    background: #f8f9fa !important;
+    border-color: #e9ecef !important;
+    color: #dc3545 !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .btn-outline-success {
+    background-color: transparent !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+[data-bs-theme="dark"] .bg-primary .btn-outline-success:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
 }
 
 [data-bs-theme="dark"] .hero-section {
@@ -458,7 +972,10 @@ code {
     border-bottom: 1px solid var(--dark-bg);
 }
 
-[data-bs-theme="dark"] .navbar-brand,
+[data-bs-theme="dark"] .navbar-brand {
+    color: var(--primary-color) !important;
+}
+
 [data-bs-theme="dark"] .nav-link {
     color: #f9fafb !important;
 }
@@ -466,7 +983,7 @@ code {
 [data-bs-theme="dark"] .nav-link.active,
 [data-bs-theme="dark"] .nav-link:focus,
 [data-bs-theme="dark"] .nav-link:hover {
-    color: #60a5fa !important;
+    color: var(--secondary-color) !important;
 }
 
 [data-bs-theme="dark"] .badge {
@@ -475,8 +992,8 @@ code {
 }
 
 [data-bs-theme="dark"] .badge.bg-primary {
-    background-color: var(--dark-bg) !important;
-    color: #f9fafb !important;
+    background-color: var(--primary-color) !important;
+    color: white !important;
 }
 
 [data-bs-theme="dark"] .badge.bg-secondary {
@@ -526,8 +1043,8 @@ code {
 [data-bs-theme="dark"] .form-select:focus {
     background-color: var(--dark-bg) !important;
     color: #f9fafb !important;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 0.2rem rgba(96,165,250,.25);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59,130,246,.25);
 }
 
 [data-bs-theme="dark"] .table {
@@ -549,8 +1066,8 @@ code {
     border-color: var(--border-color) !important;
 }
 
-[data-bs-theme="dark"] pre,
-[data-bs-theme="dark"] code {
+[data-bs-theme="dark"] pre:not([class*="language-"]),
+[data-bs-theme="dark"] code:not([class*="language-"]) {
     background-color: var(--dark-bg) !important;
     color: #f9fafb !important;
 }
@@ -579,7 +1096,7 @@ code {
 [data-bs-theme="dark"] .dropdown-item:hover,
 [data-bs-theme="dark"] .dropdown-item:focus {
     background-color: var(--border-color) !important;
-    color: #60a5fa !important;
+    color: var(--secondary-color) !important;
 }
 
 [data-bs-theme="dark"] .toast {
@@ -593,7 +1110,7 @@ code {
 }
 
 /* Smooth transition for theme switching */
-body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container, .row, .col-lg-8, .col-lg-4, .col-md-6, .col-md-4, main {
+body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container:not(.hero-section .container), .row:not(.hero-section .row), .col-lg-8:not(.hero-section .col-lg-8), .col-lg-4:not(.hero-section .col-lg-4), .col-md-6:not(.hero-section .col-md-6), .col-md-4:not(.hero-section .col-md-4), main {
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -650,6 +1167,161 @@ body, .card, .navbar, .footer, .hero-section, .bg-light, .bg-primary, .container
     to {
         text-shadow: 0 0 15px rgba(0, 123, 255, 0.8);
     }
+}
+
+/* Quick Actions Section Styling - keep title light blue only */
+.quick-actions-title {
+    color: #60a5fa !important; /* Light blue text */
+}
+
+/* Dark mode - same light blue text */
+[data-bs-theme="dark"] .quick-actions-title {
+    color: #60a5fa !important; /* Same light blue text */
+}
+
+/* No special styling for modules header section background - keep default */
+
+/* Get Help button styling - light blue text in both modes */
+.quick-actions-section .btn-outline-secondary {
+    color: #60a5fa !important;
+    border-color: #60a5fa !important;
+}
+
+.quick-actions-section .btn-outline-secondary:hover {
+    background-color: #60a5fa !important;
+    border-color: #60a5fa !important;
+    color: white !important;
+}
+
+[data-bs-theme="dark"] .quick-actions-section .btn-outline-secondary {
+    color: #60a5fa !important;
+    border-color: #60a5fa !important;
+}
+
+[data-bs-theme="dark"] .quick-actions-section .btn-outline-secondary:hover {
+    background-color: #60a5fa !important;
+    border-color: #60a5fa !important;
+    color: white !important;
+}
+
+/* Self-Paced badge styling - light blue in both modes (only for badges, not sections) */
+.badge.bg-secondary {
+    background-color: #60a5fa !important; /* Light blue */
+    color: white !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-secondary {
+    background-color: #60a5fa !important; /* Same light blue */
+    color: white !important;
+}
+
+/* Seasonal Icon Styling - Simple style like original calendar icon */
+#seasonal-icon {
+    color: inherit;
+    opacity: 1;
+}
+
+/* Completion Medal Animation */
+@keyframes bounceIn {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.3); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.05); 
+    }
+    70% { 
+        transform: scale(0.9); 
+    }
+    100% { 
+        transform: scale(1); 
+    }
+}
+
+.animate__bounceIn {
+    animation: bounceIn 0.75s ease-out;
+}
+
+/* Medal and Trophy styling */
+.fas.fa-medal, .fas.fa-trophy {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
+}
+
+/* Trophy gets extra sparkle effect */
+.fas.fa-trophy {
+    filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.5)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+}
+
+/* Pulse animation for trophy upgrade */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 2px 8px rgba(255, 193, 7, 0.8)); }
+    100% { transform: scale(1); }
+}
+
+.animate__pulse {
+    animation: pulse 0.6s ease-in-out 3;
+}
+
+/* Course Completion Animation */
+@keyframes courseCompleteSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.5) rotateY(180deg); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.1) rotateY(0deg); 
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg); 
+    }
+}
+
+/* Simple Star Rating System */
+.simple-star-rating {
+    display: flex;
+    gap: 3px;
+}
+
+.simple-star-rating i {
+    font-size: 1rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.simple-star-rating i:hover,
+.simple-star-rating i.selected {
+    color: #ffc107;
+}
+
+.simple-star-rating i.selected {
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+}
+
+/* Feedback Text Container */
+.feedback-text-container {
+    max-width: 100%;
+}
+
+.feedback-text-container textarea {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.feedback-text-container textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.feedback-text-container .btn {
+    font-size: 0.8rem;
 }
 
  
