@@ -1,0 +1,55 @@
+name: Auto-Allow Everything (UNSAFE)
+
+# ⚠️ SECURITY WARNING: This workflow bypasses all safety checks
+# Only use this in development/testing environments, NEVER in production
+# This workflow will:
+# - Auto-approve ALL PRs from trusted users
+# - Skip waiting for CI (merge even if tests fail)
+# - Auto-merge immediately without review requirements
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: write
+  repository-projects: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ dev ]  # Only on dev branch for safety
+
+jobs:
+  auto-allow-everything:
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'chiara-cattani' ||
+      contains(github.event.pull_request.title, '[auto-merge]')
+
+    steps:
+    - name: Auto-approve immediately
+      uses: hmarr/auto-approve-action@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Force merge without waiting for checks
+      run: |
+        # Force enable auto-merge with squash
+        gh pr merge --auto --squash --delete-branch "${{ github.event.pull_request.number }}" || true
+
+        # If auto-merge fails, force merge immediately
+        sleep 5
+        gh pr merge --squash --delete-branch "${{ github.event.pull_request.number }}" || echo "Merge failed, PR may already be merged"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Add bypass comment
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🚨 **AUTO-MERGE BYPASS ACTIVATED** - All safety checks have been bypassed. This PR was merged immediately without waiting for CI or reviews.'
+          });

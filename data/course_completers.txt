@@ -1,0 +1,11 @@
+# Course Completers Log - TransitionR Course
+# This file contains information about users who have downloaded certificates
+# Format: Certificates are separated by equal signs
+# Each certificate contains: timestamp, completer name, completion method
+# Certificate Method: Always "Downloaded" (email functionality removed)
+#
+=== CERTIFICATE 2025-11-09 23:27:52 ===
+Completer: Chiara Cattani sd
+Method: Downloaded
+Timestamp: 2025-11-09T23:27:52.694Z
+==============================

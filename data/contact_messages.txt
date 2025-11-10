@@ -1,0 +1,5 @@
+# Contact Messages Log - TransitionR Course
+# This file contains messages submitted through the contact form
+# Format: Messages are separated by equal signs
+# Each message contains: timestamp, name, email, subject, message
+#

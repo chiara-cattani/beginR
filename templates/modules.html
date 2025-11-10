@@ -8,7 +8,9 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <h2 class="mb-4">Your Progress</h2>
+                <h2 class="mb-4">
+                    <i class="fas fa-chart-line me-3 text-success"></i>Your Progress
+                </h2>
                 <p class="text-muted mb-4">Track your learning journey across all modules</p>
             </div>
         </div>
@@ -27,18 +29,7 @@
                                 <button id="downloadCertificateBtn" class="btn btn-warning mt-2" style="display:none;" data-bs-toggle="modal" data-bs-target="#certificateModal">
                                     <i class="fas fa-medal me-2"></i>Download Certificate
                                 </button>
-                                <!-- Certificate Email Form (hidden by default) -->
-                                <form id="certificateEmailForm" class="mt-3" style="display:none;" method="POST" action="/send_certificate">
-                                    <div class="input-group mb-2">
-                                        <input type="text" name="name" class="form-control" placeholder="Name" required>
-                                        <input type="text" name="surname" class="form-control" placeholder="Surname" required>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
-                                        <button type="submit" class="btn btn-primary">Send to Email</button>
-                                    </div>
-                                </form>
-                                
+
 
                             </div>
                             <div class="col-md-6">
@@ -216,28 +207,28 @@
 function resetProgress() {
     if (confirm('Are you sure you want to reset all progress? This action cannot be undone.')) {
         // Remove all progress-related localStorage items
-        const keysToRemove = Object.keys(localStorage).filter(key => 
-            key.startsWith('progress_') || 
-            key.startsWith('module_') || 
+        const keysToRemove = Object.keys(localStorage).filter(key =>
+            key.startsWith('progress_') ||
+            key.startsWith('module_') ||
             key === 'course_completed' ||
             key === 'medals_upgraded_to_cups'
         );
         keysToRemove.forEach(key => localStorage.removeItem(key));
-        
+
         // Hide all medals/cups on current page
         document.querySelectorAll('[id^="completion-medal-"]').forEach(medal => {
             medal.style.display = 'none';
             medal.className = 'fas fa-medal text-warning ms-3'; // Reset to medal
         });
-        
+
         // Remove course completion badges
         document.querySelectorAll('.course-completed-badge').forEach(badge => {
             badge.remove();
         });
-        
+
         // Reset body course completion indicator
         document.body.style.removeProperty('--course-completed');
-        
+
         // Reset home page title styling if on home page
         const heroTitle = document.querySelector('.hero-section h1');
         if (heroTitle) {
@@ -245,12 +236,12 @@ function resetProgress() {
             heroTitle.style.color = '';
             heroTitle.style.textShadow = '';
         }
-        
+
         // Update the page
         updateOverallProgress();
         updateRecentActivity();
         checkCertificateEligibility();
-        
+
         // Show success message
         if (window.showToast) {
             window.showToast('All progress reset successfully! Medals and course completion status cleared.', 'success');
@@ -302,4 +293,4 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
-{% endblock %} 
+{% endblock %}

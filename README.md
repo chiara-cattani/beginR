@@ -10,24 +10,28 @@ A modular web-based training platform for transitioning from SAS to R programmin
 **beginR** is a comprehensive Flask-based training portal that provides structured, progressive learning modules for data professionals transitioning from SAS to R. The platform emphasizes practical skills development through hands-on exercises, GitHub Copilot integration, and real-world data manipulation scenarios including SDTM programming and quality control procedures.
 
 - **Modular**: 7 progressive learning modules from RStudio setup to advanced QC and reporting
-- **Interactive**: Progress tracking, downloadable resources, and hands-on exercises  
+- **Interactive**: Progress tracking, downloadable resources, and hands-on exercises
 - **AI-Enhanced**: GitHub Copilot integration throughout the curriculum
 - **Practical**: Real-world data manipulation, SDTM creation, and professional reporting workflows
 
 ## Project Status
 
-- **Version**: 1.0.0 (stable)
+- **Version**: 1.2.0 (stable)
 - **Status**: ✅ Production-ready for training programs and self-study
 - **Scope**: Complete SAS-to-R transition curriculum with 7 structured modules
+- **Latest Updates**: Enhanced UI, improved server stability, automatic logging, CI/CD integration
 
 ## Features
 
 - **Metadata-driven learning**: Module configuration in Python dictionaries with flexible content management
 - **Progressive curriculum**: RStudio setup → data manipulation → joins → dates/text → functions → SDTM → QC/reporting
-- **Resource management**: Downloadable exercises, solutions, templates, and reference materials
-- **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators
+- **Resource management**: Downloadable exercises, solutions, templates, and reference materials with organized bonus content
+- **Progress persistence**: localStorage-based tracking across sessions with visual progress indicators and completion animations
 - **Theme support**: Light/dark mode with CSS variables and user preference persistence
-- **Music integration**: Built-in music player with curated study playlists (House, Piano, Organic, Natural, Jazz)
+- **Certificate generation**: Automatic PDF certificate generation with completion logging to file-based storage
+- **Contact system**: Secure contact form with file-based message storage (no email dependencies)
+- **Enhanced UI**: Improved alignment, bigger interactive elements, and better visual feedback
+- **CI/CD Integration**: GitHub Actions workflows with automated testing, formatting, and trusted contributor auto-merge
 - **Responsive design**: Mobile-first Bootstrap 5 implementation with cross-device compatibility
 
 ## Installation
@@ -59,9 +63,11 @@ python app.py
 # or
 python run.py
 
-# Platform-specific shortcuts
-start_app.bat      # Windows
-./start_app.sh     # Unix/Linux
+# Robust server startup (recommended)
+python start_server.py              # Cross-platform robust startup
+start_server_robust.bat            # Windows with auto-restart
+start_app.bat                      # Windows simple startup
+./start_app.sh                     # Unix/Linux startup
 ```
 
 Access the training portal at `http://localhost:5000`
@@ -106,96 +112,19 @@ All bonus materials are organized in the `bonus_resources/` folder:
 ## Repository Layout
 
 • `app.py` — Flask application, module configuration, and routing logic
-• `templates/` — Jinja2 HTML templates with inheritance and component structure  
+• `templates/` — Jinja2 HTML templates with inheritance and component structure
 • `static/css/styles.css` — CSS variables, responsive design, and theme management
 • `static/js/main.js` — Progress tracking, theme toggle, and interactive features
 • `training_material/` — Structured learning content organized by module
 • `bonus_resources/` — Downloadable materials, templates, and reference files
 • `requirements.txt` — Python dependencies and version specifications
 
-## Features Overview
-
-### Progress Tracking
-• localStorage-based progress persistence across browser sessions
-• Individual learning objective completion tracking with visual indicators
-• Module-level progress bars and completion status
-• Dark/light theme preference persistence
-
-### User Interface
-• Responsive Bootstrap 5 design optimized for multiple screen sizes
-• CSS variables for consistent theming and easy customization
-• Font Awesome icons and Inter font for professional appearance
-• Accessible navigation with ARIA labels and keyboard support
-
-##  Configuration & Deployment
-
-### Environment Variables
-Create a `.env` file for custom settings:
-```env
-FLASK_ENV=development
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-PORT=5000
-```
-
-### Production Deployment
-1. Set `FLASK_ENV=production` and disable debug mode
-2. Use production WSGI server (Gunicorn recommended)
-3. Configure reverse proxy (Nginx) with SSL certificates
-4. Set secure session configurations
-
-### Docker Deployment
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-EXPOSE 5000
-CMD ["python", "app.py"]
-```
-
-## 🌐 Browser Compatibility
-
-- **Chrome/Edge**: 90+ (full support)
-- **Firefox**: 88+ (full support)  
-- **Safari**: 14+ (full support)
-- **Mobile browsers**: iOS Safari 14+, Chrome Mobile 90+
-
-## 🏗️ Technology Details
-
-### Backend Stack
-- **Flask 2.3+**: Lightweight Python web framework
-- **Jinja2**: Template engine with inheritance and macros
-- **Werkzeug**: WSGI utilities and development server
-
-### Frontend Stack  
-- **Bootstrap 5.3**: Responsive CSS framework with CSS Grid
-- **Font Awesome 6**: Comprehensive icon library
-- **Inter Font**: Professional typography from Google Fonts
-- **Vanilla JavaScript**: Progress tracking and theme management
-
-### Key Features
-- **Responsive Design**: Mobile-first approach with Bootstrap Grid
-- **Accessibility**: ARIA labels, keyboard navigation, color contrast
-- **Performance**: Minified assets, efficient CSS variables
-- **SEO**: Semantic HTML, meta tags, structured data
-
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch for your changes
-3. Follow PEP 8 coding standards for Python code
-4. Test across multiple browsers and screen sizes
-5. Update documentation as needed
-6. Submit a pull request with clear description
-
-## Known Limitations
-
-1. **Content scope**: Focuses on SAS-to-R transition; not comprehensive R programming
-2. **Performance**: Not optimized for concurrent users (designed for individual/small group use)
-3. **Offline usage**: Requires internet connection for CDN resources (Bootstrap, Font Awesome)
-4. **Mobile experience**: Full functionality best experienced on desktop/tablet devices
+3. Follow coding standards and submit a pull request with clear description
+4. For detailed development setup, see [CI-CD.md](docs/CI-CD.md)
 
 ## Roadmap
 
@@ -215,9 +144,9 @@ CMD ["python", "app.py"]
 
 ## Citation
 
-> Cattani, C. (2025). beginR: Modular Web-Based Training Platform for SAS-to-R Transition. 
+> Cattani, C. (2025). beginR: Modular Web-Based Training Platform for SAS-to-R Transition.
 > Web application version 1.0.0. https://github.com/chiara-cattani/beginR
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

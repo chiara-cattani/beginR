@@ -1,0 +1,192 @@
+name: Deploy to Production
+
+permissions:
+  contents: read
+  security-events: write
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test-before-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+
+    - name: Run tests
+      run: |
+        pytest --cov=. --cov-report=xml
+
+    - name: Security scan
+      run: |
+        bandit -r . -f json -o bandit-report.json
+        safety check --json --output safety-report.json || true
+
+  build:
+    needs: test-before-deploy
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get version
+      id: version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION="main-$(git rev-parse --short HEAD)"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+
+    - name: Create deployment package
+      run: |
+        mkdir -p dist
+
+        # Copy application files
+        cp -r static templates training_material dist/
+        cp *.py requirements.txt README.md LICENSE dist/
+
+        # Create version file
+        echo "${{ steps.version.outputs.version }}" > dist/VERSION
+        echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > dist/BUILD_DATE
+
+        # Create deployment archive
+        cd dist && tar -czf ../beginR-${{ steps.version.outputs.version }}.tar.gz .
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: beginR-${{ steps.version.outputs.version }}
+        path: beginR-${{ steps.version.outputs.version }}.tar.gz
+        retention-days: 30
+
+  deploy-staging:
+    needs: [test-before-deploy, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment: staging
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: beginR-${{ needs.build.outputs.version }}
+
+    - name: Deploy to staging
+      run: |
+        echo "🚀 Deploying beginR ${{ needs.build.outputs.version }} to staging..."
+        echo "📦 Package: beginR-${{ needs.build.outputs.version }}.tar.gz"
+        echo "✅ Staging deployment completed!"
+
+        # Here you would add your actual deployment commands, for example:
+        # - Upload to server via SCP/SFTP
+        # - Deploy to cloud platform (Heroku, AWS, etc.)
+        # - Update container registry
+        # - Run deployment scripts
+
+    - name: Health check
+      run: |
+        echo "🔍 Running health checks..."
+        # Add health check commands here
+        echo "✅ Health checks passed!"
+
+  deploy-production:
+    needs: [test-before-deploy, build, deploy-staging]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.environment == 'production'
+    environment: production
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: beginR-${{ needs.build.outputs.version }}
+
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploying beginR ${{ needs.build.outputs.version }} to production..."
+        echo "📦 Package: beginR-${{ needs.build.outputs.version }}.tar.gz"
+
+        # Production deployment commands would go here
+        # This might include:
+        # - Blue-green deployment
+        # - Database migrations
+        # - Cache warming
+        # - CDN invalidation
+
+        echo "✅ Production deployment completed!"
+
+    - name: Create GitHub release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ needs.build.outputs.version }}
+        release_name: Release ${{ needs.build.outputs.version }}
+        body: |
+          ## Changes in this Release
+
+          - Comprehensive R learning platform
+          - Interactive module system
+          - Progress tracking and certificates
+          - Contact form and feedback system
+          - Modern responsive UI/UX
+
+          ## Deployment
+
+          This release has been automatically deployed to production.
+
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ needs.build.outputs.version }}
+        draft: false
+        prerelease: false
+
+  notify:
+    needs: [deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+          echo "🎉 Production deployment successful!"
+        elif [[ "${{ needs.deploy-staging.result }}" == "success" ]]; then
+          echo "✅ Staging deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi

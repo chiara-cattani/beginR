@@ -1,0 +1,22 @@
+# Course Ratings Log - TransitionR Course
+# This file contains ratings and feedback submitted by users
+# Format: Ratings are separated by equal signs
+# Each rating contains: timestamp, rating (1-5 stars), optional feedback
+#
+
+=== RATING 2025-11-09 23:25:44 ===
+Rating: 3/5 stars
+Timestamp: 2025-11-09T22:25:44.479Z
+==============================
+
+=== FEEDBACK UPDATE 2025-11-09 23:26:54 ===
+Rating: 4/5 stars (with additional feedback)
+Feedback: dhjdg
+Timestamp: 2025-11-09T22:26:54.026Z
+==============================
+
+=== FEEDBACK UPDATE 2025-11-09 23:28:54 ===
+Rating: 5/5 stars (with additional feedback)
+Feedback: hygu
+Timestamp: 2025-11-09T22:28:54.263Z
+==============================
