@@ -11,7 +11,7 @@ editor: visual
 By the end of this module, you will:
 
 -   Install R and RStudio with proper configuration for clinical programming
--   Set up nutriciaconfig for environment and working directory management  
+-   Set up envconfig for environment and working directory management  
 -   Navigate RStudio interface panes and understand R file types
 -   Load essential packages (dplyr, haven, tibble) for clinical programming
 -   Configure and use GitHub Copilot basics for R programming assistance
@@ -37,26 +37,26 @@ By the end of this module, you will:
 
 ------------------------------------------------------------------------
 
-## ⚙️ 2. Setting Up nutriciaconfig
+## ⚙️ 2. Setting Up envconfig
 
-The `nutriciaconfig` package helps manage your R environment and working directories for clinical programming projects.
+The `envconfig` package helps manage your R environment and working directories for clinical programming projects.
 
 ### Installation:
 ```r
-# Install nutriciaconfig (replace with actual installation method)
-install.packages("nutriciaconfig")  # if on CRAN
-# or remotes::install_github("org/nutriciaconfig")  # if on GitHub
+# Install envconfig (replace with actual installation method)
+install.packages("envconfig")  # if on CRAN
+# or remotes::install_github("org/envconfig")  # if on GitHub
 ```
 
 ### Basic Setup:
 ```r
-library(nutriciaconfig)
+library(envconfig)
 
 # Initialize configuration for a new project
-nutriciaconfig::setup_project("my_clinical_study")
+envconfig::setup_project("my_clinical_study")
 
 # Set up environment paths
-nutriciaconfig::configure_paths()
+envconfig::configure_paths()
 ```
 
 ------------------------------------------------------------------------
@@ -172,7 +172,7 @@ dm <- dm %>% mutate(AGEGR1 = case_when(
 
 By completing this module, you should now be able to:
 
-✅ Install and configure R, RStudio, and nutriciaconfig  
+✅ Install and configure R, RStudio, and envconfig  
 ✅ Navigate the RStudio interface efficiently  
 ✅ Load essential packages for clinical programming  
 ✅ Use GitHub Copilot to assist with R code development  
@@ -188,7 +188,7 @@ By completing this module, you should now be able to:
 ## � Key Takeaways
 
 1. **R + RStudio** provides a powerful environment for clinical programming
-2. **nutriciaconfig** helps manage your project setup and working directories  
+2. **envconfig** helps manage your project setup and working directories  
 3. **Essential packages** (dplyr, haven, tibble) are your foundation tools
 4. **GitHub Copilot** can significantly speed up your coding when used thoughtfully
 5. **Practice and experimentation** are key to becoming proficient in R

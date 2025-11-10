@@ -61,18 +61,18 @@ glimpse(dm)          # Structure overview
 head(dm)             # First few rows
 
 # ----------------------------
-# Part 4: nutriciaconfig Demo (if available)
+# Part 4: envconfig Demo (if available)
 # ----------------------------
 
-# Note: This section assumes nutriciaconfig package is available
+# Note: This section assumes envconfig package is available
 # If not available, skip to Part 5
 
-# Load nutriciaconfig (uncomment if package is available)
-# library(nutriciaconfig)
+# Load envconfig (uncomment if package is available)
+# library(envconfig)
 
-# Example setup (replace with actual nutriciaconfig functions)
-# nutriciaconfig::setup_project("module1_demo")
-# nutriciaconfig::configure_paths()
+# Example setup (replace with actual envconfig functions)
+# envconfig::setup_project("module1_demo")
+# envconfig::configure_paths()
 
 # For now, demonstrate basic project organization
 cat("Project organization tips:\n")

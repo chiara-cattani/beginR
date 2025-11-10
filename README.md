@@ -84,7 +84,7 @@ Access the training portal at `http://localhost:5000`
 
 | Module | Topic | Key Skills |
 |--------|-------|------------|
-| **1** | RStudio & Environment Setup | Installation, nutriciaconfig, GitHub Copilot basics |
+| **1** | RStudio & Environment Setup | Installation, envconfig, GitHub Copilot basics |
 | **2** | Data Manipulation Basics | dplyr fundamentals, tibbles, data types, SAS comparison |
 | **3** | Joins & Summaries | left_join, group_by, summarise, frequency tables |
 | **4** | Date & Text Handling | lubridate functions, stringr operations, study day calculations |

@@ -29,10 +29,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "clinical-r-transition-2024")
 MODULES = {
     1: {
         "title": "RStudio & Environment Setup",
-        "description": "Learn to install R/RStudio, set up nutriciaconfig for environment management, navigate RStudio interface, and get started with GitHub Copilot.",
+        "description": "Learn to install R/RStudio, set up envconfig for environment management, navigate RStudio interface, and get started with GitHub Copilot.",
         "objectives": [
             "Install R and RStudio with proper configuration",
-            "Set up nutriciaconfig for environment and working directory management",
+            "Set up envconfig for environment and working directory management",
             "Navigate RStudio panes and understand R file types",
             "Load essential packages (dplyr, haven, tibble) for clinical programming",
             "Understand how to use GitHub Copilot to assist you while coding",
