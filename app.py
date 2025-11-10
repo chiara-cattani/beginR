@@ -248,7 +248,6 @@ def contact():
     return render_template("contact.html")
 
 
-@app.route("/download/<path:filename>")
 def _search_training_material(filename):
     """Search for file in training_material subdirectories."""
     for root, dirs, files in os.walk("training_material"):
@@ -327,6 +326,7 @@ def _find_bonus_resources(filename):
     return None
 
 
+@app.route("/download/<path:filename>")
 def download_file(filename):
     try:
         # Search for file in training_material subdirectories first
