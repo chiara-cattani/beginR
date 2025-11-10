@@ -1,5 +1,6 @@
 import io
 import os
+import sys
 import zipfile
 from datetime import datetime
 
@@ -875,8 +876,58 @@ def view_completers():
         return f"Error reading completers data: {str(e)}", 500
 
 
+@app.route("/health")
+def health_check():
+    """Health check route for deployment debugging"""
+    try:
+        import sys
+        import os
+        
+        info = {
+            "status": "healthy",
+            "python_version": sys.version,
+            "working_directory": os.getcwd(),
+            "files_exist": {
+                "templates_dir": os.path.exists("templates"),
+                "static_dir": os.path.exists("static"),
+                "training_material_dir": os.path.exists("training_material"),
+                "bonus_resources_dir": os.path.exists("bonus_resources"),
+            },
+            "environment": {
+                "PORT": os.getenv("PORT", "not set"),
+                "HOST": os.getenv("HOST", "not set"),
+                "FLASK_ENV": os.getenv("FLASK_ENV", "not set"),
+            }
+        }
+        
+        return jsonify(info)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
 if __name__ == "__main__":
+    # Add some startup logging
+    print("🚀 Starting TransitionR Flask Application...")
+    print(f"📁 Working directory: {os.getcwd()}")
+    print(f"🐍 Python version: {sys.version}")
+    
+    # Check if critical directories exist
+    critical_dirs = ["templates", "static", "training_material", "bonus_resources"]
+    for dir_name in critical_dirs:
+        exists = os.path.exists(dir_name)
+        status = "✅" if exists else "❌"
+        print(f"{status} {dir_name}: {'exists' if exists else 'MISSING'}")
+    
+    # Environment variables
     debug_mode = os.getenv("FLASK_DEBUG", "True").lower() == "true"
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 5000))
-    app.run(debug=debug_mode, host=host, port=port)
+    
+    print(f"🌐 Starting server on {host}:{port} (debug={debug_mode})")
+    
+    try:
+        app.run(debug=debug_mode, host=host, port=port)
+    except Exception as e:
+        print(f"❌ Failed to start server: {e}")
+        import traceback
+        traceback.print_exc()
